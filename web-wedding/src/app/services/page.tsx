@@ -22,14 +22,14 @@ export default function ServicesPage() {
             alt="Elegant wedding reception with floral arrangements and candlelit tables"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-gray-900/70 via-gray-900/55 to-gray-900/75" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-accent/10" />
         </div>
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6 pt-20">
           <p className="text-white/80 text-xs md:text-sm uppercase tracking-wide-lg mb-6">
             Services
           </p>
           <h1 className="font-serif text-white text-4xl md:text-6xl lg:text-7xl font-normal leading-tight text-balance">
-            How we can <span className="font-script text-accent font-normal">work</span> together
+            How we can <span className="font-script font-normal">work</span> together
           </h1>
         </div>
       </section>

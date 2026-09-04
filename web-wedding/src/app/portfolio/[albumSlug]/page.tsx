@@ -31,7 +31,7 @@ export default function AlbumPage({ params }: { params: { albumSlug: string } })
             alt={album.coverImageAlt}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-gray-900/70 via-gray-900/55 to-gray-900/80" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-accent/10" />
         </div>
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6 pt-20">
           <p className="text-white/80 text-xs md:text-sm uppercase tracking-wide-lg mb-6">

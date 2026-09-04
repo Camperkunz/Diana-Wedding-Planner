@@ -48,6 +48,7 @@ const config: Config = {
         accent: {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',
+          overlay: 'hsl(var(--accent-overlay))',
         },
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',

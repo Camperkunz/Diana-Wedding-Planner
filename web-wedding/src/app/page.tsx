@@ -29,17 +29,17 @@ export default function Home() {
             alt="Elegant outdoor wedding ceremony with white draped canopy and floral arrangements"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-gray-900/70 via-gray-900/60 to-gray-900/80" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-accent/20" />
         </div>
 
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
           <p className="text-white/80 text-xs md:text-sm uppercase tracking-wide-lg mb-6 fade-in" style={{ animationDelay: '0.1s' }}>
-            Ottawa · Independent Wedding Planner
+            Ottawa · Wedding Planner & Coordinator
           </p>
-          <h1 className="font-serif text-white text-4xl md:text-6xl lg:text-7xl font-normal leading-[1.1] max-w-4xl text-balance fade-in-up" style={{ animationDelay: '0.2s' }}>
+          <h1 className="font-serif text-white text-4xl md:text-7xl lg:text-8xl font-normal leading-[1.1] max-w-4xl text-balance fade-in-up" style={{ animationDelay: '0.2s' }}>
             Your wedding,
             <br />
-            <span className="font-script text-accent font-normal">personally</span> planned.
+            <span className="font-script font-normal">personally</span> planned.
           </h1>
           <p className="text-white text-base md:text-lg font-light mt-8 max-w-2xl leading-relaxed fade-in-up" style={{ animationDelay: '0.4s' }}>
             I&apos;m Diana — an independent wedding planner in Ottawa. Not an agency, not a team.
@@ -212,7 +212,7 @@ export default function Home() {
       </section>
 
       {/* ── 5. Diana's Quote (narrowed, reduced intensity) ─── */}
-      <section className="relative py-28 md:py-36 overflow-hidden">
+      <section className="relative py-24 md:py-28 overflow-hidden ">
         <div className="absolute inset-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -221,7 +221,7 @@ export default function Home() {
             className="w-full h-full object-cover"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-accent/55" />
+          <div className="absolute inset-0 bg-black/50" />
         </div>
 
         <div className="relative z-10 max-w-2xl mx-auto px-6 text-center">
@@ -389,7 +389,7 @@ export default function Home() {
             className="w-full h-full object-cover"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-gray-900/88 via-gray-900/82 to-gray-900/88" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-accent/20" />
         </div>
 
         <div className="relative z-10 container-narrow text-center">
@@ -399,7 +399,7 @@ export default function Home() {
           <h2 className="font-serif text-white text-3xl md:text-5xl lg:text-6xl font-normal leading-tight mb-8 text-balance">
             Your wedding deserves someone
             <br />
-            who shows up — <span className="font-script text-accent font-normal">personally</span>.
+            who shows up — <span className="font-script font-normal">personally</span>.
           </h2>
           <p className="text-white/80 text-base md:text-lg font-light max-w-2xl mx-auto mb-12 leading-relaxed">
             If you&apos;re looking for a planner who will know your wedding inside and out

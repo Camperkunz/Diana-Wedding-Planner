@@ -20,14 +20,14 @@ export default function BackstagePage() {
             alt="Groom dipping bride under a floral arch at an outdoor wedding"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-gray-900/70 via-gray-900/55 to-gray-900/75" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-accent/10" />
         </div>
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6 pt-20">
           <p className="text-white/80 text-xs md:text-sm uppercase tracking-wide-lg mb-6">
             Backstage
           </p>
           <h1 className="font-serif text-white text-4xl md:text-6xl lg:text-7xl font-normal leading-tight text-balance">
-            Behind the <span className="font-script text-accent font-normal">scenes</span>
+            Behind the <span className="font-script font-normal">scenes</span>
           </h1>
         </div>
       </section>

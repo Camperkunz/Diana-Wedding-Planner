@@ -29,7 +29,8 @@
     --muted-foreground: 220 8% 45%;
 
     /* Accent - burgundy / royal red */
-    --accent: 345 55% 38%;
+    --accent: 345 55% 35%;
+    --accent-overlay: 345 65% 55%;
     --accent-foreground: 40 44% 98%;
 
     /* Destructive */
