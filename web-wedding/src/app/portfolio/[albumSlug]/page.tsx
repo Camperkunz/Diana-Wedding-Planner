@@ -7,8 +7,13 @@ export function generateStaticParams() {
   return getAlbums().map((album) => ({ albumSlug: album.slug }));
 }
 
-export function generateMetadata({ params }: { params: { albumSlug: string } }) {
-  const album = getAlbum(params.albumSlug);
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ albumSlug: string }>;
+}) {
+  const { albumSlug } = await params;
+  const album = getAlbum(albumSlug);
   if (!album) return { title: 'Album Not Found' };
   return {
     title: `${album.title} — ${album.category} | Diana, Ottawa Wedding Planner`,
@@ -16,8 +21,13 @@ export function generateMetadata({ params }: { params: { albumSlug: string } }) 
   };
 }
 
-export default function AlbumPage({ params }: { params: { albumSlug: string } }) {
-  const album = getAlbum(params.albumSlug);
+export default async function AlbumPage({
+  params,
+}: {
+  params: Promise<{ albumSlug: string }>;
+}) {
+  const { albumSlug } = await params;
+  const album = getAlbum(albumSlug);
   if (!album) notFound();
 
   return (
