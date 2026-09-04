@@ -1,26 +1,194 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Neutral background */
+    --background: 220 10% 97%;
+    --foreground: 220 10% 15%;
+
+    /* Cards */
+    --card: 220 10% 99%;
+    --card-foreground: 220 10% 15%;
+
+    /* Popover */
+    --popover: 220 10% 99%;
+    --popover-foreground: 220 10% 15%;
+
+    /* Primary - neutral charcoal gray */
+    --primary: 220 10% 16%;
+    --primary-foreground: 220 10% 96%;
+
+    /* Secondary - neutral light gray */
+    --secondary: 220 10% 92%;
+    --secondary-foreground: 220 10% 25%;
+
+    /* Muted */
+    --muted: 220 10% 91%;
+    --muted-foreground: 220 8% 45%;
+
+    /* Accent - burgundy / royal red */
+    --accent: 345 55% 38%;
+    --accent-foreground: 40 44% 98%;
+
+    /* Destructive */
+    --destructive: 0 65% 48%;
+    --destructive-foreground: 40 44% 98%;
+
+    /* Border & Input */
+    --border: 220 10% 87%;
+    --input: 220 10% 85%;
+    --ring: 345 55% 38%;
+
+    /* Custom brand colors */
+    --sage: 100 10% 58%;
+    --sage-light: 100 10% 90%;
+    --blush: 350 20% 90%;
+    --blush-light: 350 14% 95%;
+    --sand: 220 10% 88%;
+    --terracotta: 345 55% 38%;
+
+    --radius: 0.125rem;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "liga" 1, "kern" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-weight: 300;
+    line-height: 1.75;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-serif;
+    letter-spacing: -0.01em;
+    font-weight: 500;
+  }
+
+  p {
+    line-height: 1.85;
+  }
+
+  ::selection {
+    background-color: hsl(var(--accent) / 0.2);
+  }
+}
+
+@layer utilities {
+  .font-script {
+    font-family: var(--font-script), cursive;
+  }
+
+  .font-serif {
+    font-family: var(--font-serif), Georgia, serif;
+  }
+
+  .font-sans {
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .container-narrow {
+    @apply mx-auto max-w-5xl px-6 md:px-10;
+  }
+
+  .container-wide {
+    @apply mx-auto max-w-7xl px-6 md:px-10;
+  }
+
+  .fade-in-up {
+    animation: fadeInUp 0.7s ease-out both;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.8s ease-out both;
+  }
+
+  .scale-in {
+    animation: scaleIn 0.6s ease-out both;
+  }
+
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.4);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.6);
 }
