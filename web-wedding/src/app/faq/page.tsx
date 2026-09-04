@@ -21,7 +21,7 @@ export default function FaqPage() {
   return (
     <>
       {/* Hero */}
-      <section className="relative h-[40vh] min-h-[300px] w-full overflow-hidden">
+      <section className="relative h-[50vh] min-h-[350px] w-full overflow-hidden">
         <div className="absolute inset-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img

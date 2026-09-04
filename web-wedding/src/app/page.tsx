@@ -123,12 +123,12 @@ export default function Home() {
       </section>
 
       {/* ── 3. Stats Strip ──────────────────────── */}
-      <section className="bg-secondary/50 py-20 md:py-24">
+      <section className="bg-secondary/50 py-20 md:py-16">
         <div className="container-wide">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-6">
             {stats.map((stat, i) => (
               <div key={i} className="text-center">
-                <p className="font-serif text-4xl md:text-5xl text-accent mb-3">
+                <p className="font-serif text-4xl md:text-6xl text-accent mb-4">
                   {stat.value}
                 </p>
                 <p className="text-xs md:text-sm uppercase tracking-wide text-muted-foreground font-light">
@@ -144,7 +144,7 @@ export default function Home() {
       <section className="py-28 md:py-40 bg-background">
         <div className="container-wide">
           {/* Left-aligned header with button on right */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-6 lg:items-center">
             <div>
               <p className="text-xs uppercase tracking-wide-lg text-accent mb-6">
                 What I Do
@@ -173,7 +173,7 @@ export default function Home() {
                 href="/services"
                 className="group flex flex-col"
               >
-                <div className="aspect-[4/3] overflow-hidden rounded-sm mb-6 relative">
+                <div className="aspect-[4/3] overflow-hidden rounded-sm mb-4 relative">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={service.image}
@@ -181,14 +181,14 @@ export default function Home() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     loading="lazy"
                   />
-                  <span className="absolute top-4 left-4 font-serif text-3xl text-white/90 leading-none drop-shadow-md">
-                    0{i + 1}
-                  </span>
                 </div>
-                <h3 className="font-serif text-2xl md:text-3xl mb-4 group-hover:text-accent transition-colors duration-300">
+                <span className="font-serif text-2xl md:text-3xl text-accent/30 leading-none shrink-0">
+                  0{i + 1}
+                </span>
+                <h3 className="font-serif text-2xl md:text-3xl lg:text-4xl mb-4 group-hover:text-accent transition-colors duration-300">
                   {service.name}
                 </h3>
-                <p className="text-muted-foreground text-sm font-light leading-relaxed mb-5">
+                <p className="text-muted-foreground text-md font-light leading-relaxed mb-5">
                   {service.shortDescription}
                 </p>
                 {/* Thin divider between description and features */}
@@ -197,7 +197,7 @@ export default function Home() {
                   {service.includes.slice(0, 4).map((item, j) => (
                     <li key={j} className="flex items-start gap-2.5">
                       <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                      <span className="text-sm text-foreground/70 font-light">{item}</span>
+                      <span className="text-md text-foreground/70 font-light">{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -221,7 +221,7 @@ export default function Home() {
             className="w-full h-full object-cover"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0 bg-black/60" />
         </div>
 
         <div className="relative z-10 max-w-2xl mx-auto px-6 text-center">

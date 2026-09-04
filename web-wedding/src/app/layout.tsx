@@ -36,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${jost.variable} ${cormorant.variable} ${dancing.variable}`}>
+    <html lang="en" data-scroll-behavior="smooth" className={`${jost.variable} ${cormorant.variable} ${dancing.variable}`}>
       <body className="font-sans bg-background text-foreground">
         <SiteHeader />
         <main>{children}</main>
