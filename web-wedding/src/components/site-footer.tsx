@@ -15,7 +15,7 @@ export function SiteFooter() {
   const settings = getSiteSettings();
 
   return (
-    <footer className="bg-primary text-primary-foreground mt-24">
+    <footer className="bg-primary text-primary-foreground">
       <div className="container-wide py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Brand */}

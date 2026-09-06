@@ -36,7 +36,7 @@ export default function Home() {
           <p className="text-white/80 text-xs md:text-sm uppercase tracking-wide-lg mb-6 fade-in" style={{ animationDelay: '0.1s' }}>
             Ottawa · Wedding Planner & Coordinator
           </p>
-          <h1 className="font-serif text-white text-4xl md:text-7xl lg:text-8xl font-normal leading-[1.1] max-w-4xl text-balance fade-in-up" style={{ animationDelay: '0.2s' }}>
+          <h1 className="font-serif text-white text-5xl md:text-7xl lg:text-8xl font-normal leading-[1.1] max-w-4xl text-balance fade-in-up" style={{ animationDelay: '0.2s' }}>
             Your wedding,
             <br />
             <span className="font-script font-normal">personally</span> planned.
@@ -263,7 +263,7 @@ export default function Home() {
                 href={`/portfolio/${album.slug}`}
                 className={cn(
                   'group relative overflow-hidden rounded-sm hover:shadow-xl transition-all duration-500',
-                  i === 0 ? 'sm:col-span-2 lg:col-span-2 aspect-[16/10]' : 'aspect-[4/5]'
+                  i === 0 ? 'sm:col-span-2 lg:col-span-2 aspect-[16/10]' : 'aspect-[16/10] sm:aspect-[4/5]',
                 )}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -313,7 +313,7 @@ export default function Home() {
                         {step.number}
                       </div>
                       <div className="flex-1 pt-1">
-                        <h3 className="font-serif text-xl md:text-2xl mb-3 group-hover:text-accent transition-colors duration-300">
+                        <h3 className="font-serif text-2xl md:text-2xl mb-3 group-hover:text-accent transition-colors duration-300">
                           {step.title}
                         </h3>
                         <p className="text-muted-foreground text-base font-light leading-relaxed">

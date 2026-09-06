@@ -120,7 +120,7 @@ export default function AboutPage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 ">
             {[
               {
                 title: 'Your wedding should feel like you',
