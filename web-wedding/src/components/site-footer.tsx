@@ -1,18 +1,20 @@
 import Link from 'next/link';
 import { Instagram, Mail, MapPin, Phone } from 'lucide-react';
-import { getSiteSettings } from '../lib/data';
+import type { SiteLayout, SiteSettings } from '../lib/sanity-data';
 
-const footerLinks = [
+type Props = { settings: SiteSettings | null; layout: SiteLayout | null };
+
+const fallbackLinks = [
   { href: '/about', label: 'About' },
   { href: '/services', label: 'Services' },
   { href: '/portfolio', label: 'Portfolio' },
   { href: '/backstage', label: 'Backstage' },
-  { href: '/faq', label: 'FAQ' },
   { href: '/contact', label: 'Contact' },
 ];
 
-export function SiteFooter() {
-  const settings = getSiteSettings();
+export function SiteFooter({ settings, layout }: Props) {
+  const footerLinks = layout?.footerNavLinks?.length ? layout.footerNavLinks : fallbackLinks;
+  const socials = layout?.footerSocialLinks?.length ? layout.footerSocialLinks : (settings?.socialLinks || []);
 
   return (
     <footer className="bg-primary text-primary-foreground">
@@ -22,25 +24,24 @@ export function SiteFooter() {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <span className="font-script text-4xl text-primary-foreground/90">
-                {settings.monogram}
+                {settings?.name?.charAt(0) || 'D'}
               </span>
               <div>
-                <p className="font-serif text-xl">{settings.name}</p>
+                <p className="font-serif text-xl">{settings?.name || 'Site Title'}</p>
                 <p className="text-xs uppercase tracking-wide-lg text-primary-foreground/60">
-                  {settings.tagline}
+                  {settings?.tagline || ''}
                 </p>
               </div>
             </div>
             <p className="text-sm text-primary-foreground/70 max-w-xs leading-relaxed">
-              Independent wedding planning, personally. Based in Ottawa, serving couples
-              across Eastern Ontario and beyond.
+              {layout?.footerDescription || ''}
             </p>
           </div>
 
           {/* Links */}
           <div>
             <p className="text-xs uppercase tracking-wide-lg text-primary-foreground/50 mb-4">
-              Explore
+              {layout?.footerExploreLabel || 'Explore'}
             </p>
             <ul className="grid grid-cols-2 gap-2">
               {footerLinks.map((link) => (
@@ -59,27 +60,27 @@ export function SiteFooter() {
           {/* Contact */}
           <div>
             <p className="text-xs uppercase tracking-wide-lg text-primary-foreground/50 mb-4">
-              Get in Touch
+              {layout?.footerContactLabel || 'Get in Touch'}
             </p>
             <ul className="space-y-3 text-sm text-primary-foreground/80">
               <li className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-accent shrink-0" />
-                <a href={`mailto:${settings.email}`} className="hover:text-accent transition-colors">
-                  {settings.email}
+                <a href={`mailto:${layout?.footerEmail || ''}`} className="hover:text-accent transition-colors">
+                  {layout?.footerEmail || ''}
                 </a>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-accent shrink-0" />
-                <span>{settings.phone}</span>
+                <span>{layout?.footerPhone || ''}</span>
               </li>
               <li className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-accent shrink-0" />
-                <span>{settings.serviceArea}</span>
+                <span>{layout?.footerAddress || ''}</span>
               </li>
             </ul>
             <div className="flex items-center gap-4 mt-4">
               <a
-                href={settings.instagramUrl}
+                href={socials.find((item) => item.platform === 'instagram')?.url || '#'}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
@@ -93,10 +94,10 @@ export function SiteFooter() {
 
         <div className="mt-12 pt-6 border-t border-primary-foreground/15 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-primary-foreground/50">
-            © {new Date().getFullYear()} {settings.name} Wedding Planning. All rights reserved.
+            © {new Date().getFullYear()} {settings?.name || 'Site Title'} Wedding Planning. All rights reserved.
           </p>
           <p className="text-xs text-primary-foreground/40">
-            Ottawa, Ontario · Canada
+            {layout?.footerAddress || settings?.location || ''}
           </p>
         </div>
       </div>

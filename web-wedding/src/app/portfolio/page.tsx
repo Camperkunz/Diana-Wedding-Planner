@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { getAlbums } from '@/lib/data';
+import { getAlbums } from '@/lib/sanity-data';
 
 export const metadata = {
   title: 'Portfolio — Weddings Planned by Diana | Ottawa',
@@ -8,8 +8,8 @@ export const metadata = {
     'A selection of weddings Diana has personally planned across Ottawa, the Gatineau Hills, and Eastern Ontario.',
 };
 
-export default function PortfolioPage() {
-  const albums = getAlbums();
+export default async function PortfolioPage() {
+  const albums = await getAlbums();
 
   return (
     <>

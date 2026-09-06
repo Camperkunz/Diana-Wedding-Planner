@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowRight, ArrowLeft, MapPin, Calendar } from 'lucide-react';
-import { getAlbum, getAlbums } from '@/lib/data';
+import { getAlbum, getAlbums } from '@/lib/sanity-data';
 
 export function generateStaticParams() {
-  return getAlbums().map((album) => ({ albumSlug: album.slug }));
+  return getAlbums().then((albums) => albums.map((album) => ({ albumSlug: album.slug })));
 }
 
 export async function generateMetadata({
@@ -13,11 +13,11 @@ export async function generateMetadata({
   params: Promise<{ albumSlug: string }>;
 }) {
   const { albumSlug } = await params;
-  const album = getAlbum(albumSlug);
+  const album = await getAlbum(albumSlug);
   if (!album) return { title: 'Album Not Found' };
   return {
     title: `${album.title} — ${album.category} | Diana, Ottawa Wedding Planner`,
-    description: album.story.slice(0, 160),
+    description: (album.story || album.title).slice(0, 160),
   };
 }
 
@@ -27,7 +27,7 @@ export default async function AlbumPage({
   params: Promise<{ albumSlug: string }>;
 }) {
   const { albumSlug } = await params;
-  const album = getAlbum(albumSlug);
+  const album = await getAlbum(albumSlug);
   if (!album) notFound();
 
   return (
@@ -37,8 +37,8 @@ export default async function AlbumPage({
         <div className="absolute inset-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={album.coverImage}
-            alt={album.coverImageAlt}
+            src={album.coverImage || ''}
+            alt={album.coverImageAlt || album.title}
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-accent/10" />
@@ -71,7 +71,7 @@ export default async function AlbumPage({
               The Story
             </p>
             <p className="text-muted-foreground text-base md:text-lg font-light leading-relaxed">
-              {album.story}
+              {album.story || ''}
             </p>
           </div>
         </div>

@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { ArrowRight, Quote, Heart, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CmsSections } from '@/components/cms-sections';
+import { getHomePage } from '@/lib/sanity-data';
 import {
   getStats,
   getServices,
@@ -10,7 +12,21 @@ import {
   getSiteSettings,
 } from '@/lib/data';
 
-export default function Home() {
+export async function generateMetadata() {
+  const cmsHome = await getHomePage();
+  return {
+    title: cmsHome?.seo?.metaTitle || 'Diana — Wedding Planner in Ottawa | Personal, Hands-On Wedding Planning',
+    description: cmsHome?.seo?.metaDescription || 'Independent, personal wedding planning in Ottawa.',
+  };
+}
+
+export default async function Home() {
+  const cmsHome = await getHomePage();
+  if (cmsHome?.sections?.length) return <CmsSections sections={cmsHome.sections} />;
+  return <LegacyHome />;
+}
+
+function LegacyHome() {
   const stats = getStats();
   const services = getServices();
   const albums = getFeaturedAlbums();

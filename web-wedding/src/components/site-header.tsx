@@ -5,9 +5,11 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Menu, X, Instagram } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { getSiteSettings } from '../lib/data';
+import type { SiteLayout, SiteSettings } from '../lib/sanity-data';
 
-const navLinks = [
+type Props = { settings: SiteSettings | null; layout: SiteLayout | null };
+
+const fallbackLinks = [
   { href: '/about', label: 'About' },
   { href: '/services', label: 'Services' },
   { href: '/portfolio', label: 'Portfolio' },
@@ -15,11 +17,15 @@ const navLinks = [
   { href: '/faq', label: 'FAQ' },
 ];
 
-export function SiteHeader() {
+export function SiteHeader({ settings, layout }: Props) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const settings = getSiteSettings();
+  const allNavLinks = layout?.navLinks?.length ? layout.navLinks.map((item) => ({ href: item.link, label: item.label })) : fallbackLinks;
+  const contactLink = allNavLinks.find((item) => item.href === '/contact' || item.label.toLowerCase() === 'contact') || { href: '/contact', label: 'Contact' };
+  const navLinks = allNavLinks.filter((item) => item !== contactLink);
+  const logo = layout?.headerLogo || settings?.logo;
+  const logoAlt = layout?.headerLogoAlt || settings?.logoAlt || `${settings?.name || 'Site'} logo`;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -48,16 +54,13 @@ export function SiteHeader() {
           className="flex items-center gap-3 group"
           aria-label="Diana — Home"
         >
-          <span
-            className={cn(
-              'font-script text-3xl md:text-4xl leading-none transition-colors duration-300',
-              scrolled
-                ? 'text-foreground group-hover:text-accent'
-                : 'text-white group-hover:text-accent'
-            )}
-          >
-            {settings.monogram}
-          </span>
+          {logo ? (
+            <img src={logo} alt={logoAlt} className={cn('max-h-12 w-auto max-w-[180px] object-contain transition-opacity duration-300', !scrolled && 'brightness-0 invert')} />
+          ) : (
+            <span className={cn('font-script text-3xl md:text-4xl leading-none transition-colors duration-300', scrolled ? 'text-foreground group-hover:text-accent' : 'text-white group-hover:text-accent')}>
+              {settings?.name?.charAt(0) || 'D'}
+            </span>
+          )}
           <span className="hidden sm:flex flex-col leading-tight">
             <span
               className={cn(
@@ -65,7 +68,7 @@ export function SiteHeader() {
                 scrolled ? 'text-foreground' : 'text-white'
               )}
             >
-              {settings.name}
+              {settings?.name || 'Site Title'}
             </span>
             <span
               className={cn(
@@ -73,7 +76,7 @@ export function SiteHeader() {
                 scrolled ? 'text-muted-foreground' : 'text-white/70'
               )}
             >
-              {settings.tagline}
+              {settings?.tagline || ''}
             </span>
           </span>
         </Link>
@@ -102,14 +105,14 @@ export function SiteHeader() {
             </Link>
           ))}
           <Link
-            href="/contact"
+            href={contactLink.href}
             className="bg-accent text-accent-foreground px-8 py-2.5 text-sm font-medium tracking-wide uppercase hover:bg-accent/90 transition-all duration-300 shadow-sm hover:shadow-md"
           >
-            Contact
+            {contactLink.label}
           </Link>
           <div className={cn('flex items-center gap-3 pl-2 border-l', scrolled ? 'border-border' : 'border-white/20')}>
             <a
-              href={settings.instagramUrl}
+              href={settings?.socialLinks?.find((item) => item.platform === 'instagram')?.url || '#'}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram"
@@ -160,10 +163,10 @@ export function SiteHeader() {
             </Link>
           ))}
           <Link
-            href="/contact"
+            href={contactLink.href}
             className="mt-4 bg-accent text-accent-foreground px-8 py-3 text-center text-sm font-medium tracking-wide uppercase"
           >
-            Contact
+            {contactLink.label}
           </Link>
         </div>
       </div>

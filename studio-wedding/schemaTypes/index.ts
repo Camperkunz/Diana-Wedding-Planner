@@ -1,5 +1,6 @@
 import { siteSettings } from './documents/siteSettings';
-import { siteLayout } from './documents/siteLayout';
+import { siteHeader } from './documents/siteHeader';
+import { siteFooter } from './documents/siteFooter';
 import { homePage } from './documents/homePage';
 import { page } from './documents/page';
 import { album } from './documents/album';
@@ -19,7 +20,8 @@ import { sections } from './objects/sections';
 export const schemaTypes = [
   // Documents
   siteSettings,
-  siteLayout,
+  siteHeader,
+  siteFooter,
   homePage,
   page,
   album,

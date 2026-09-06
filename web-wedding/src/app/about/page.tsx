@@ -1,17 +1,22 @@
 import Link from 'next/link';
 import { ArrowRight, Heart, Award, MapPin } from 'lucide-react';
-import { getTestimonials, getStats, getSiteSettings } from '@/lib/data';
+import { getTestimonials, getStats } from '@/lib/data';
+import { getPage } from '@/lib/sanity-data';
+import { CmsSections } from '@/components/cms-sections';
 
-export const metadata = {
-  title: 'About Diana — Ottawa Wedding Planner',
-  description:
-    'Meet Diana, an independent wedding planner based in Ottawa. Her story, her philosophy, and why every couple gets her — personally.',
-};
+export async function generateMetadata() {
+  const page = await getPage('about');
+  return {
+    title: page?.seo?.metaTitle || page?.title || 'About Diana — Ottawa Wedding Planner',
+    description: page?.seo?.metaDescription || 'Meet Diana, an independent wedding planner based in Ottawa.',
+  };
+}
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const cmsPage = await getPage('about');
+  if (cmsPage?.sections?.length) return <CmsSections sections={cmsPage.sections} />;
   const testimonials = getTestimonials();
   const stats = getStats();
-  const settings = getSiteSettings();
 
   return (
     <>

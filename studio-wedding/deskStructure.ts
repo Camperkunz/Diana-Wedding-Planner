@@ -3,7 +3,8 @@ import { structureTool } from 'sanity/structure';
 // Hardcoded singleton document IDs — must match the `name` in each singleton schema
 const SINGLETONS = {
   siteSettings: 'siteSettings',
-  siteLayout: 'siteLayout',
+  siteHeader: 'siteHeader',
+  siteFooter: 'siteFooter',
   homePage: 'homePage',
 } as const;
 
@@ -22,15 +23,26 @@ export const deskStructure = (S: any) =>
             .title('Site Settings')
         ),
 
-      // ── Header & Footer (singleton) ──
+      // ── Header (singleton) ──
       S.listItem()
-        .id('site-layout')
-        .title('Header & Footer')
+        .id('site-header')
+        .title('Header')
         .child(
           S.document()
-            .schemaType('siteLayout')
-            .documentId(SINGLETONS.siteLayout)
-            .title('Header & Footer')
+            .schemaType('siteHeader')
+            .documentId(SINGLETONS.siteHeader)
+            .title('Header')
+        ),
+
+      // ── Footer (singleton) ──
+      S.listItem()
+        .id('site-footer')
+        .title('Footer')
+        .child(
+          S.document()
+            .schemaType('siteFooter')
+            .documentId(SINGLETONS.siteFooter)
+            .title('Footer')
         ),
 
       // ── Home Page (singleton) ──
