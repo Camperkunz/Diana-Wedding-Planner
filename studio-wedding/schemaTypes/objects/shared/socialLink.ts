@@ -26,7 +26,7 @@ export const socialLink = defineType({
     defineField({
       name: 'url',
       title: 'Link URL',
-      type: 'string',
+      type: 'url',
       description: 'The full web address, e.g. "https://instagram.com/yourname".',
       validation: (rule: Rule) => rule.required(),
     }),

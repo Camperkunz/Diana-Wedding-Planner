@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import type { FormEvent } from 'react';
 import { Mail, Phone, MapPin, Instagram, Send, Check } from 'lucide-react';
 
-export default function ContactClient({ settings }: { settings: { email?: string; phone?: string; location?: string; serviceArea?: string; socialLinks: { platform: string; url: string }[] } }) {
+export default function ContactClient({ settings, content }: { settings: { email?: string; phone?: string; location?: string; serviceArea?: string; socialLinks: { platform: string; url: string }[] }; content: any }) {
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
     name: '',
@@ -12,7 +13,7 @@ export default function ContactClient({ settings }: { settings: { email?: string
     message: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
   };
@@ -24,18 +25,18 @@ export default function ContactClient({ settings }: { settings: { email?: string
         <div className="absolute inset-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="https://images.pexels.com/photos/2253867/pexels-photo-2253867.jpeg?auto=compress&cs=tinysrgb&w=1920"
-            alt="Bride holding a bouquet with groom embracing, symbolizing love and togetherness"
+            src={content.heroImage}
+            alt={content.heroImageAlt}
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-accent/10" />
         </div>
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6 pt-20">
           <p className="text-white/80 text-xs md:text-sm uppercase tracking-wide-lg mb-6">
-            Contact
+            {content.heroEyebrow}
           </p>
           <h1 className="font-serif text-white text-4xl md:text-6xl lg:text-7xl font-normal leading-tight text-balance">
-            Let&apos;s <span className="font-script font-normal">talk</span>
+            {content.heroHeadingLine1} <span className="font-script font-normal">{content.heroHeadingScript}</span>
           </h1>
         </div>
       </section>
@@ -47,11 +48,10 @@ export default function ContactClient({ settings }: { settings: { email?: string
             {/* Form */}
             <div className="lg:col-span-3">
               <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-6 text-balance">
-                Tell me about your wedding
+                {content.formHeading}
               </h2>
               <p className="text-muted-foreground font-light mb-10 leading-relaxed">
-                Fill out the form below and I&apos;ll get back to you within two business days.
-                The more you can tell me, the better our first conversation will be.
+                {content.formDescription}
               </p>
 
               {submitted ? (
@@ -59,11 +59,9 @@ export default function ContactClient({ settings }: { settings: { email?: string
                   <div className="w-16 h-16 bg-accent/15 flex items-center justify-center mx-auto mb-8">
                     <Check className="w-8 h-8 text-accent" />
                   </div>
-                  <h3 className="font-serif text-2xl mb-4">Message sent</h3>
+                  <h3 className="font-serif text-2xl mb-4">{content.successHeading}</h3>
                   <p className="text-muted-foreground font-light leading-relaxed max-w-md mx-auto">
-                    Thank you, {form.name || 'friend'} — I&apos;ve received your message and
-                    will be in touch within two business days. In the meantime, feel free to
-                    reach me directly at{' '}
+                    {content.successDescription} {' '}
                     <a href={`mailto:${settings.email}`} className="text-accent">
                       {settings.email}
                     </a>
@@ -76,14 +74,14 @@ export default function ContactClient({ settings }: { settings: { email?: string
                     }}
                     className="mt-8 text-sm text-muted-foreground hover:text-accent transition-colors"
                   >
-                    Send another message
+                    {content.sendAnotherLabel}
                   </button>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium mb-3">
-                      Your Name
+                      {content.nameLabel}
                     </label>
                     <input
                       id="name"
@@ -92,13 +90,13 @@ export default function ContactClient({ settings }: { settings: { email?: string
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
                       className="w-full px-4 py-3 rounded-sm border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                      placeholder="Jane & Michael"
+                      placeholder={content.namePlaceholder}
                     />
                   </div>
 
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium mb-3">
-                      Email Address
+                      {content.emailLabel}
                     </label>
                     <input
                       id="email"
@@ -107,13 +105,13 @@ export default function ContactClient({ settings }: { settings: { email?: string
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
                       className="w-full px-4 py-3 rounded-sm border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                      placeholder="jane@email.com"
+                      placeholder={content.emailPlaceholder}
                     />
                   </div>
 
                   <div>
                     <label htmlFor="weddingDate" className="block text-sm font-medium mb-3">
-                      Wedding Date <span className="text-muted-foreground font-light">(if known)</span>
+                      {content.weddingDateLabel} <span className="text-muted-foreground font-light">{content.optionalLabel}</span>
                     </label>
                     <input
                       id="weddingDate"
@@ -126,7 +124,7 @@ export default function ContactClient({ settings }: { settings: { email?: string
 
                   <div>
                     <label htmlFor="message" className="block text-sm font-medium mb-3">
-                      Tell me about your wedding
+                      {content.messageLabel}
                     </label>
                     <textarea
                       id="message"
@@ -135,7 +133,7 @@ export default function ContactClient({ settings }: { settings: { email?: string
                       value={form.message}
                       onChange={(e) => setForm({ ...form, message: e.target.value })}
                       className="w-full px-4 py-3 rounded-sm border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all resize-none"
-                      placeholder="Where are you getting married? What kind of day are you dreaming up? What stage are you at in planning?"
+                      placeholder={content.messagePlaceholder}
                     />
                   </div>
 
@@ -143,7 +141,7 @@ export default function ContactClient({ settings }: { settings: { email?: string
                     type="submit"
                     className="inline-flex items-center gap-3 bg-accent text-accent-foreground px-12 py-3.5 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-lg hover:shadow-xl"
                   >
-                    Send Message
+                    {content.submitLabel}
                     <Send className="w-4 h-4" />
                   </button>
                 </form>
@@ -153,7 +151,7 @@ export default function ContactClient({ settings }: { settings: { email?: string
             {/* Contact Info */}
             <div className="lg:col-span-2">
               <div className="bg-secondary/40 rounded-sm p-8 border border-border/50 sticky top-28">
-                <h3 className="font-serif text-2xl mb-8">Other ways to reach me</h3>
+                <h3 className="font-serif text-2xl mb-8">{content.contactInfoHeading}</h3>
                 <ul className="space-y-6">
                   <li>
                     <a
@@ -165,7 +163,7 @@ export default function ContactClient({ settings }: { settings: { email?: string
                       </div>
                       <div>
                         <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1 font-light">
-                          Email
+                          {content.contactEmailLabel}
                         </p>
                         <p className="text-foreground group-hover:text-accent transition-colors font-light">
                           {settings.email}
@@ -179,7 +177,7 @@ export default function ContactClient({ settings }: { settings: { email?: string
                     </div>
                     <div>
                       <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1 font-light">
-                        Phone
+                        {content.contactPhoneLabel}
                       </p>
                       <p className="text-foreground font-light">{settings.phone}</p>
                     </div>
@@ -190,7 +188,7 @@ export default function ContactClient({ settings }: { settings: { email?: string
                     </div>
                     <div>
                       <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1 font-light">
-                        Location
+                        {content.contactLocationLabel}
                       </p>
                       <p className="text-foreground font-light">{settings.location}</p>
                       <p className="text-sm text-muted-foreground mt-1 font-light">
@@ -210,10 +208,10 @@ export default function ContactClient({ settings }: { settings: { email?: string
                       </div>
                       <div>
                         <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1 font-light">
-                          Instagram
+                          {content.instagramLabel}
                         </p>
                         <p className="text-foreground group-hover:text-accent transition-colors font-light">
-                          @dianaweddings
+                          {content.instagramHandle}
                         </p>
                       </div>
                     </a>
@@ -222,8 +220,7 @@ export default function ContactClient({ settings }: { settings: { email?: string
 
                 <div className="mt-10 pt-6 border-t border-border/50">
                   <p className="text-sm text-muted-foreground font-light leading-relaxed">
-                    I reply to every message personally — usually within a day. If you
-                    haven&apos;t heard back, check your spam folder or try email directly.
+                    {content.directReplyText}
                   </p>
                 </div>
               </div>

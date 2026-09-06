@@ -1,13 +1,6 @@
 import { client } from '@/app/sanity/client';
 import { urlFor } from '@/app/sanity/image';
 
-export type SanityImage = {
-  asset?: { _ref?: string; _id?: string };
-  alt?: string;
-  crop?: unknown;
-  hotspot?: unknown;
-};
-
 export type SiteSettings = {
   name: string;
   tagline: string;
@@ -20,8 +13,7 @@ export type SiteSettings = {
   location?: string;
   serviceArea?: string;
   socialLinks: { platform: string; url: string }[];
-  accentColorHsl?: string;
-  seo?: { metaTitle?: string; metaDescription?: string; ogImage?: string };
+  seo?: { metaTitle?: string; metaDescription?: string; ogImage?: string; canonicalUrl?: string; noIndex?: boolean; noFollow?: boolean };
 };
 
 export type SiteLayout = {
@@ -47,16 +39,89 @@ export type Album = {
   coverImage?: string;
   coverImageAlt?: string;
   story?: string;
+  shortDescription?: string;
   date?: string;
   venue?: string;
   location?: string;
   order?: number;
   photos: { src: string; alt: string; caption?: string }[];
+  seo?: { metaTitle?: string; metaDescription?: string; ogImage?: any; canonicalUrl?: string; noIndex?: boolean; noFollow?: boolean };
 };
 
-export type HomeSection = Record<string, any> & { _key: string; _type: string };
+export type Service = {
+  _id: string;
+  slug: string;
+  name: string;
+  shortDescription?: string;
+  fullDescription?: string;
+  includes: string[];
+  image?: string;
+  imageAlt?: string;
+  startingPrice?: string;
+  featured?: boolean;
+  order?: number;
+};
 
-function hexToHsl(hex?: string) {
+export type HomePageContent = {
+  seo?: any;
+  heroEyebrow?: string;
+  heroHeadingLine1?: string;
+  heroHeadingScript?: string;
+  heroHeadingLine2?: string;
+  heroDescription?: string;
+  heroImage?: string;
+  heroImageAlt?: string;
+  heroPrimaryButtonLabel?: string;
+  heroPrimaryButtonLink?: string;
+  heroSecondaryButtonLabel?: string;
+  heroSecondaryButtonLink?: string;
+  aboutEyebrow?: string;
+  aboutHeading?: string;
+  aboutParagraph1?: string;
+  aboutParagraph2?: string;
+  aboutLinkLabel?: string;
+  aboutLink?: string;
+  aboutImage1?: string;
+  aboutImage2?: string;
+  aboutImage1Alt?: string;
+  aboutImage2Alt?: string;
+  stats: { value: string; label: string }[];
+  servicesEyebrow?: string;
+  servicesHeading?: string;
+  servicesDescription?: string;
+  servicesButtonLabel?: string;
+  servicesButtonLink?: string;
+  featuredServices: Service[];
+  quoteImage?: string;
+  quoteImageAlt?: string;
+  quoteText?: string;
+  quoteAuthor?: string;
+  portfolioEyebrow?: string;
+  portfolioHeading?: string;
+  portfolioButtonLabel?: string;
+  portfolioButtonLink?: string;
+  featuredAlbums: Album[];
+  approachEyebrow?: string;
+  approachHeading?: string;
+  approachImage?: string;
+  approachImageAlt?: string;
+  approachSteps: { number: string; title: string; description?: string }[];
+  testimonialsEyebrow?: string;
+  testimonialsHeading?: string;
+  testimonialsSubtext?: string;
+  testimonials: { quote: string; author: string; weddingType?: string }[];
+  ctaEyebrow?: string;
+  ctaHeadingLine1?: string;
+  ctaHeadingLine2?: string;
+  ctaHeadingScript?: string;
+  ctaDescription?: string;
+  ctaButtonLabel?: string;
+  ctaButtonLink?: string;
+  ctaImage?: string;
+  ctaImageAlt?: string;
+};
+
+export function hexToHsl(hex?: string) {
   if (!hex) return undefined;
   const value = hex.replace('#', '');
   if (value.length !== 6) return undefined;
@@ -81,11 +146,56 @@ function hexToHsl(hex?: string) {
   return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
 }
 
+const albumProjection = `
+  _id, title, slug, category, coverImage, coverImageAlt, shortDescription, order,
+  story, date, venue, location,
+  seo{ metaTitle, metaDescription, ogImage, canonicalUrl, noIndex, noFollow },
+  photos[]{ image, alt, caption }
+`;
+
+function mapAlbum(album: any): Album {
+  return {
+    _id: album._id,
+    slug: album.slug?.current || '',
+    title: album.title,
+    category: album.category,
+    coverImage: album.coverImage ? urlFor(album.coverImage).width(1800).auto('format').url() : undefined,
+    coverImageAlt: album.coverImageAlt,
+    shortDescription: album.shortDescription,
+    story: album.story || album.shortDescription,
+    date: album.date,
+    venue: album.venue,
+    location: album.location,
+    order: album.order,
+    seo: album.seo ? { metaTitle: album.seo.metaTitle, metaDescription: album.seo.metaDescription, ogImage: album.seo.ogImage, canonicalUrl: album.seo.canonicalUrl, noIndex: album.seo.noIndex, noFollow: album.seo.noFollow } : undefined,
+    photos: (album.photos || []).filter((p: any) => p.image).map((p: any) => ({
+      src: urlFor(p.image).width(1800).auto('format').url(),
+      alt: p.alt || album.title,
+      caption: p.caption,
+    })),
+  };
+}
+
+function mapService(service: any): Service {
+  return {
+    _id: service._id,
+    slug: service.slug?.current || '',
+    name: service.name,
+    shortDescription: service.shortDescription,
+    fullDescription: service.fullDescription,
+    includes: service.includes || [],
+    image: service.image ? urlFor(service.image).width(1200).auto('format').url() : undefined,
+    imageAlt: service.imageAlt,
+    startingPrice: service.startingPrice,
+    featured: service.featured,
+    order: service.order,
+  };
+}
+
 export async function getSiteSettings(): Promise<SiteSettings | null> {
   const data = await client.fetch(`*[_type == "siteSettings" && _id == "siteSettings"][0]{
-    siteTitle, tagline, location, serviceArea, logo, logoAlt, favicon, accentColor,
-    socialLinks[]{ platform, url },
-    seo{ metaTitle, metaDescription, ogImage }
+    siteTitle, tagline, location, serviceArea, email, phone, address, logo, logoAlt, favicon,
+    socialLinks[]{ platform, url }, seo{ metaTitle, metaDescription, ogImage, canonicalUrl, noIndex, noFollow }
   }`);
   if (!data) return null;
   return {
@@ -96,18 +206,19 @@ export async function getSiteSettings(): Promise<SiteSettings | null> {
     logo: data.logo ? urlFor(data.logo).width(600).auto('format').url() : undefined,
     logoAlt: data.logoAlt,
     favicon: data.favicon ? urlFor(data.favicon).width(64).height(64).fit('crop').auto('format').url() : undefined,
+    email: data.email,
+    phone: data.phone,
+    address: data.address,
     socialLinks: data.socialLinks || [],
-    accentColorHsl: hexToHsl(data.accentColor?.hex),
-    seo: data.seo ? { metaTitle: data.seo.metaTitle, metaDescription: data.seo.metaDescription, ogImage: data.seo.ogImage ? urlFor(data.seo.ogImage).width(1200).auto('format').url() : undefined } : undefined,
+    seo: data.seo ? { metaTitle: data.seo.metaTitle, metaDescription: data.seo.metaDescription, ogImage: data.seo.ogImage ? urlFor(data.seo.ogImage).width(1200).auto('format').url() : undefined, canonicalUrl: data.seo.canonicalUrl, noIndex: data.seo.noIndex, noFollow: data.seo.noFollow } : undefined,
   };
 }
 
 export async function getSiteLayout(): Promise<SiteLayout | null> {
   const data = await client.fetch(`*[_type == "siteLayout" && _id == "siteLayout"][0]{
-    headerLogo, navLinks[]{ label, link, order },
-    copyrightText, footerDescription, footerExploreLabel, footerContactLabel, footerNavLinks[]{ label, link },
-    footerEmail, footerPhone, footerAddress,
-    footerSocialLinks[]{ platform, url }
+    headerLogo, navLinks[]{ label, link, order }, copyrightText, footerDescription,
+    footerExploreLabel, footerContactLabel, footerNavLinks[]{ label, link },
+    footerEmail, footerPhone, footerAddress, footerSocialLinks[]{ platform, url }
   }`);
   if (!data) return null;
   return {
@@ -127,79 +238,130 @@ export async function getSiteLayout(): Promise<SiteLayout | null> {
 }
 
 export async function getAlbums(): Promise<Album[]> {
-  const data = await client.fetch(`*[_type == "album"] | order(coalesce(order, 9999) asc, _createdAt desc){
-    _id, title, slug, category, coverImage, coverImageAlt, shortDescription, order,
-    story, date, venue, location,
-    photos[]{ image, alt, caption }
-  }`);
-  return (data || []).map((album: any) => ({
-    _id: album._id,
-    slug: album.slug?.current || '',
-    title: album.title,
-    category: album.category,
-    coverImage: album.coverImage ? urlFor(album.coverImage).width(1400).auto('format').url() : undefined,
-    coverImageAlt: album.coverImageAlt,
-    story: album.story || album.shortDescription,
-    date: album.date,
-    venue: album.venue,
-    location: album.location,
-    order: album.order,
-    photos: (album.photos || []).filter((p: any) => p.image).map((p: any) => ({
-      src: urlFor(p.image).width(1800).auto('format').url(),
-      alt: p.alt || album.title,
-      caption: p.caption,
-    })),
-  }));
+  const data = await client.fetch(`*[_type == "album"] | order(coalesce(order, 9999) asc, _createdAt desc){${albumProjection}}`);
+  return (data || []).map(mapAlbum);
 }
 
 export async function getAlbum(slug: string): Promise<Album | null> {
-  const albums = await client.fetch(`*[_type == "album" && slug.current == $slug][0]{
-    _id, title, slug, category, coverImage, coverImageAlt, shortDescription, order,
-    story, date, venue, location,
-    photos[]{ image, alt, caption }
-  }`, { slug });
-  if (!albums) return null;
+  const data = await client.fetch(`*[_type == "album" && slug.current == $slug][0]{${albumProjection}}`, { slug });
+  return data ? mapAlbum(data) : null;
+}
+
+export async function getServices(): Promise<Service[]> {
+  const data = await client.fetch(`*[_type == "service"] | order(coalesce(order, 9999) asc, _createdAt asc){
+    _id, name, slug, shortDescription, fullDescription, includes, image, imageAlt, startingPrice, featured, order
+  }`);
+  return (data || []).map(mapService);
+}
+
+export async function getHomePage(): Promise<HomePageContent | null> {
+  const data = await client.fetch(`*[_type == "homePage" && _id == "homePage"][0]{
+    seo{ metaTitle, metaDescription, ogImage, canonicalUrl, noIndex, noFollow },
+    heroEyebrow, heroHeadingLine1, heroHeadingScript, heroHeadingLine2, heroDescription, heroImage, heroImageAlt,
+    heroPrimaryButtonLabel, heroPrimaryButtonLink, heroSecondaryButtonLabel, heroSecondaryButtonLink,
+    aboutEyebrow, aboutHeading, aboutParagraph1, aboutParagraph2, aboutLinkLabel, aboutLink,
+    aboutImage1, aboutImage2, aboutImage1Alt, aboutImage2Alt,
+    stats[]{ value, label },
+    servicesEyebrow, servicesHeading, servicesDescription, servicesButtonLabel, servicesButtonLink,
+    featuredServices[]->{ _id, name, slug, shortDescription, fullDescription, includes, image, imageAlt, startingPrice, featured, order },
+    quoteImage, quoteImageAlt, quoteText, quoteAuthor,
+    portfolioEyebrow, portfolioHeading, portfolioButtonLabel, portfolioButtonLink,
+    featuredAlbums[]->{${albumProjection}},
+    approachEyebrow, approachHeading, approachImage, approachImageAlt, approachSteps[]{ number, title, description },
+    testimonialsEyebrow, testimonialsHeading, testimonialsSubtext, testimonials[]{ quote, author, weddingType },
+    ctaEyebrow, ctaHeadingLine1, ctaHeadingLine2, ctaHeadingScript, ctaDescription, ctaButtonLabel, ctaButtonLink, ctaDirectContactText, ctaImage, ctaImageAlt
+  }`);
+  if (!data) return null;
+
   return {
-    _id: albums._id,
-    slug: albums.slug?.current || slug,
-    title: albums.title,
-    category: albums.category,
-    coverImage: albums.coverImage ? urlFor(albums.coverImage).width(1800).auto('format').url() : undefined,
-    coverImageAlt: albums.coverImageAlt,
-    story: albums.story || albums.shortDescription,
-    date: albums.date,
-    venue: albums.venue,
-    location: albums.location,
-    order: albums.order,
-    photos: (albums.photos || []).filter((p: any) => p.image).map((p: any) => ({
-      src: urlFor(p.image).width(1800).auto('format').url(),
-      alt: p.alt || albums.title,
-      caption: p.caption,
-    })),
+    ...data,
+    seo: data.seo ? { metaTitle: data.seo.metaTitle, metaDescription: data.seo.metaDescription, ogImage: data.seo.ogImage ? urlFor(data.seo.ogImage).width(1200).auto('format').url() : undefined, canonicalUrl: data.seo.canonicalUrl, noIndex: data.seo.noIndex, noFollow: data.seo.noFollow } : undefined,
+    heroImage: data.heroImage ? urlFor(data.heroImage).width(1920).auto('format').url() : undefined,
+    aboutImage1: data.aboutImage1 ? urlFor(data.aboutImage1).width(900).auto('format').url() : undefined,
+    aboutImage2: data.aboutImage2 ? urlFor(data.aboutImage2).width(900).auto('format').url() : undefined,
+    quoteImage: data.quoteImage ? urlFor(data.quoteImage).width(1920).auto('format').url() : undefined,
+    approachImage: data.approachImage ? urlFor(data.approachImage).width(900).auto('format').url() : undefined,
+    ctaImage: data.ctaImage ? urlFor(data.ctaImage).width(1920).auto('format').url() : undefined,
+    stats: data.stats || [],
+    featuredServices: (data.featuredServices || []).map(mapService),
+    featuredAlbums: (data.featuredAlbums || []).map(mapAlbum),
+    approachSteps: data.approachSteps || [],
+    testimonials: data.testimonials || [],
   };
 }
 
-export async function getHomePage(): Promise<{ seo?: any; sections: HomeSection[] } | null> {
-  return client.fetch(`*[_type == "homePage" && _id == "homePage"][0]{
-    seo{ metaTitle, metaDescription, ogImage },
-    sections[]{
-      ...,
-      _type == "galleryPreviewSection" => {
-        featuredAlbums[]->{ _id, title, slug, category, coverImage, coverImageAlt, shortDescription, order, photos[]{ image, alt, caption } }
-      }
-    }
-  }`);
+export async function getBackstageVideos() {
+  return client.fetch(`
+    *[
+      _type == "backstageVideo" &&
+      isVisible != false
+    ]
+    | order(order asc)
+  `)
 }
 
 export async function getPage(slug: string) {
   return client.fetch(`*[_type == "page" && slug.current == $slug][0]{
-    _id, title, slug,
-    seo{ metaTitle, metaDescription, ogImage },
-    sections[]{
+    _id, title, slug, seo{ metaTitle, metaDescription, ogImage, canonicalUrl, noIndex, noFollow }, sections[]{
       ...,
-      _type == "galleryPreviewSection" => {
-        featuredAlbums[]->{ _id, title, slug, category, coverImage, coverImageAlt, shortDescription, order, photos[]{ image, alt, caption } }
-      }
+      _type == "galleryPreviewSection" => { featuredAlbums[]->{${albumProjection}} }
     }
   }`, { slug });
+}
+
+export type SiteDesign = {
+  colors: Record<string, string | undefined>;
+  fontPreset?: 'elegant' | 'editorial' | 'romantic';
+};
+
+function mapColor(value: any) {
+  return value?.hex || undefined;
+}
+
+export function sanityImage(source: any, width = 1920) {
+  if (!source) return undefined;
+  if (typeof source === 'string') return source;
+  return urlFor(source).width(width).auto('format').url();
+}
+
+export async function getSiteDesign(): Promise<SiteDesign | null> {
+  const data = await client.fetch(`*[_type == "siteDesign" && _id == "siteDesign"][0]{
+    background, foreground, secondary, mutedForeground, accent, accentOverlay, accentForeground, border,
+    sage, blush, sand, terracotta, fontPreset
+  }`);
+  if (!data) return null;
+  return {
+    colors: {
+      background: mapColor(data.background), foreground: mapColor(data.foreground), secondary: mapColor(data.secondary),
+      mutedForeground: mapColor(data.mutedForeground), accent: mapColor(data.accent), accentOverlay: mapColor(data.accentOverlay),
+      accentForeground: mapColor(data.accentForeground), border: mapColor(data.border), sage: mapColor(data.sage),
+      blush: mapColor(data.blush), sand: mapColor(data.sand), terracotta: mapColor(data.terracotta),
+    },
+    fontPreset: data.fontPreset,
+  };
+}
+
+function pageProjection(type: string, slug: string) {
+  return client.fetch(`*[_type == $type && _id == $id][0]{...}`, { type, id: slug });
+}
+
+export async function getFixedPage(type: string) {
+  return pageProjection(type, type);
+}
+
+export async function getAboutPage() { return getFixedPage('aboutPage'); }
+export async function getServicesPage() { return getFixedPage('servicesPage'); }
+export async function getPortfolioPage() { return getFixedPage('portfolioPage'); }
+export async function getFaqPage() { return getFixedPage('faqPage'); }
+export async function getBackstagePage() { return getFixedPage('backstagePage'); }
+export async function getContactPage() { return getFixedPage('contactPage'); }
+
+export function buildSeoMetadata(seo: any, fallbackTitle: string, fallbackDescription: string) {
+  return {
+    title: seo?.metaTitle || fallbackTitle,
+    description: seo?.metaDescription || fallbackDescription,
+    alternates: seo?.canonicalUrl ? { canonical: seo.canonicalUrl } : undefined,
+    robots: seo?.noIndex ? { index: false, follow: !seo?.noFollow } : undefined,
+    openGraph: seo?.ogImage ? { images: [sanityImage(seo.ogImage, 1200) || ''] } : undefined,
+  };
 }

@@ -1,77 +1,30 @@
-import { defineType, defineField } from 'sanity';
+import {defineType, defineField} from 'sanity'
 
 export const siteSettings = defineType({
   name: 'siteSettings',
   title: 'Site Settings',
   type: 'document',
-  // Singleton — hardcoded ID is managed in deskStructure.ts
-  fields: [
-    defineField({
-      name: 'siteTitle',
-      title: 'Site Title',
-      type: 'string',
-      description: 'The name of your website, e.g. "Diana Voloshina Weddings".',
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      name: 'tagline',
-      title: 'Tagline',
-      type: 'string',
-      description: 'A short phrase under your name, e.g. "Wedding Planner · Ottawa".',
-    }),
-    defineField({
-      name: 'logo',
-      title: 'Logo Image',
-      type: 'image',
-      options: { hotspot: true },
-      description: 'Your logo. If you don\'t have one yet, the site title text will be shown instead. Recommended: a horizontal logo on a transparent background.',
-    }),
-    defineField({
-      name: 'logoAlt',
-      title: 'Logo Alt Text',
-      type: 'string',
-      description: 'A short text description of the logo for screen readers, e.g. "Diana Voloshina Weddings logo".',
-    }),
-    defineField({
-      name: 'favicon',
-      title: 'Favicon',
-      type: 'image',
-      options: { hotspot: true },
-      description: 'The small icon shown in browser tabs. Recommended: a simple square image, at least 32×32 pixels.',
-    }),
-    defineField({
-      name: 'accentColor',
-      title: 'Accent Color',
-      type: 'color',
-      description: 'The main highlight color used for buttons, links, and headings across the site. Click to pick a color.',
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      name: 'socialLinks',
-      title: 'Social Media Links',
-      type: 'array',
-      of: [{ type: 'socialLink' }],
-      description: 'Add your social media profiles. These appear in the footer and contact areas.',
-    }),
-    defineField({
-      name: 'seo',
-      title: 'Default SEO',
-      type: 'seo',
-      description: 'Search engine and social share settings used when a page doesn\'t have its own.',
-    }),
+  description: 'Business information and defaults used throughout the website. You normally only need to edit this once.',
+  fieldsets: [
+    {name: 'business', title: 'Business Information', options: {collapsible: true, collapsed: false}},
+    {name: 'branding', title: 'Logo & Browser Icon', options: {collapsible: true, collapsed: true}},
+    {name: 'contact', title: 'Contact Details', options: {collapsible: true, collapsed: true}},
+    {name: 'social', title: 'Social Media', options: {collapsible: true, collapsed: true}},
+    {name: 'seo', title: 'Default SEO', options: {collapsible: true, collapsed: true}},
   ],
-  preview: {
-    select: {
-      title: 'siteTitle',
-      subtitle: 'tagline',
-      media: 'logo',
-    },
-    prepare({ title, subtitle, media }: { title?: string; subtitle?: string; media?: any }) {
-      return {
-        title: title || 'Site Settings',
-        subtitle: subtitle || 'Configure your site',
-        media: media || undefined,
-      };
-    },
-  },
-});
+  fields: [
+    defineField({name: 'siteTitle', title: 'Business / Website Name', type: 'string', fieldset: 'business', description: 'Example: Diana Voloshina Weddings.', validation: (rule) => rule.required()}),
+    defineField({name: 'tagline', title: 'Short Tagline', type: 'string', fieldset: 'business', description: 'A short phrase used in places such as the footer and metadata.'}),
+    defineField({name: 'location', title: 'Base Location', type: 'string', fieldset: 'business', description: 'Example: Ottawa, Ontario.'}),
+    defineField({name: 'serviceArea', title: 'Service Area', type: 'string', fieldset: 'business', description: 'Example: Ottawa · Gatineau · Eastern Ontario.'}),
+    defineField({name: 'logo', title: 'Main Logo', type: 'image', fieldset: 'branding', options: {hotspot: true}, description: 'Used by default in the header. Transparent PNG or SVG-style artwork works best.'}),
+    defineField({name: 'logoAlt', title: 'Logo Description', type: 'string', fieldset: 'branding', description: 'A short description for accessibility, e.g. “Diana Voloshina Weddings logo”.'}),
+    defineField({name: 'favicon', title: 'Browser Icon (Favicon)', type: 'image', fieldset: 'branding', description: 'The small icon shown in browser tabs. A square image works best.'}),
+    defineField({name: 'email', title: 'Email', type: 'string', fieldset: 'contact', validation: (rule) => rule.email()}),
+    defineField({name: 'phone', title: 'Phone', type: 'string', fieldset: 'contact'}),
+    defineField({name: 'address', title: 'Address', type: 'string', fieldset: 'contact'}),
+    defineField({name: 'socialLinks', title: 'Social Media Accounts', type: 'array', fieldset: 'social', description: 'Add only the accounts you actually use. Drag to reorder.', of: [{type: 'socialLink'}]}),
+    defineField({name: 'seo', title: 'Default Search & Social Settings', type: 'seo', fieldset: 'seo', description: 'These are fallback SEO settings used when a page does not have its own SEO values.'}),
+  ],
+  preview: {select: {title: 'siteTitle', subtitle: 'tagline', media: 'logo'}, prepare({title, subtitle, media}: {title?: string; subtitle?: string; media?: any}) {return {title: title || 'Site Settings', subtitle: subtitle || 'Business information and defaults', media}}},
+})

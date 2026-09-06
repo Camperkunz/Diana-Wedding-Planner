@@ -2,13 +2,23 @@ import { defineType, defineField } from 'sanity';
 
 export const album = defineType({
   name: 'album',
-  title: 'Album',
+  title: 'Wedding Album',
   type: 'document',
+  description: 'A wedding story in Diana’s portfolio. The album page layout is fixed; you control the story and photos.',
+  fieldsets: [
+    {name: 'identity', title: 'Wedding Details', options: {collapsible: true, collapsed: false}},
+    {name: 'story', title: 'Story', options: {collapsible: true, collapsed: false}},
+    {name: 'cover', title: 'Cover Photo', options: {collapsible: true, collapsed: true}},
+    {name: 'gallery', title: 'Gallery Photos', options: {collapsible: true, collapsed: false}},
+    {name: 'display', title: 'Portfolio Display', options: {collapsible: true, collapsed: true}},
+    {name: 'seo', title: 'SEO', options: {collapsible: true, collapsed: true}},
+  ],
   fields: [
     defineField({
       name: 'title',
       title: 'Album Title',
       type: 'string',
+      fieldset: 'identity',
       description: 'The name of this wedding album, e.g. "Marguerite & James".',
       validation: (rule) => rule.required(),
     }),
@@ -16,6 +26,7 @@ export const album = defineType({
       name: 'slug',
       title: 'Album URL',
       type: 'slug',
+      fieldset: 'identity',
       options: {
         source: 'title',
         maxLength: 96,
@@ -27,6 +38,7 @@ export const album = defineType({
       name: 'coverImage',
       title: 'Cover Image',
       type: 'image',
+      fieldset: 'cover',
       options: {
         hotspot: true,
       },
@@ -37,6 +49,7 @@ export const album = defineType({
       name: 'coverImageAlt',
       title: 'Cover Image Alt Text',
       type: 'string',
+      fieldset: 'cover',
       description: 'A short description of the cover image for screen readers, e.g. "Outdoor ceremony with white canopy and florals".',
       validation: (rule) => rule.required(),
     }),
@@ -44,13 +57,42 @@ export const album = defineType({
       name: 'shortDescription',
       title: 'Short Description',
       type: 'text',
+      fieldset: 'story',
       rows: 3,
       description: 'A brief summary shown in the portfolio grid and at the top of the album page.',
+    }),
+    defineField({
+      name: 'story',
+      title: 'Story',
+      type: 'text',
+      fieldset: 'story',
+      rows: 6,
+      description: 'The longer story shown on the individual album page.',
+    }),
+    defineField({
+      name: 'date',
+      title: 'Wedding Date / Label',
+      type: 'string',
+      fieldset: 'identity',
+      description: 'Optional date or date label shown on the album page, e.g. September 2025.',
+    }),
+    defineField({
+      name: 'venue',
+      title: 'Venue',
+      type: 'string',
+      fieldset: 'identity',
+    }),
+    defineField({
+      name: 'location',
+      title: 'Location',
+      type: 'string',
+      fieldset: 'identity',
     }),
     defineField({
       name: 'category',
       title: 'Category',
       type: 'string',
+      fieldset: 'identity',
       description: 'A label for the wedding type, e.g. "Garden Wedding" or "Ballroom Reception".',
       options: {
         list: [
@@ -68,6 +110,7 @@ export const album = defineType({
       name: 'order',
       title: 'Display Order',
       type: 'number',
+      fieldset: 'display',
       description: 'Lower numbers appear first in the portfolio grid. Use 1, 2, 3, etc.',
       initialValue: 1,
     }),
@@ -75,6 +118,7 @@ export const album = defineType({
       name: 'photos',
       title: 'Photos',
       type: 'array',
+      fieldset: 'gallery',
       of: [
         {
           type: 'object',
@@ -123,6 +167,7 @@ export const album = defineType({
       ],
       description: 'The photos in this album. Drag to reorder. Each photo needs an image and alt text.',
     }),
+    defineField({name: 'seo', title: 'Search & Social Preview', type: 'seo', fieldset: 'seo'}),
   ],
   preview: {
     select: {

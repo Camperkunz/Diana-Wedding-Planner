@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowRight, ArrowLeft, MapPin, Calendar } from 'lucide-react';
-import { getAlbum, getAlbums } from '@/lib/sanity-data';
+import { getAlbum, getAlbums, sanityImage } from '@/lib/sanity-data';
 
 export function generateStaticParams() {
   return getAlbums().then((albums) => albums.map((album) => ({ albumSlug: album.slug })));
@@ -16,8 +16,11 @@ export async function generateMetadata({
   const album = await getAlbum(albumSlug);
   if (!album) return { title: 'Album Not Found' };
   return {
-    title: `${album.title} — ${album.category} | Diana, Ottawa Wedding Planner`,
-    description: (album.story || album.title).slice(0, 160),
+    title: album.seo?.metaTitle || `${album.title} — ${album.category} | Diana, Ottawa Wedding Planner`,
+    description: album.seo?.metaDescription || (album.story || album.title).slice(0, 160),
+    alternates: album.seo?.canonicalUrl ? { canonical: album.seo.canonicalUrl } : undefined,
+    robots: album.seo?.noIndex ? { index: false, follow: !album.seo?.noFollow } : undefined,
+    openGraph: album.seo?.ogImage ? { images: [sanityImage(album.seo.ogImage, 1200) || ''] } : undefined,
   };
 }
 

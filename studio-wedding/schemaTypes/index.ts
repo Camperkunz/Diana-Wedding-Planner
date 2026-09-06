@@ -1,42 +1,40 @@
 import { siteSettings } from './documents/siteSettings';
-import { siteHeader } from './documents/siteHeader';
-import { siteFooter } from './documents/siteFooter';
+import { siteLayout } from './documents/siteLayout';
 import { homePage } from './documents/homePage';
-import { page } from './documents/page';
 import { album } from './documents/album';
+import { service } from './documents/service';
+import { siteDesign } from './documents/siteDesign';
+import { aboutPage } from './documents/aboutPage';
+import { servicesPage } from './documents/servicesPage';
+import { portfolioPage } from './documents/portfolioPage';
+import { faqPage } from './documents/faqPage';
+import { backstagePage } from './documents/backstagePage';
+import { contactPage } from './documents/contactPage';
+import backstageVideo from './documents/backstageVideo'
 
 import { seo } from './objects/shared/seo';
 import { button } from './objects/shared/button';
 import { socialLink } from './objects/shared/socialLink';
 
-import { heroSection } from './objects/sections/heroSection';
-import { aboutSection } from './objects/sections/aboutSection';
-import { galleryPreviewSection } from './objects/sections/galleryPreviewSection';
-import { testimonialsSection } from './objects/sections/testimonialsSection';
-import { ctaSection } from './objects/sections/ctaSection';
-import { contactSection } from './objects/sections/contactSection';
-import { sections } from './objects/sections';
 
 export const schemaTypes = [
   // Documents
   siteSettings,
-  siteHeader,
-  siteFooter,
+  siteLayout,
   homePage,
-  page,
   album,
-
+  service,
+  siteDesign,
+  aboutPage,
+  servicesPage,
+  portfolioPage,
+  faqPage,
+  backstagePage,
+  contactPage,
+  backstageVideo,
   // Shared objects
   seo,
   button,
   socialLink,
 
-  // Section objects
-  sections,
-  heroSection,
-  aboutSection,
-  galleryPreviewSection,
-  testimonialsSection,
-  ctaSection,
-  contactSection,
 ];

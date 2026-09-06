@@ -1,170 +1,34 @@
-import { defineType, defineField } from 'sanity';
+import {defineType, defineField} from 'sanity'
+
+const navItem = {
+  type: 'object', name: 'navLink', title: 'Navigation Link', fields: [
+    defineField({name: 'label', title: 'Menu Label', type: 'string', validation: (rule) => rule.required()}),
+    defineField({name: 'link', title: 'Destination', type: 'string', description: 'Example: /about or https://example.com', validation: (rule) => rule.required()}),
+  ],
+  preview: {select: {title: 'label', subtitle: 'link'}},
+}
 
 export const siteLayout = defineType({
   name: 'siteLayout',
   title: 'Header & Footer',
   type: 'document',
-  // Singleton — hardcoded ID is managed in deskStructure.ts
+  description: 'Control the words and links in the global header and footer. The visual layout stays fixed.',
   fieldsets: [
-    {
-      name: 'header',
-      title: 'Header (Top Navigation Bar)',
-      options: { collapsible: true, collapsed: false },
-    },
-    {
-      name: 'footer',
-      title: 'Footer (Bottom of Every Page)',
-      options: { collapsible: true, collapsed: false },
-    },
+    {name: 'header', title: 'Header & Navigation', options: {collapsible: true, collapsed: false}},
+    {name: 'footer', title: 'Footer', options: {collapsible: true, collapsed: false}},
   ],
   fields: [
-    // ── Header ──
-    defineField({
-      name: 'headerLogo',
-      title: 'Header Logo Override',
-      type: 'image',
-      options: { hotspot: true },
-      fieldset: 'header',
-      description: 'Optional. Use a different logo in the header than the one in Site Settings. Leave empty to use the default.',
-    }),
-    defineField({
-      name: 'navLinks',
-      title: 'Navigation Links',
-      type: 'array',
-      fieldset: 'header',
-      of: [
-        {
-          type: 'object',
-          name: 'navLink',
-          title: 'Navigation Link',
-          fields: [
-            defineField({
-              name: 'label',
-              title: 'Link Text',
-              type: 'string',
-              description: 'The text shown in the menu, e.g. "Services".',
-              validation: (rule) => rule.required(),
-            }),
-            defineField({
-              name: 'link',
-              title: 'Link',
-              type: 'string',
-              description: 'Where the link goes, e.g. "/services" or "https://example.com".',
-              validation: (rule) => rule.required(),
-            }),
-            defineField({
-              name: 'order',
-              title: 'Display Order',
-              type: 'number',
-              description: 'Lower numbers appear first. Use 1, 2, 3, etc.',
-              initialValue: 1,
-            }),
-          ],
-          preview: {
-            select: {
-              title: 'label',
-              subtitle: 'link',
-            },
-            prepare({ title, subtitle }: { title?: string; subtitle?: string }) {
-              return {
-                title: title || 'Untitled Link',
-                subtitle: subtitle || 'No link set',
-              };
-            },
-          },
-        },
-      ],
-      description: 'The menu links shown in the top navigation bar. Drag to reorder.',
-    }),
-
-    // ── Footer ──
-    defineField({
-      name: 'copyrightText',
-      title: 'Copyright Text',
-      type: 'string',
-      fieldset: 'footer',
-      description: 'The text at the very bottom of the page, e.g. "© 2025 Diana Voloshina. All rights reserved."',
-      initialValue: '© 2025 Diana Voloshina. All rights reserved.',
-    }),
-    defineField({
-      name: 'footerNavLinks',
-      title: 'Footer Navigation Links',
-      type: 'array',
-      fieldset: 'footer',
-      of: [
-        {
-          type: 'object',
-          name: 'footerNavLink',
-          title: 'Footer Link',
-          fields: [
-            defineField({
-              name: 'label',
-              title: 'Link Text',
-              type: 'string',
-              validation: (rule) => rule.required(),
-            }),
-            defineField({
-              name: 'link',
-              title: 'Link',
-              type: 'string',
-              validation: (rule) => rule.required(),
-            }),
-          ],
-          preview: {
-            select: {
-              title: 'label',
-              subtitle: 'link',
-            },
-            prepare({ title, subtitle }: { title?: string; subtitle?: string }) {
-              return {
-                title: title || 'Untitled Link',
-                subtitle: subtitle || 'No link set',
-              };
-            },
-          },
-        },
-      ],
-      description: 'Links shown in the footer area. Drag to reorder.',
-    }),
-    defineField({
-      name: 'footerEmail',
-      title: 'Contact Email',
-      type: 'string',
-      fieldset: 'footer',
-      description: 'The email address shown in the footer.',
-    }),
-    defineField({
-      name: 'footerPhone',
-      title: 'Contact Phone',
-      type: 'string',
-      fieldset: 'footer',
-      description: 'The phone number shown in the footer.',
-    }),
-    defineField({
-      name: 'footerAddress',
-      title: 'Address',
-      type: 'string',
-      fieldset: 'footer',
-      description: 'The mailing or physical address shown in the footer.',
-    }),
-    defineField({
-      name: 'footerSocialLinks',
-      title: 'Footer Social Links Override',
-      type: 'array',
-      fieldset: 'footer',
-      of: [{ type: 'socialLink' }],
-      description: 'Optional. Use different social links in the footer than the ones in Site Settings. Leave empty to use the defaults.',
-    }),
+    defineField({name: 'headerLogo', title: 'Header Logo Override', type: 'image', fieldset: 'header', options: {hotspot: true}, description: 'Optional. Leave empty to use the main logo from Site Settings.'}),
+    defineField({name: 'navLinks', title: 'Main Menu', type: 'array', fieldset: 'header', of: [navItem], description: 'Drag items to change their order.'}),
+    defineField({name: 'footerDescription', title: 'Footer Description', type: 'text', rows: 3, fieldset: 'footer'}),
+    defineField({name: 'footerExploreLabel', title: 'Footer Navigation Heading', type: 'string', fieldset: 'footer', initialValue: 'Explore'}),
+    defineField({name: 'footerContactLabel', title: 'Footer Contact Heading', type: 'string', fieldset: 'footer', initialValue: 'Get in Touch'}),
+    defineField({name: 'footerNavLinks', title: 'Footer Menu', type: 'array', fieldset: 'footer', of: [navItem]}),
+    defineField({name: 'footerEmail', title: 'Footer Email Override', type: 'string', fieldset: 'footer', description: 'Optional. Leave empty to use the email from Site Settings.'}),
+    defineField({name: 'footerPhone', title: 'Footer Phone Override', type: 'string', fieldset: 'footer', description: 'Optional. Leave empty to use the phone from Site Settings.'}),
+    defineField({name: 'footerAddress', title: 'Footer Address Override', type: 'string', fieldset: 'footer', description: 'Optional. Leave empty to use the address from Site Settings.'}),
+    defineField({name: 'footerSocialLinks', title: 'Footer Social Links Override', type: 'array', fieldset: 'footer', of: [{type: 'socialLink'}], description: 'Optional. Leave empty to use Site Settings social accounts.'}),
+    defineField({name: 'copyrightText', title: 'Copyright Text', type: 'string', fieldset: 'footer', initialValue: '© 2026 Diana Voloshina. All rights reserved.'}),
   ],
-  preview: {
-    select: {
-      title: 'copyrightText',
-    },
-    prepare({ title }: { title?: string }) {
-      return {
-        title: title || 'Header & Footer',
-        subtitle: 'Navigation and footer settings',
-      };
-    },
-  },
-});
+  preview: {prepare: () => ({title: 'Header & Footer', subtitle: 'Global navigation and footer content'})},
+})

@@ -65,17 +65,17 @@ export function SiteFooter({ settings, layout }: Props) {
             <ul className="space-y-3 text-sm text-primary-foreground/80">
               <li className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-accent shrink-0" />
-                <a href={`mailto:${layout?.footerEmail || ''}`} className="hover:text-accent transition-colors">
-                  {layout?.footerEmail || ''}
+                <a href={`mailto:${layout?.footerEmail || settings?.email || ''}`} className="hover:text-accent transition-colors">
+                  {layout?.footerEmail || settings?.email || ''}
                 </a>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-accent shrink-0" />
-                <span>{layout?.footerPhone || ''}</span>
+                <span>{layout?.footerPhone || settings?.phone || ''}</span>
               </li>
               <li className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-accent shrink-0" />
-                <span>{layout?.footerAddress || ''}</span>
+                <span>{layout?.footerAddress || settings?.address || settings?.location || ''}</span>
               </li>
             </ul>
             <div className="flex items-center gap-4 mt-4">
