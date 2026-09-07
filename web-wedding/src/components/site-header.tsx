@@ -152,8 +152,8 @@ export function SiteHeader({ settings, layout }: Props) {
         {/* Mobile toggle */}
         <button
           className={cn(
-            'lg:hidden p-2 -mr-2 transition-colors duration-300 relative z-[60]',
-            mobileOpen ? 'text-foreground' : opaque ? 'text-foreground' : 'text-white'
+            'lg:hidden p-2 -mr-2 transition-colors duration-300',
+            scrolled ? 'text-foreground' : 'text-white'
           )}
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
@@ -163,21 +163,21 @@ export function SiteHeader({ settings, layout }: Props) {
         </button>
       </nav>
 
-      {/* Mobile menu — full-screen overlay */}
+      {/* Mobile menu */}
       <div
         className={cn(
-          'lg:hidden fixed inset-0 z-50 bg-background transition-opacity duration-300 flex flex-col',
-          mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          'lg:hidden overflow-hidden transition-all duration-400 bg-background border-b border-border',
+          mobileOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
         )}
       >
-        <div className="flex-1 flex flex-col items-center justify-center gap-2 px-6">
+        <div className="container-wide py-6 flex flex-col gap-1">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                'py-3 font-serif text-3xl tracking-wide transition-colors duration-200',
-                pathname === link.href ? 'text-accent' : 'text-foreground'
+                'py-3 text-base tracking-wide transition-colors duration-200 border-b border-border/50',
+                pathname === link.href ? 'text-accent' : 'text-foreground/80'
               )}
             >
               {link.label}
@@ -185,7 +185,7 @@ export function SiteHeader({ settings, layout }: Props) {
           ))}
           <Link
             href={contactLink.href}
-            className="mt-8 bg-accent text-accent-foreground px-12 py-3.5 text-center text-sm font-medium tracking-wide uppercase"
+            className="mt-4 bg-accent text-accent-foreground px-8 py-3 text-center text-sm font-medium tracking-wide uppercase"
           >
             {contactLink.label}
           </Link>
