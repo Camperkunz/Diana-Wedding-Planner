@@ -17,6 +17,16 @@ const fallbackLinks = [
   { href: '/faq', label: 'FAQ' },
 ];
 
+// Routes that have their own full-bleed hero image at the top, where the
+// header should start transparent and only turn solid once the user scrolls.
+// Any route NOT in this list (e.g. the 404 page) gets the solid/dark header
+// treatment from the very start, since there's no hero image behind it.
+const heroRoutes = ['/', '/about', '/services', '/portfolio', '/faq', '/backstage', '/contact'];
+
+function hasHero(pathname: string) {
+  return heroRoutes.some((route) => (route === '/' ? pathname === '/' : pathname === route || pathname.startsWith(`${route}/`)));
+}
+
 export function SiteHeader({ settings, layout }: Props) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
@@ -26,6 +36,10 @@ export function SiteHeader({ settings, layout }: Props) {
   const navLinks = allNavLinks.filter((item) => item !== contactLink);
   const logo = layout?.headerLogo || settings?.logo;
   const logoAlt = layout?.headerLogoAlt || settings?.logoAlt || `${settings?.name || 'Site'} logo`;
+
+  // "opaque" drives all the light/dark styling. It's true once the user has
+  // scrolled OR on any page that doesn't have a hero image to sit on top of.
+  const opaque = scrolled || !hasHero(pathname || '/');
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -38,11 +52,18 @@ export function SiteHeader({ settings, layout }: Props) {
     setMobileOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen]);
+
   return (
     <header
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
-        scrolled
+        opaque
           ? 'bg-background/95 backdrop-blur-md shadow-sm border-b border-border/50'
           : 'bg-transparent'
       )}
@@ -55,9 +76,9 @@ export function SiteHeader({ settings, layout }: Props) {
           aria-label="Diana — Home"
         >
           {logo ? (
-            <img src={logo} alt={logoAlt} className={cn('max-h-12 w-auto max-w-[180px] object-contain transition-opacity duration-300', !scrolled && 'brightness-0 invert')} />
+            <img src={logo} alt={logoAlt} className={cn('max-h-12 w-auto max-w-[180px] object-contain transition-opacity duration-300', !opaque && 'brightness-0 invert')} />
           ) : (
-            <span className={cn('font-script text-3xl md:text-4xl leading-none transition-colors duration-300', scrolled ? 'text-foreground group-hover:text-accent' : 'text-white group-hover:text-accent')}>
+            <span className={cn('font-script text-3xl md:text-4xl leading-none transition-colors duration-300', opaque ? 'text-foreground group-hover:text-accent' : 'text-white group-hover:text-accent')}>
               {settings?.name?.charAt(0) || 'D'}
             </span>
           )}
@@ -65,7 +86,7 @@ export function SiteHeader({ settings, layout }: Props) {
             <span
               className={cn(
                 'font-serif text-lg transition-colors duration-300',
-                scrolled ? 'text-foreground' : 'text-white'
+                opaque ? 'text-foreground' : 'text-white'
               )}
             >
               {settings?.name || 'Site Title'}
@@ -73,7 +94,7 @@ export function SiteHeader({ settings, layout }: Props) {
             <span
               className={cn(
                 'text-[10px] uppercase tracking-wide-lg transition-colors duration-300',
-                scrolled ? 'text-muted-foreground' : 'text-white/70'
+                opaque ? 'text-muted-foreground' : 'text-white/70'
               )}
             >
               {settings?.tagline || ''}
@@ -89,7 +110,7 @@ export function SiteHeader({ settings, layout }: Props) {
               href={link.href}
               className={cn(
                 'text-sm font-medium tracking-wide uppercase transition-colors duration-300 relative py-1',
-                scrolled
+                opaque
                   ? pathname === link.href
                     ? 'text-accent'
                     : 'text-foreground/70 hover:text-foreground'
@@ -110,7 +131,7 @@ export function SiteHeader({ settings, layout }: Props) {
           >
             {contactLink.label}
           </Link>
-          <div className={cn('flex items-center gap-3 pl-2 border-l', scrolled ? 'border-border' : 'border-white/20')}>
+          <div className={cn('flex items-center gap-3 pl-2 border-l', opaque ? 'border-border' : 'border-white/20')}>
             <a
               href={settings?.socialLinks?.find((item) => item.platform === 'instagram')?.url || '#'}
               target="_blank"
@@ -118,7 +139,7 @@ export function SiteHeader({ settings, layout }: Props) {
               aria-label="Instagram"
               className={cn(
                 'transition-colors duration-300',
-                scrolled
+                opaque
                   ? 'text-foreground/60 hover:text-accent'
                   : 'text-white/60 hover:text-white'
               )}
@@ -131,8 +152,8 @@ export function SiteHeader({ settings, layout }: Props) {
         {/* Mobile toggle */}
         <button
           className={cn(
-            'lg:hidden p-2 -mr-2 transition-colors duration-300',
-            scrolled ? 'text-foreground' : 'text-white'
+            'lg:hidden p-2 -mr-2 transition-colors duration-300 relative z-[60]',
+            mobileOpen ? 'text-foreground' : opaque ? 'text-foreground' : 'text-white'
           )}
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
@@ -142,21 +163,21 @@ export function SiteHeader({ settings, layout }: Props) {
         </button>
       </nav>
 
-      {/* Mobile menu */}
+      {/* Mobile menu — full-screen overlay */}
       <div
         className={cn(
-          'lg:hidden overflow-hidden transition-all duration-400 bg-background border-b border-border',
-          mobileOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+          'lg:hidden fixed inset-0 z-50 bg-background transition-opacity duration-300 flex flex-col',
+          mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         )}
       >
-        <div className="container-wide py-6 flex flex-col gap-1">
+        <div className="flex-1 flex flex-col items-center justify-center gap-2 px-6">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                'py-3 text-base tracking-wide transition-colors duration-200 border-b border-border/50',
-                pathname === link.href ? 'text-accent' : 'text-foreground/80'
+                'py-3 font-serif text-3xl tracking-wide transition-colors duration-200',
+                pathname === link.href ? 'text-accent' : 'text-foreground'
               )}
             >
               {link.label}
@@ -164,7 +185,7 @@ export function SiteHeader({ settings, layout }: Props) {
           ))}
           <Link
             href={contactLink.href}
-            className="mt-4 bg-accent text-accent-foreground px-8 py-3 text-center text-sm font-medium tracking-wide uppercase"
+            className="mt-8 bg-accent text-accent-foreground px-12 py-3.5 text-center text-sm font-medium tracking-wide uppercase"
           >
             {contactLink.label}
           </Link>

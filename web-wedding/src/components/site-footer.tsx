@@ -13,7 +13,9 @@ const fallbackLinks = [
 ];
 
 export function SiteFooter({ settings, layout }: Props) {
-  const footerLinks = layout?.footerNavLinks?.length ? layout.footerNavLinks : fallbackLinks;
+  const footerLinks = layout?.footerNavLinks?.length
+    ? layout.footerNavLinks.map((item) => ({ href: item.link, label: item.label }))
+    : fallbackLinks;
   const socials = layout?.footerSocialLinks?.length ? layout.footerSocialLinks : (settings?.socialLinks || []);
 
   return (
@@ -94,7 +96,7 @@ export function SiteFooter({ settings, layout }: Props) {
 
         <div className="mt-12 pt-6 border-t border-primary-foreground/15 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-primary-foreground/50">
-            © {new Date().getFullYear()} {settings?.name || 'Site Title'} Wedding Planning. All rights reserved.
+            {layout?.copyrightText || `© ${new Date().getFullYear()} ${settings?.name || 'Site Title'} Wedding Planning. All rights reserved.`}
           </p>
           <p className="text-xs text-primary-foreground/40">
             {layout?.footerAddress || settings?.location || ''}

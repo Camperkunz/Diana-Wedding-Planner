@@ -1,7 +1,17 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import type { CSSProperties, ReactNode } from 'react';
-import { Jost, Cormorant_Garamond, Dancing_Script, Manrope, Playfair_Display, Allura, Lato, DM_Serif_Display, Great_Vibes } from 'next/font/google';
+import {
+  Jost,
+  Cormorant_Garamond,
+  Dancing_Script,
+  Manrope,
+  Playfair_Display,
+  Allura,
+  Lato,
+  DM_Serif_Display,
+  Great_Vibes,
+} from 'next/font/google';
 import { SiteHeader } from '../components/site-header';
 import { SiteFooter } from '../components/site-footer';
 import { FloatingContact } from '../components/floating-contact';
@@ -26,6 +36,11 @@ const lato = Lato({ subsets: ['latin'], weight: ['300', '400', '700'], variable:
 const dmSerif = DM_Serif_Display({ subsets: ['latin'], weight: ['400'], variable: '--font-dm-serif' });
 const greatVibes = Great_Vibes({ subsets: ['latin'], weight: ['400'], variable: '--font-great-vibes' });
 
+// Without this, Next.js statically caches every page at build time and Studio
+// edits will not appear on the live site until the next deploy. This makes
+// every route re-fetch fresh content from Sanity at most once a minute.
+export const revalidate = 60;
+
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
   return {
@@ -47,23 +62,60 @@ export default async function RootLayout({
 }: {
   children: ReactNode;
 }) {
-  const [settings, siteLayout, design] = await Promise.all([getSiteSettings(), getSiteLayout(), getSiteDesign()]);
+  const [settings, siteLayout, design] = await Promise.all([
+    getSiteSettings(),
+    getSiteLayout(),
+    getSiteDesign(),
+  ]);
+
   const colors = design?.colors || {};
   const vars: Record<string, string> = {};
-  for (const [name, hex] of Object.entries(colors)) { if (hex) { const hsl = hexToHsl(hex); if (hsl) vars[`--${name.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`)}`] = hsl; } }
-  if (vars['--accent']) { vars['--ring'] = vars['--accent']; vars['--terracotta'] = vars['--terracotta'] || vars['--accent']; }
+
+  for (const [name, hex] of Object.entries(colors)) {
+    if (hex) {
+      const hsl = hexToHsl(hex as string);
+      if (hsl) vars[`--${name.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`)}`] = hsl;
+    }
+  }
+
+  if (vars['--accent']) {
+    vars['--ring'] = vars['--accent'];
+    vars['--terracotta'] = vars['--terracotta'] || vars['--accent'];
+  }
   if (vars['--border']) vars['--input'] = vars['--border'];
-  if (vars['--background']) { vars['--card'] = vars['--background']; vars['--popover'] = vars['--background']; }
+  if (vars['--background']) {
+    vars['--card'] = vars['--background'];
+    vars['--popover'] = vars['--background'];
+  }
+
   const fontPreset = design?.fontPreset || 'elegant';
-  const fontVars = fontPreset === 'editorial'
-    ? {'--font-sans': 'var(--font-manrope)', '--font-serif': 'var(--font-playfair)', '--font-script': 'var(--font-allura)'}
-    : fontPreset === 'romantic'
-      ? {'--font-sans': 'var(--font-lato)', '--font-serif': 'var(--font-dm-serif)', '--font-script': 'var(--font-great-vibes)'}
-      : {'--font-sans': 'var(--font-jost)', '--font-serif': 'var(--font-cormorant)', '--font-script': 'var(--font-dancing)'};
-  const style = {...vars, ...fontVars} as CSSProperties;
+  const fontVars =
+    fontPreset === 'editorial'
+      ? {
+        '--font-sans': 'var(--font-manrope)',
+        '--font-serif': 'var(--font-playfair)',
+        '--font-script': 'var(--font-allura)',
+      }
+      : fontPreset === 'romantic'
+        ? {
+          '--font-sans': 'var(--font-lato)',
+          '--font-serif': 'var(--font-dm-serif)',
+          '--font-script': 'var(--font-great-vibes)',
+        }
+        : {
+          '--font-sans': 'var(--font-jost)',
+          '--font-serif': 'var(--font-cormorant)',
+          '--font-script': 'var(--font-dancing)',
+        };
+
+  const style = { ...vars, ...fontVars } as CSSProperties;
 
   return (
-    <html lang="en" data-scroll-behavior="smooth" className={`${jost.variable} ${cormorant.variable} ${dancing.variable} ${manrope.variable} ${playfair.variable} ${allura.variable} ${lato.variable} ${dmSerif.variable} ${greatVibes.variable}`}>
+    <html
+      lang="en"
+      data-scroll-behavior="smooth"
+      className={`${jost.variable} ${cormorant.variable} ${dancing.variable} ${manrope.variable} ${playfair.variable} ${allura.variable} ${lato.variable} ${dmSerif.variable} ${greatVibes.variable}`}
+    >
       <body className="font-sans bg-background text-foreground" style={style}>
         <SiteHeader settings={settings} layout={siteLayout} />
         <main>{children}</main>
