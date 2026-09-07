@@ -8,8 +8,7 @@ export const backstagePage = defineType({
   fieldsets: [
     {name: 'hero', title: '1. Hero', options: {collapsible: true, collapsed: false}},
     {name: 'intro', title: '2. Introduction', options: {collapsible: true, collapsed: false}},
-    {name: 'videos', title: '3. Videos', options: {collapsible: true, collapsed: false}},
-    {name: 'cta', title: '4. Final CTA', options: {collapsible: true, collapsed: true}},
+    {name: 'cta', title: '3. Final CTA', options: {collapsible: true, collapsed: true}},
     {name: 'seo', title: 'SEO', options: {collapsible: true, collapsed: true}},
   ],
   fields: [
@@ -19,13 +18,6 @@ export const backstagePage = defineType({
     defineField({name: 'heroImage', title: 'Background Photo', type: 'image', options: {hotspot: true}, fieldset: 'hero'}),
     defineField({name: 'heroImageAlt', title: 'Photo Alt Text', type: 'string', fieldset: 'hero'}),
     defineField({name: 'introText', title: 'Introduction', type: 'text', rows: 5, fieldset: 'intro'}),
-    defineField({name: 'videos', title: 'Video Stories', type: 'array', fieldset: 'videos', of: [{type: 'object', name: 'backstageVideo', fields: [
-      defineField({name: 'title', title: 'Title', type: 'string', validation: (rule) => rule.required()}),
-      defineField({name: 'description', title: 'Description', type: 'text', rows: 4}),
-      defineField({name: 'embedUrl', title: 'Video Embed URL', type: 'url', description: 'Paste the embed URL provided by YouTube or Vimeo.', validation: (rule) => rule.required()}),
-      defineField({name: 'thumbnail', title: 'Thumbnail', type: 'image', options: {hotspot: true}, validation: (rule) => rule.required()}),
-      defineField({name: 'thumbnailAlt', title: 'Thumbnail Alt Text', type: 'string'}),
-    ]}]}),
     defineField({name: 'ctaHeading', title: 'Heading', type: 'string', fieldset: 'cta'}),
     defineField({name: 'ctaButtonLabel', title: 'Button Label', type: 'string', fieldset: 'cta'}),
     defineField({name: 'ctaButtonLink', title: 'Button Link', type: 'string', fieldset: 'cta', initialValue: '/contact'}),
