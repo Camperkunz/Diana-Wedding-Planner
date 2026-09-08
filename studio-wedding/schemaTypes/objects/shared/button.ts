@@ -1,5 +1,4 @@
 import { defineType, defineField } from 'sanity';
-import type { Rule } from 'sanity';
 
 export const button = defineType({
   name: 'button',
@@ -11,14 +10,14 @@ export const button = defineType({
       title: 'Button Text',
       type: 'string',
       description: 'The text shown on the button, e.g. "Get in Touch".',
-      validation: (rule: Rule) => rule.required(),
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'link',
       title: 'Link',
       type: 'string',
       description: 'Where the button goes. Use a page path like "/contact" or a full URL like "https://example.com".',
-      validation: (rule: Rule) => rule.required(),
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'style',

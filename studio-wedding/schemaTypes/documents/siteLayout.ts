@@ -17,8 +17,8 @@ export const siteLayout = defineType({
   type: 'document',
   description: 'Control the navigation links and labels in the global header and footer.',
   fieldsets: [
-    { name: 'header', title: 'Header & Navigation', options: { collapsible: true, collapsed: false } },
-    { name: 'footer', title: 'Footer', options: { collapsible: true, collapsed: false } },
+    { name: 'header', title: 'Header & Navigation', options: { collapsible: true, collapsed: true } },
+    { name: 'footer', title: 'Footer', options: { collapsible: true, collapsed: true } },
   ],
   fields: [
     defineField({

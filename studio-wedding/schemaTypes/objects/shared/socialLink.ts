@@ -1,5 +1,4 @@
 import { defineType, defineField } from 'sanity';
-import type { Rule } from 'sanity';
 
 export const socialLink = defineType({
   name: 'socialLink',
@@ -21,14 +20,14 @@ export const socialLink = defineType({
         layout: 'radio',
       },
       initialValue: 'instagram',
-      validation: (rule: Rule) => rule.required(),
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'url',
       title: 'Link URL',
       type: 'url',
       description: 'The full web address, e.g. "https://instagram.com/yourname".',
-      validation: (rule: Rule) => rule.required(),
+      validation: (rule) => rule.required(),
     }),
   ],
   preview: {

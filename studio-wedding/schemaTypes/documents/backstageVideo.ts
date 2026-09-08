@@ -14,7 +14,7 @@ export default defineType({
         {
             name: 'display',
             title: 'Website Display',
-            options: { collapsible: true, collapsed: false },
+            options: { collapsible: true, collapsed: true },
         },
     ],
 

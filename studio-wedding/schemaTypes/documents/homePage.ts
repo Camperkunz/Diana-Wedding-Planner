@@ -19,7 +19,7 @@ export const homePage = defineType({
   type: 'document',
   description: 'Edit the words and photos used by the existing homepage design. The layout, sections and styling are fixed in the website code.',
   fieldsets: [
-    { name: 'hero', title: '1. Hero', options: { collapsible: true, collapsed: false } },
+    { name: 'hero', title: '1. Hero', options: { collapsible: true, collapsed: true } },
     { name: 'about', title: '2. Meet Diana', options: { collapsible: true, collapsed: true } },
     { name: 'stats', title: '3. Stats', options: { collapsible: true, collapsed: true } },
     { name: 'services', title: '4. Services Preview', options: { collapsible: true, collapsed: true } },
@@ -56,10 +56,12 @@ export const homePage = defineType({
 
     defineField({
       name: 'stats', title: 'Stats', type: 'array', fieldset: 'stats', validation: (rule) => rule.max(4),
-      of: [{ type: 'object', name: 'homeStat', fields: [
-        defineField({ name: 'value', title: 'Value', type: 'string', validation: (rule) => rule.required() }),
-        defineField({ name: 'label', title: 'Label', type: 'string', validation: (rule) => rule.required() }),
-      ] }],
+      of: [{
+        type: 'object', name: 'homeStat', fields: [
+          defineField({ name: 'value', title: 'Value', type: 'string', validation: (rule) => rule.required() }),
+          defineField({ name: 'label', title: 'Label', type: 'string', validation: (rule) => rule.required() }),
+        ]
+      }],
     }),
 
     defineField({ name: 'servicesEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'services' }),
@@ -84,20 +86,28 @@ export const homePage = defineType({
     defineField({ name: 'approachHeading', title: 'Heading', type: 'string', fieldset: 'approach' }),
     defineField({ name: 'approachImage', title: 'Photo', type: 'image', fieldset: 'approach', options: { hotspot: true } }),
     defineField({ name: 'approachImageAlt', title: 'Photo Alt Text', type: 'string', fieldset: 'approach' }),
-    defineField({ name: 'approachSteps', title: 'Steps', type: 'array', fieldset: 'approach', of: [{ type: 'object', name: 'approachStep', fields: [
-      defineField({ name: 'number', title: 'Number', type: 'string', validation: (rule) => rule.required() }),
-      defineField({ name: 'title', title: 'Title', type: 'string', validation: (rule) => rule.required() }),
-      defineField({ name: 'description', title: 'Description', type: 'text', rows: 4 }),
-    ] }], validation: (rule) => rule.max(6) }),
+    defineField({
+      name: 'approachSteps', title: 'Steps', type: 'array', fieldset: 'approach', of: [{
+        type: 'object', name: 'approachStep', fields: [
+          defineField({ name: 'number', title: 'Number', type: 'string', validation: (rule) => rule.required() }),
+          defineField({ name: 'title', title: 'Title', type: 'string', validation: (rule) => rule.required() }),
+          defineField({ name: 'description', title: 'Description', type: 'text', rows: 4 }),
+        ]
+      }], validation: (rule) => rule.max(6)
+    }),
 
     defineField({ name: 'testimonialsEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'testimonials' }),
     defineField({ name: 'testimonialsHeading', title: 'Heading', type: 'string', fieldset: 'testimonials' }),
     defineField({ name: 'testimonialsSubtext', title: 'Intro Text', type: 'text', rows: 3, fieldset: 'testimonials' }),
-    defineField({ name: 'testimonials', title: 'Testimonials', type: 'array', fieldset: 'testimonials', of: [{ type: 'object', name: 'homeTestimonial', fields: [
-      defineField({ name: 'quote', title: 'Quote', type: 'text', rows: 5, validation: (rule) => rule.required() }),
-      defineField({ name: 'author', title: 'Author', type: 'string', validation: (rule) => rule.required() }),
-      defineField({ name: 'weddingType', title: 'Wedding Type', type: 'string' }),
-    ] }], validation: (rule) => rule.max(3) }),
+    defineField({
+      name: 'testimonials', title: 'Testimonials', type: 'array', fieldset: 'testimonials', of: [{
+        type: 'object', name: 'homeTestimonial', fields: [
+          defineField({ name: 'quote', title: 'Quote', type: 'text', rows: 5, validation: (rule) => rule.required() }),
+          defineField({ name: 'author', title: 'Author', type: 'string', validation: (rule) => rule.required() }),
+          defineField({ name: 'weddingType', title: 'Wedding Type', type: 'string' }),
+        ]
+      }], validation: (rule) => rule.max(3)
+    }),
 
     defineField({ name: 'ctaEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'cta' }),
     defineField({ name: 'ctaHeadingLine1', title: 'Heading — First Line', type: 'string', fieldset: 'cta' }),

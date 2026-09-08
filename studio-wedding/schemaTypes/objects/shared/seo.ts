@@ -1,5 +1,4 @@
-import {defineType, defineField} from 'sanity'
-import type {Rule} from 'sanity'
+import { defineType, defineField } from 'sanity'
 
 export const seo = defineType({
   name: 'seo',
@@ -9,15 +8,15 @@ export const seo = defineType({
     defineField({
       name: 'metaTitle', title: 'Google / Browser Title', type: 'string',
       description: 'The title shown in search results and browser tabs. Aim for 50–60 characters.',
-      validation: (rule: Rule) => rule.max(60).warning(),
+      validation: (rule) => rule.max(60).warning(),
     }),
     defineField({
       name: 'metaDescription', title: 'Google Search Description', type: 'text', rows: 3,
       description: 'The short description under the page title in Google. Aim for 140–160 characters.',
-      validation: (rule: Rule) => rule.max(160).warning(),
+      validation: (rule) => rule.max(160).warning(),
     }),
     defineField({
-      name: 'ogImage', title: 'Social Share Image', type: 'image', hotspot: true,
+      name: 'ogImage', title: 'Social Share Image', type: 'image', options: { hotspot: true },
       description: 'The image used when this page is shared on social media or in messages. Recommended: 1200 × 630 px.',
     }),
     defineField({
@@ -33,5 +32,5 @@ export const seo = defineType({
       description: 'Usually leave this off. Use only when you specifically want search engines not to follow links on this page.',
     }),
   ],
-  preview: {prepare: () => ({title: 'Search & Social Preview', subtitle: 'Google and social sharing settings'})},
+  preview: { prepare: () => ({ title: 'Search & Social Preview', subtitle: 'Google and social sharing settings' }) },
 })
