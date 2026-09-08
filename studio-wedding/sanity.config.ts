@@ -1,12 +1,12 @@
-import { defineConfig } from 'sanity';
-import { structureTool } from 'sanity/structure';
-import { visionTool } from '@sanity/vision';
-import { colorInput } from '@sanity/color-input';
-import { schemaTypes } from './schemaTypes';
-import { deskStructure } from './deskStructure';
+import { defineConfig } from 'sanity'
+import { structureTool } from 'sanity/structure'
+import { visionTool } from '@sanity/vision'
+import { colorInput } from '@sanity/color-input'
+import { schemaTypes } from './schemaTypes'
+import { deskStructure } from './deskStructure'
 
-const projectId = 'zwrr14ct';
-const dataset = 'production';
+const projectId = 'zwrr14ct'
+const dataset = 'production'
 
 export default defineConfig({
   name: 'default',
@@ -23,4 +23,4 @@ export default defineConfig({
   schema: {
     types: schemaTypes,
   },
-});
+})

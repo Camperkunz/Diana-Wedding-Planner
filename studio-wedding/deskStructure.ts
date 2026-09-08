@@ -11,8 +11,6 @@ const SINGLETON_IDS = {
   contactPage: 'contactPage',
 } as const
 
-const singletonTypes = new Set(Object.values(SINGLETON_IDS))
-
 const singleton = (S: any, id: string, schemaType: string, title: string) =>
   S.listItem()
     .id(id)
