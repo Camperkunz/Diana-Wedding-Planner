@@ -94,11 +94,16 @@ export function SiteFooter({ settings, layout }: Props) {
           </div>
         </div>
 
-        <div className="mt-12 pt-6 border-t border-primary-foreground/15 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-primary-foreground/50">
-            {layout?.copyrightText || `© ${new Date().getFullYear()} ${settings?.name || 'Site Title'} Wedding Planning. All rights reserved.`}
-          </p>
-          <p className="text-xs text-primary-foreground/40">
+        <div className="mt-12 pt-6 border-t border-primary-foreground/15 flex flex-col sm:flex-row items-center justify-between gap-8 sm:gap-3">
+          <div className="text-xs text-primary-foreground/50 items-center sm:items-start flex flex-col">
+            <p className="text-sm">
+              {layout?.copyrightText || `© ${new Date().getFullYear()} ${settings?.name || 'Site Title'} Wedding Planning. All rights reserved.`}
+            </p>
+            <p>
+              Made with ❤️ by <a href="https://annanikiforova.vercel.app/?utm_source=wedding" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors duration-200">Anna Nikiforova</a>
+            </p>
+          </div>
+          <p className="text-xs text-primary-foreground/40 ">
             {layout?.footerAddress || settings?.location || ''}
           </p>
         </div>
