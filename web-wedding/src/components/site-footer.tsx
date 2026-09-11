@@ -17,6 +17,7 @@ export function SiteFooter({ settings, layout }: Props) {
     ? layout.footerNavLinks.map((item) => ({ href: item.link, label: item.label }))
     : fallbackLinks;
   const socials = layout?.footerSocialLinks?.length ? layout.footerSocialLinks : (settings?.socialLinks || []);
+  const logo = layout?.headerLogo || settings?.logo;
 
   return (
     <footer className="bg-primary text-primary-foreground">
@@ -26,10 +27,16 @@ export function SiteFooter({ settings, layout }: Props) {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <span className="font-script text-4xl text-primary-foreground/90">
-                {settings?.name?.charAt(0) || 'D'}
+                <Link href="/" className="flex items-center gap-3">
+                  {logo ? (
+                    <img src={logo} alt={settings?.name || 'D'} className="h-12 w-auto brightness-0 invert" />
+                  ) : (
+                    settings?.name || 'D'
+                  )}
+                </Link>
               </span>
               <div>
-                <p className="font-serif text-xl">{settings?.name || 'Site Title'}</p>
+                <p className="font-serif text-xl">{settings?.name || 'D'}</p>
                 <p className="text-xs uppercase tracking-wide-lg text-primary-foreground/60">
                   {settings?.tagline || ''}
                 </p>
@@ -108,6 +115,6 @@ export function SiteFooter({ settings, layout }: Props) {
           </p>
         </div>
       </div>
-    </footer>
+    </footer >
   );
 }
