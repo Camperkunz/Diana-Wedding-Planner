@@ -1,4 +1,5 @@
 import { getBackstagePage, getBackstageVideos, sanityImage } from '@/lib/sanity-data';
+import { getEmbedUrl, getAutoThumbnail } from '@/lib/video-embed';
 import BackstageClient, { Video } from './backstage-client';
 
 const fallback = {
@@ -22,14 +23,21 @@ export default async function BackstagePage() {
         ...(page || {}),
     };
 
-    const mapped: Video[] = (videos || []).map((video: any, index: number) => ({
-        id: video._id || `backstage-${index}`,
-        title: video.title || '',
-        description: video.description || '',
-        embedUrl: video.videoUrl || '',
-        thumbnail: video.thumbnail ? sanityImage(video.thumbnail) : undefined,
-        thumbnailAlt: video.title || 'Video thumbnail',
-    }));
+    const mapped: Video[] = await Promise.all(
+        (videos || []).map(async (video: any, index: number) => {
+            const manualThumbnail = video.thumbnail ? sanityImage(video.thumbnail) : undefined;
+            const thumbnail = manualThumbnail || (await getAutoThumbnail(video.videoUrl)) || undefined;
+
+            return {
+                id: video._id || `backstage-${index}`,
+                title: video.title || '',
+                description: video.description || '',
+                embedUrl: getEmbedUrl(video.videoUrl) || '',
+                thumbnail,
+                thumbnailAlt: video.title || 'Video thumbnail',
+            };
+        })
+    );
 
     return (
         <BackstageClient

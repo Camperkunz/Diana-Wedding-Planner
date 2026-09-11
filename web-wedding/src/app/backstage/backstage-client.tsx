@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { withAutoplay } from '@/lib/video-embed';
 import { ArrowRight, Play, X } from 'lucide-react';
 
 export type Video = {
@@ -142,7 +143,7 @@ export default function BackstageClient({
                         onClick={(e) => e.stopPropagation()}
                     >
                         <iframe
-                            src={`${activeVideo}?autoplay=1`}
+                            src={withAutoplay(activeVideo)}
                             className="w-full h-full rounded-sm"
                             allow="autoplay; fullscreen; picture-in-picture"
                             title="Wedding video"

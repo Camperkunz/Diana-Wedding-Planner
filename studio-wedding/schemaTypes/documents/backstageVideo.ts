@@ -40,7 +40,7 @@ export default defineType({
             title: 'YouTube Embed URL',
             type: 'url',
             description:
-                'Example: https://www.youtube.com/embed/VIDEO_ID',
+                'Example: https://www.youtube.com/embed/VIDEO_ID or any other embeddable video URL.',
             validation: (Rule) => Rule.required(),
             fieldset: 'videoDetails',
         }),
@@ -49,6 +49,7 @@ export default defineType({
             name: 'thumbnail',
             title: 'Thumbnail',
             type: 'image',
+            description: 'Optional thumbnail image for the video. If not provided, the default thumbnail from the video URL will be used.',
             options: {
                 hotspot: true,
             },
