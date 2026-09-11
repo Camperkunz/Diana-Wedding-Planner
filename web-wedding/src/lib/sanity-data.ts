@@ -62,6 +62,16 @@ export type Service = {
   order?: number;
 };
 
+export type ComparisonValue = {
+  serviceId: string;
+  value: string;
+};
+
+export type ComparisonRow = {
+  label: string;
+  values: ComparisonValue[];
+};
+
 export type HomePageContent = {
   seo?: any;
   heroEyebrow?: string;
@@ -350,7 +360,22 @@ export async function getFixedPage(type: string) {
 }
 
 export async function getAboutPage() { return getFixedPage('aboutPage'); }
-export async function getServicesPage() { return getFixedPage('servicesPage'); }
+
+// servicesPage has its own query (rather than the generic getFixedPage) because
+// comparisonRows needs its service references dereferenced into plain serviceId/value pairs.
+export async function getServicesPage() {
+  return client.fetch(`*[_type == "servicesPage" && _id == "servicesPage"][0]{
+    ...,
+    comparisonRows[]{
+      label,
+      values[]{
+        "serviceId": service->_id,
+        value
+      }
+    }
+  }`);
+}
+
 export async function getPortfolioPage() { return getFixedPage('portfolioPage'); }
 export async function getFaqPage() { return getFixedPage('faqPage'); }
 export async function getBackstagePage() { return getFixedPage('backstagePage'); }

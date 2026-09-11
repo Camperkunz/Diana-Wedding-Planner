@@ -25,14 +25,42 @@ export const servicesPage = defineType({
     defineField({ name: 'comparisonEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'comparison' }),
     defineField({ name: 'comparisonHeading', title: 'Heading', type: 'string', fieldset: 'comparison' }),
     defineField({
-      name: 'comparisonRows', title: 'Rows', type: 'array', fieldset: 'comparison', of: [{
-        type: 'object', name: 'comparisonRow', fields: [
+      name: 'comparisonRows',
+      title: 'Rows',
+      type: 'array',
+      fieldset: 'comparison',
+      description: 'Each row is a feature. Add a value for every service that should show something in this row — services left out will show "—" automatically. Columns in the table are generated automatically from your Services list, in the same order as on the page above.',
+      of: [{
+        type: 'object',
+        name: 'comparisonRow',
+        fields: [
           defineField({ name: 'label', title: 'Feature', type: 'string', validation: (rule) => rule.required() }),
-          defineField({ name: 'fullService', title: 'Full-Service Planning', type: 'string' }),
-          defineField({ name: 'partial', title: 'Partial Planning', type: 'string' }),
-          defineField({ name: 'dayOf', title: 'Day-Of Coordination', type: 'string' }),
-        ]
-      }]
+          defineField({
+            name: 'values',
+            title: 'Values Per Service',
+            type: 'array',
+            description: 'Add one entry per service, choose the service, and type its value for this row (e.g. Yes, Unlimited, 2/month, —).',
+            of: [{
+              type: 'object',
+              name: 'comparisonValue',
+              fields: [
+                defineField({ name: 'service', title: 'Service', type: 'reference', to: [{ type: 'service' }], validation: (rule) => rule.required() }),
+                defineField({ name: 'value', title: 'Value', type: 'string', validation: (rule) => rule.required() }),
+              ],
+              preview: {
+                select: { title: 'service.name', subtitle: 'value' },
+              },
+            }],
+          }),
+        ],
+        preview: {
+          select: { title: 'label', count: 'values.length' },
+          prepare: (value: Record<string, any>) => ({
+            title: value.title,
+            subtitle: `${value.count || 0} service value(s)`,
+          }),
+        },
+      }],
     }),
     defineField({ name: 'ctaHeading', title: 'Heading', type: 'string', fieldset: 'cta' }),
     defineField({ name: 'ctaDescription', title: 'Description', type: 'text', rows: 5, fieldset: 'cta' }),
