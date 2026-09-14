@@ -6,12 +6,12 @@ export const album = defineType({
   type: 'document',
   description: 'A wedding story in Diana’s portfolio. The album page layout is fixed; you control the story and photos.',
   fieldsets: [
-    {name: 'identity', title: 'Wedding Details', options: {collapsible: true, collapsed: false}},
-    {name: 'story', title: 'Story', options: {collapsible: true, collapsed: false}},
-    {name: 'cover', title: 'Cover Photo', options: {collapsible: true, collapsed: true}},
-    {name: 'gallery', title: 'Gallery Photos', options: {collapsible: true, collapsed: false}},
-    {name: 'display', title: 'Portfolio Display', options: {collapsible: true, collapsed: true}},
-    {name: 'seo', title: 'SEO', options: {collapsible: true, collapsed: true}},
+    { name: 'identity', title: 'Wedding Details', options: { collapsible: true, collapsed: false } },
+    { name: 'story', title: 'Story', options: { collapsible: true, collapsed: false } },
+    { name: 'cover', title: 'Cover Photo', options: { collapsible: true, collapsed: true } },
+    { name: 'gallery', title: 'Gallery Photos', options: { collapsible: true, collapsed: false } },
+    { name: 'display', title: 'Portfolio Display', options: { collapsible: true, collapsed: true } },
+    { name: 'seo', title: 'SEO', options: { collapsible: true, collapsed: true } },
   ],
   fields: [
     defineField({
@@ -51,7 +51,6 @@ export const album = defineType({
       type: 'string',
       fieldset: 'cover',
       description: 'A short description of the cover image for screen readers, e.g. "Outdoor ceremony with white canopy and florals".',
-      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'shortDescription',
@@ -140,7 +139,6 @@ export const album = defineType({
               title: 'Alt Text',
               type: 'string',
               description: 'A short description of the photo for screen readers, e.g. "Bride and groom kissing at the ceremony".',
-              validation: (rule) => rule.required(),
             }),
             defineField({
               name: 'caption',
@@ -167,7 +165,7 @@ export const album = defineType({
       ],
       description: 'The photos in this album. Drag to reorder. Each photo needs an image and alt text.',
     }),
-    defineField({name: 'seo', title: 'Search & Social Preview', type: 'seo', fieldset: 'seo'}),
+    defineField({ name: 'seo', title: 'Search & Social Preview', type: 'seo', fieldset: 'seo' }),
   ],
   preview: {
     select: {

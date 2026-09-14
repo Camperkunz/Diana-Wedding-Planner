@@ -1,6 +1,34 @@
 import ContactClient from './contact-client';
-import {getSiteSettings, getSiteLayout, getContactPage, sanityImage, buildSeoMetadata} from '@/lib/sanity-data';
+import { getSiteSettings, getSiteLayout, getContactPage, sanityImage, buildSeoMetadata } from '@/lib/sanity-data';
 
-const fallback={heroEyebrow:'Contact',heroHeadingLine1:"Let's",heroHeadingScript:'talk',heroImage:'https://images.pexels.com/photos/2253867/pexels-photo-2253867.jpeg?auto=compress&cs=tinysrgb&w=1920',heroImageAlt:'Bride holding a bouquet with groom embracing, symbolizing love and togetherness',formHeading:'Tell me about your wedding',formDescription:"Fill out the form below and I'll get back to you within two business days. The more you can tell me, the better our first conversation will be.",nameLabel:'Your Name',namePlaceholder:'Jane & Michael',emailLabel:'Email Address',emailPlaceholder:'jane@email.com',weddingDateLabel:'Wedding Date',optionalLabel:'(if known)',messageLabel:'Tell me about your wedding',messagePlaceholder:'Where are you getting married? What kind of day are you dreaming up? What stage are you at in planning?',submitLabel:'Send Message',successHeading:'Message sent',successDescription:"Thank you — I've received your message and will be in touch within two business days. In the meantime, feel free to reach me directly at",sendAnotherLabel:'Send another message',contactInfoHeading:'Other ways to reach me',contactEmailLabel:'Email',contactPhoneLabel:'Phone',contactLocationLabel:'Location',instagramLabel:'Instagram',instagramHandle:'@dianaweddings',directReplyText:'I reply to every message personally — usually within a day. If you haven’t heard back, check your spam folder or try email directly.'};
-export async function generateMetadata(){const page=await getContactPage();return buildSeoMetadata(page?.seo, 'Contact Diana — Ottawa Wedding Planner', fallback.formDescription)}
-export default async function ContactPage(){const [page,settings,layout]=await Promise.all([getContactPage(),getSiteSettings(),getSiteLayout()]);const c={...fallback,...(page||{})} as typeof fallback & Record<string,any>;return <ContactClient settings={{email:layout?.footerEmail||settings?.email,phone:layout?.footerPhone||settings?.phone,location:settings?.location,serviceArea:settings?.serviceArea||layout?.footerAddress,socialLinks:layout?.footerSocialLinks||settings?.socialLinks||[]}} content={{...c,heroImage:sanityImage(c.heroImage)||fallback.heroImage}}/>}
+export async function generateMetadata() {
+    const page = await getContactPage();
+    return buildSeoMetadata(page?.seo, 'Contact', page?.formDescription);
+}
+
+export default async function ContactPage() {
+    const [page, settings, layout] = await Promise.all([
+        getContactPage(),
+        getSiteSettings(),
+        getSiteLayout(),
+    ]);
+
+    const targetEmail = page?.recipientEmail || settings?.email || layout?.footerEmail;
+
+    return (
+        <ContactClient
+            recipientEmail={targetEmail}
+            settings={{
+                email: settings?.email || layout?.footerEmail,
+                phone: settings?.phone || layout?.footerPhone,
+                location: settings?.location,
+                serviceArea: settings?.serviceArea || layout?.footerAddress,
+                socialLinks: layout?.footerSocialLinks || settings?.socialLinks || [],
+            }}
+            content={{
+                ...page,
+                heroImage: sanityImage(page?.heroImage),
+            }}
+        />
+    );
+}
