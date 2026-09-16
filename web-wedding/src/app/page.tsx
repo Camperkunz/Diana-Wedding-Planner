@@ -198,7 +198,7 @@ export default async function Home() {
             className="w-full h-full object-cover"
           />
 
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-accent/20" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-accent/30" />
         </div>
 
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
