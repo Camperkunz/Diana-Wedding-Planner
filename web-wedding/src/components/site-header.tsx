@@ -3,7 +3,15 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Menu, X, Instagram } from 'lucide-react';
+import { Menu, X, Globe } from 'lucide-react';
+import {
+  SiInstagram,
+  SiPinterest,
+  SiFacebook,
+  SiTiktok,
+  SiYoutube,
+  SiX
+} from 'react-icons/si';
 import { cn } from '../lib/utils';
 import type { SiteLayout, SiteSettings } from '../lib/sanity-data';
 
@@ -17,14 +25,26 @@ const fallbackLinks = [
   { href: '/faq', label: 'FAQ' },
 ];
 
-// Routes that have their own full-bleed hero image at the top, where the
-// header should start transparent and only turn solid once the user scrolls.
-// Any route NOT in this list (e.g. the 404 page) gets the solid/dark header
-// treatment from the very start, since there's no hero image behind it.
 const heroRoutes = ['/', '/about', '/services', '/portfolio', '/faq', '/backstage', '/contact'];
 
 function hasHero(pathname: string) {
   return heroRoutes.some((route) => (route === '/' ? pathname === '/' : pathname === route || pathname.startsWith(`${route}/`)));
+}
+
+const SOCIAL_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  instagram: SiInstagram,
+  pinterest: SiPinterest,
+  facebook: SiFacebook,
+  tiktok: SiTiktok,
+  youtube: SiYoutube,
+  twitter: SiX,
+  x: SiX
+};
+
+function getSocialIcon(platform?: string) {
+  if (!platform) return <Globe className="w-5 h-5" />;
+  const IconComponent = SOCIAL_ICONS[platform.toLowerCase().trim()];
+  return IconComponent ? <IconComponent className="w-4 h-4" /> : <Globe className="w-5 h-5" />;
 }
 
 export function SiteHeader({ settings, layout }: Props) {
@@ -37,8 +57,6 @@ export function SiteHeader({ settings, layout }: Props) {
   const logo = layout?.headerLogo || settings?.logo;
   const logoAlt = layout?.headerLogoAlt || settings?.logoAlt || `${settings?.name || 'Site'} logo`;
 
-  // "opaque" drives all the light/dark styling. It's true once the user has
-  // scrolled OR on any page that doesn't have a hero image to sit on top of.
   const opaque = scrolled || !hasHero(pathname || '/');
 
   useEffect(() => {
@@ -69,7 +87,6 @@ export function SiteHeader({ settings, layout }: Props) {
       )}
     >
       <nav className="container-wide flex items-center justify-between h-20" aria-label="Main navigation">
-        {/* Logo */}
         <Link
           href="/"
           className="flex items-center gap-3 group"
@@ -102,7 +119,6 @@ export function SiteHeader({ settings, layout }: Props) {
           </span>
         </Link>
 
-        {/* Desktop nav */}
         <div className="hidden lg:flex items-center gap-8">
           {navLinks.map((link) => (
             <Link
@@ -131,25 +147,32 @@ export function SiteHeader({ settings, layout }: Props) {
           >
             {contactLink.label}
           </Link>
-          <div className={cn('flex items-center gap-3 pl-2 border-l', opaque ? 'border-border' : 'border-white/20')}>
-            <a
-              href={settings?.socialLinks?.find((item) => item.platform === 'instagram')?.url || '#'}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Instagram"
-              className={cn(
-                'transition-colors duration-300',
-                opaque
-                  ? 'text-foreground/60 hover:text-accent'
-                  : 'text-white/60 hover:text-white'
-              )}
-            >
-              <Instagram className="w-5 h-5" />
-            </a>
-          </div>
+          {Boolean(settings?.socialLinks?.length) && (
+            <div className={cn('flex items-center gap-4 pl-2 border-l', opaque ? 'border-border' : 'border-white/20')}>
+              {settings?.socialLinks?.map((item, index) => {
+                if (!item.url) return null;
+                return (
+                  <a
+                    key={`${item.platform}-${index}`}
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={item.platform || 'Social Link'}
+                    className={cn(
+                      'transition-colors duration-300',
+                      opaque
+                        ? 'text-foreground/60 hover:text-accent'
+                        : 'text-white/60 hover:text-white'
+                    )}
+                  >
+                    {getSocialIcon(item.platform)}
+                  </a>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* Mobile toggle */}
         <button
           className={cn(
             'lg:hidden p-2 -mr-2 transition-colors duration-300',
@@ -163,7 +186,6 @@ export function SiteHeader({ settings, layout }: Props) {
         </button>
       </nav>
 
-      {/* Mobile menu */}
       <div
         className={cn(
           'lg:hidden overflow-hidden transition-all duration-400 bg-background border-b border-border',
@@ -189,6 +211,25 @@ export function SiteHeader({ settings, layout }: Props) {
           >
             {contactLink.label}
           </Link>
+          {Boolean(settings?.socialLinks?.length) && (
+            <div className="flex items-center gap-5 pt-4 mt-2 border-t border-border/50">
+              {settings?.socialLinks?.map((item, index) => {
+                if (!item.url) return null;
+                return (
+                  <a
+                    key={`${item.platform}-${index}`}
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={item.platform || 'Social Link'}
+                    className="text-foreground/60 hover:text-accent transition-colors duration-300"
+                  >
+                    {getSocialIcon(item.platform)}
+                  </a>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </header>
