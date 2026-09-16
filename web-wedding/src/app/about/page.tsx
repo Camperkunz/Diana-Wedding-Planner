@@ -4,63 +4,55 @@ import {
   getAboutPage,
   getSiteSettings,
   sanityImage,
-  buildSeoMetadata,
+  buildSeoMetadata
 } from '@/lib/sanity-data';
 import { getTestimonials, getStats } from '@/lib/data';
+import { TestimonialsSection } from '@/components/testimonials-section';
+import { StatsSection } from '@/components/stats-section';
 
+// Fallback data
 const fallback = {
   heroEyebrow: 'About',
   heroHeadingLine1: "Hi, I'm",
   heroHeadingScript: 'Diana',
-  heroImage:
-    'https://images.pexels.com/photos/4968707/pexels-photo-4968707.jpeg?auto=compress&cs=tinysrgb&w=1920',
-  heroImageAlt:
-    'Diana writing thoughtfully in a planner at a marble table',
+  heroImage: 'https://images.pexels.com/photos/4968707/pexels-photo-4968707.jpeg?auto=compress&cs=tinysrgb&w=1920',
+  heroImageAlt: 'Diana writing thoughtfully in a planner at a marble table',
   storyEyebrow: 'My Story',
-  storyHeading:
-    "I didn't set out to be a wedding planner. But I kept being the person everyone asked.",
-  storyParagraphs:
-    "I planned my first wedding at 23 — my sister's, because she asked, and I couldn't say no. I had no idea what I was doing. But I discovered something that day: I love the quiet machinery behind a big, emotional event. The spreadsheets, the phone calls, the 2am worries about whether the florist got the right shade of cream. I love all of it.\n\nNine years later, I've planned over 120 weddings across Ottawa, the Gatineau Hills, the Ottawa Valley, and beyond. I've worked in grand ballrooms and barns and backyards and on the shore of a lake at sunset. Every single one was different, and every single one taught me something I bring to the next.\n\nBut the thing that hasn't changed — and won't — is that I do this personally. I'm not building an agency. I'm not training junior planners to run weddings on my behalf. When you hire me, you get me. My phone number. My attention. My obsession with the details you care about and the ones you haven't thought of yet.\n\nIf that's the kind of relationship you want with your planner — not a vendor, but someone who becomes part of your story — then I think we'll work well together.",
-  storyImage:
-    'https://images.pexels.com/photos/9052841/pexels-photo-9052841.jpeg?auto=compress&cs=tinysrgb&w=800',
-  storyImageAlt:
-    'Diana smiling with planning notes, exuding warmth and professionalism',
+  storyHeading: "I didn't set out to be a wedding planner. But I kept being the person everyone asked.",
+  storyParagraphs: "I planned my first wedding at 23 — my sister's, because she asked, and I couldn't say no. I had no idea what I was doing. But I discovered something that day: I love the quiet machinery behind a big, emotional event. The spreadsheets, the phone calls, the 2am worries about whether the florist got the right shade of cream. I love all of it.\n\nNine years later, I've planned over 120 weddings across Ottawa, the Gatineau Hills, the Ottawa Valley, and beyond. I've worked in grand ballrooms and barns and backyards and on the shore of a lake at sunset. Every single one was different, and every single one taught me something I bring to the next.\n\nBut the thing that hasn't changed — and won't — is that I do this personally. I'm not building an agency. I'm not training junior planners to run weddings on my behalf. When you hire me, you get me. My phone number. My attention. My obsession with the details you care about and the ones you haven't thought of yet.\n\nIf that's the kind of relationship you want with your planner — not a vendor, but someone who becomes part of your story — then I think we'll work well together.",
+  storyImage: 'https://images.pexels.com/photos/9052841/pexels-photo-9052841.jpeg?auto=compress&cs=tinysrgb&w=800',
+  storyImageAlt: 'Diana smiling with planning notes, exuding warmth and professionalism',
   glanceEyebrow: 'At a Glance',
   glanceItems: [
     { icon: 'award', text: '9 years of independent wedding planning' },
     { icon: 'heart', text: '120+ weddings, personally planned' },
-    {
-      icon: 'location',
-      text: 'Based in Ottawa, serving Eastern Ontario & beyond',
-    },
+    { icon: 'location', text: 'Based in Ottawa, serving Eastern Ontario & beyond' },
   ],
   philosophyEyebrow: 'My Philosophy',
   philosophyHeading: 'What I believe about weddings',
   philosophyItems: [
     {
       title: 'Your wedding should feel like you',
-      body: "Not like a Pinterest board, not like the wedding I did last month, not like what's trendy. I start every relationship by understanding who you are as a couple — then we build a day that reflects that, not a template.",
+      body: "Not like a Pinterest board, not like the wedding I did last month, not like what's trendy. I start every relationship by understanding who you are as a couple — then we build a day that reflects that, not a template."
     },
     {
       title: 'Details are not details — they’re the experience',
-      body: "The difference between a good wedding and a great one isn't the big things. It's whether the bar opens on time, whether the grandmother can hear the vows, whether there's a plan when it rains. I obsess over these so you don't have to.",
+      body: "The difference between a good wedding and a great one isn't the big things. It's whether the bar opens on time, whether the grandmother can hear the vows, whether there's a plan when it rains. I obsess over these so you don't have to."
     },
     {
       title: 'Your planner should be a person, not a brand',
-      body: "I deliberately keep my calendar small. When you hire me, I'm not handing you to an associate. I'm the one at your rehearsal, the one on my phone with your florist at 6am, the one making sure your day runs.",
+      body: "I deliberately keep my calendar small. When you hire me, I'm not handing you to an associate. I'm the one at your rehearsal, the one on my phone with your florist at 6am, the one making sure your day runs."
     },
     {
       title: 'Calm is a service',
-      body: "The most valuable thing I provide isn't a spreadsheet or a vendor list — it's the feeling of knowing someone competent is handling everything. Your family should enjoy the day. You should enjoy the day. I'll handle the rest.",
+      body: "The most valuable thing I provide isn't a spreadsheet or a vendor list — it's the feeling of knowing someone competent is handling everything. Your family should enjoy the day. You should enjoy the day. I'll handle the rest."
     },
   ],
   testimonialsEyebrow: 'Kind Words',
   testimonialsHeading: 'From couples after the last dance',
-  testimonialsIntro:
-    'Placeholder testimonials — real quotes will replace these once the CMS is connected.',
+  testimonialsIntro: 'Placeholder testimonials — real quotes will replace these once the CMS is connected.',
   ctaHeading: 'Think we might be a good fit?',
-  ctaDescription:
-    'The best way to find out is a conversation. No pressure, no obligation — just a chat about what you’re planning.',
+  ctaDescription: 'The best way to find out is a conversation. No pressure, no obligation — just a chat about what you’re planning.',
   ctaButtonLabel: 'Get in Touch',
   ctaButtonLink: '/contact',
 };
@@ -75,24 +67,14 @@ export async function generateMetadata() {
 }
 
 export default async function AboutPage() {
-  const [page, settings] = await Promise.all([
-    getAboutPage(),
-    getSiteSettings(),
-  ]);
+  const [page, settings] = await Promise.all([getAboutPage(), getSiteSettings()]);
+  const c = { ...fallback, ...(page || {}) } as typeof fallback & Record<string, any>;
 
-  const c = { ...fallback, ...(page || {}) } as typeof fallback &
-    Record<string, any>;
   const stats = c.stats?.length ? c.stats : getStats();
-  const testimonials = c.testimonials?.length
-    ? c.testimonials
-    : getTestimonials();
-  const paragraphs = String(c.storyParagraphs || '')
-    .split(/\n\s*\n/)
-    .filter(Boolean);
+  const testimonials = c.testimonials?.length ? c.testimonials : getTestimonials();
+  const paragraphs = String(c.storyParagraphs || '').split(/\n\s*\n/).filter(Boolean);
   const glance = c.glanceItems?.length ? c.glanceItems : fallback.glanceItems;
-  const philosophy = c.philosophyItems?.length
-    ? c.philosophyItems
-    : fallback.philosophyItems;
+  const philosophy = c.philosophyItems?.length ? c.philosophyItems : fallback.philosophyItems;
 
   return (
     <>
@@ -112,9 +94,7 @@ export default async function AboutPage() {
           </p>
           <h1 className="font-serif text-white text-4xl md:text-6xl lg:text-7xl font-normal leading-tight text-balance">
             {c.heroHeadingLine1}{' '}
-            <span className="font-script font-normal">
-              {c.heroHeadingScript}
-            </span>
+            <span className="font-script font-normal">{c.heroHeadingScript}</span>
           </h1>
         </div>
       </section>
@@ -123,6 +103,7 @@ export default async function AboutPage() {
       <section className="py-28 md:py-40 bg-background">
         <div className="container-narrow">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 items-start">
+            {/* Story Text */}
             <div className="lg:col-span-2 space-y-8">
               <p className="text-xs uppercase tracking-wide-lg text-accent mb-4">
                 {c.storyEyebrow}
@@ -137,6 +118,7 @@ export default async function AboutPage() {
               </div>
             </div>
 
+            {/* Sidebar Image & Glance Card */}
             <div className="space-y-8">
               <div className="aspect-[3/4] overflow-hidden rounded-sm shadow-md">
                 <img
@@ -146,6 +128,7 @@ export default async function AboutPage() {
                   loading="lazy"
                 />
               </div>
+
               <div className="bg-secondary/40 rounded-sm p-8 border border-border/50">
                 <p className="text-xs uppercase tracking-wide-lg text-accent mb-4">
                   {c.glanceEyebrow}
@@ -158,6 +141,7 @@ export default async function AboutPage() {
                         : item.icon === 'location'
                           ? MapPin
                           : Award;
+
                     return (
                       <li key={i} className="flex items-start gap-3">
                         <Icon className="w-4 h-4 text-accent shrink-0 mt-0.5" />
@@ -183,6 +167,7 @@ export default async function AboutPage() {
               {c.philosophyHeading}
             </h2>
           </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
             {philosophy.map((item: any, i: number) => (
               <div key={i} className="flex flex-col gap-4">
@@ -201,58 +186,20 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* STATS */}
-      <section className="bg-secondary/50 py-20 md:py-16">
-        <div className="container-wide">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-6">
-            {stats.map((stat: any, i: number) => (
-              <div key={i} className="text-center">
-                <p className="font-serif text-4xl md:text-6xl text-accent mb-4">
-                  {stat.value}
-                </p>
-
-                <p className="text-xs md:text-sm uppercase tracking-wide text-muted-foreground font-light">
-                  {stat.label}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Stats Section */}
+      <StatsSection stats={stats} />
 
       {/* Testimonials Section */}
-      <section className="py-28 md:py-40 bg-background">
-        <div className="container-wide">
-          <div className="text-center max-w-2xl mx-auto mb-20">
-            <p className="text-xs uppercase tracking-wide-lg text-accent mb-6">
-              {c.testimonialsEyebrow}
-            </p>
-            <h2 className="font-serif text-3xl md:text-5xl leading-tight mb-4 text-balance">
-              {c.testimonialsHeading}
-            </h2>
-            <p className="text-muted-foreground text-sm mt-4 font-light">
-              {c.testimonialsIntro}
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-12">
-            {testimonials.map((t: any, i: number) => (
-              <article key={t.id || i} className="flex flex-col">
-                <p className="text-foreground/80 leading-relaxed flex-1 italic font-light text-lg">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div className="mt-8 pt-5 border-t border-border/50">
-                  <p className="font-serif text-lg">{t.author}</p>
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground mt-1 font-light">
-                    {t.weddingType}
-                  </p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      <TestimonialsSection
+        eyebrow={c.testimonialsEyebrow}
+        heading={c.testimonialsHeading}
+        subtext={c.testimonialsIntro}
+        testimonials={testimonials}
+        showIcon={false}
+        cardsClassName="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-12"
+      />
 
-      {/* CTA Section */}
+      {/* Call To Action Section */}
       <section className="py-24 md:py-32 bg-secondary/40">
         <div className="container-narrow text-center">
           <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-8 text-balance">

@@ -1,7 +1,7 @@
 import { defineType, defineField } from 'sanity'
 
 const image = (name: string, title: string, fieldset: string, description?: string) =>
-  defineField({ name, title, type: 'image', options: { hotspot: true }, fieldset, description })
+  defineField({ name, title, type: 'image', options: { hotspot: true }, fieldset, description, validation: (rule) => rule.required() })
 const text = (name: string, title: string, fieldset: string, rows = 5) =>
   defineField({ name, title, type: 'text', rows, fieldset })
 
@@ -22,15 +22,15 @@ export const aboutPage = defineType({
   ],
   fields: [
     text('heroEyebrow', 'Eyebrow', 'hero', 2),
-    defineField({ name: 'heroHeadingLine1', title: 'Heading — First Line', type: 'string', fieldset: 'hero' }),
-    defineField({ name: 'heroHeadingScript', title: 'Heading — Script Word', type: 'string', fieldset: 'hero' }),
+    defineField({ name: 'heroHeadingLine1', title: 'Heading — First Line', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
+    defineField({ name: 'heroHeadingScript', title: 'Heading — Script Word', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
     image('heroImage', 'Background Photo', 'hero', 'Recommended: 1920px wide or larger.'),
-    defineField({ name: 'heroImageAlt', title: 'Photo Alt Text', type: 'string', fieldset: 'hero' }),
+    defineField({ name: 'heroImageAlt', title: 'Photo Alt Text', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
     defineField({ name: 'storyEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'story' }),
-    defineField({ name: 'storyHeading', title: 'Heading', type: 'string', fieldset: 'story' }),
-    text('storyParagraphs', 'Story Paragraphs', 'story', 8),
+    defineField({ name: 'storyHeading', title: 'Heading', type: 'string', fieldset: 'story', validation: (rule) => rule.required() }),
+    defineField({ name: 'storyParagraphs', title: 'Story Paragraphs', type: 'text', rows: 8, fieldset: 'story', validation: (rule) => rule.required() }),
     image('storyImage', 'Photo', 'story'),
-    defineField({ name: 'storyImageAlt', title: 'Photo Alt Text', type: 'string', fieldset: 'story' }),
+    defineField({ name: 'storyImageAlt', title: 'Photo Alt Text', type: 'string', fieldset: 'story', validation: (rule) => rule.required() }),
     defineField({ name: 'glanceEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'glance' }),
     defineField({
       name: 'glanceItems', title: 'Highlights', type: 'array', fieldset: 'glance', of: [{
@@ -41,7 +41,7 @@ export const aboutPage = defineType({
       }]
     }),
     defineField({ name: 'philosophyEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'philosophy' }),
-    defineField({ name: 'philosophyHeading', title: 'Heading', type: 'string', fieldset: 'philosophy' }),
+    defineField({ name: 'philosophyHeading', title: 'Heading', type: 'string', fieldset: 'philosophy', validation: (rule) => rule.required() }),
     defineField({
       name: 'philosophyItems', title: 'Beliefs', type: 'array', fieldset: 'philosophy', validation: (rule) => rule.max(6), of: [{
         type: 'object', name: 'philosophyItem', fields: [
@@ -62,7 +62,7 @@ export const aboutPage = defineType({
     defineField({ name: 'testimonialsHeading', title: 'Heading', type: 'string', fieldset: 'testimonials' }),
     defineField({ name: 'testimonialsIntro', title: 'Intro Text', type: 'text', rows: 3, fieldset: 'testimonials' }),
     defineField({
-      name: 'testimonials', title: 'Testimonials', type: 'array', fieldset: 'testimonials', validation: (rule) => rule.max(3), of: [{
+      name: 'testimonials', title: 'Testimonials', type: 'array', fieldset: 'testimonials', validation: (rule) => rule.max(3), description: 'Leave empty to hide the testimonials section on this page entirely.', of: [{
         type: 'object', name: 'aboutTestimonial', fields: [
           defineField({ name: 'quote', title: 'Quote', type: 'text', rows: 5, validation: (rule) => rule.required() }),
           defineField({ name: 'author', title: 'Couple / Author', type: 'string', validation: (rule) => rule.required() }),
@@ -70,7 +70,7 @@ export const aboutPage = defineType({
         ]
       }]
     }),
-    defineField({ name: 'ctaHeading', title: 'Heading', type: 'string', fieldset: 'cta' }),
+    defineField({ name: 'ctaHeading', title: 'Heading', type: 'string', fieldset: 'cta', validation: (rule) => rule.required() }),
     text('ctaDescription', 'Description', 'cta', 4),
     defineField({ name: 'ctaButtonLabel', title: 'Button Label', type: 'string', fieldset: 'cta' }),
     defineField({ name: 'ctaButtonLink', title: 'Button Link', type: 'string', fieldset: 'cta', initialValue: '/contact' }),

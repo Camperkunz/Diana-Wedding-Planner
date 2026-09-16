@@ -79,21 +79,21 @@ export function SiteHeader({ settings, layout }: Props) {
             <img src={logo} alt={logoAlt} className={cn('max-h-12 w-auto max-w-[180px] object-contain transition-opacity duration-300', !opaque && 'brightness-0 invert')} />
           ) : (
             <span className={cn('font-script text-3xl md:text-4xl leading-none transition-colors duration-300', opaque ? 'text-foreground group-hover:text-accent' : 'text-white group-hover:text-accent')}>
-              {settings?.name?.charAt(0) || 'D'}
+              {settings?.name?.charAt(0)}
             </span>
           )}
           <span className="hidden sm:flex flex-col leading-tight">
             <span
               className={cn(
-                'font-serif text-lg transition-colors duration-300',
+                'font-serif text-xl transition-colors duration-300',
                 opaque ? 'text-foreground' : 'text-white'
               )}
             >
-              {settings?.name || 'Site Title'}
+              {settings?.name}
             </span>
             <span
               className={cn(
-                'text-[10px] uppercase tracking-wide-lg transition-colors duration-300',
+                'text-[11px] uppercase tracking-wide-lg transition-colors duration-300',
                 opaque ? 'text-muted-foreground' : 'text-white/70'
               )}
             >
@@ -113,7 +113,7 @@ export function SiteHeader({ settings, layout }: Props) {
                 opaque
                   ? pathname === link.href
                     ? 'text-accent'
-                    : 'text-foreground/70 hover:text-foreground'
+                    : 'text-foreground/80 hover:text-foreground'
                   : pathname === link.href
                     ? 'text-accent'
                     : 'text-white/80 hover:text-white'
@@ -144,7 +144,7 @@ export function SiteHeader({ settings, layout }: Props) {
                   : 'text-white/60 hover:text-white'
               )}
             >
-              <Instagram className="w-4 h-4" />
+              <Instagram className="w-5 h-5" />
             </a>
           </div>
         </div>

@@ -32,27 +32,27 @@ export const homePage = defineType({
   ],
   fields: [
     defineField({ name: 'heroEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'hero' }),
-    defineField({ name: 'heroHeadingLine1', title: 'Heading — First Line', type: 'string', fieldset: 'hero' }),
-    defineField({ name: 'heroHeadingScript', title: 'Heading — Script Word', type: 'string', fieldset: 'hero', description: 'This word keeps the existing handwritten/script styling.' }),
-    defineField({ name: 'heroHeadingLine2', title: 'Heading — Second Line', type: 'string', fieldset: 'hero' }),
-    defineField({ name: 'heroDescription', title: 'Description', type: 'text', rows: 4, fieldset: 'hero' }),
-    imageField('heroImage', 'Background Image', 'The large hero photo. Recommended: 1920px wide or larger.', 'hero'),
-    defineField({ name: 'heroImageAlt', title: 'Image Alt Text', type: 'string', fieldset: 'hero' }),
+    defineField({ name: 'heroHeadingLine1', title: 'Heading — First Line', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
+    defineField({ name: 'heroHeadingScript', title: 'Heading — Script Word', type: 'string', fieldset: 'hero', description: 'This word keeps the existing handwritten/script styling.', validation: (rule) => rule.required() }),
+    defineField({ name: 'heroHeadingLine2', title: 'Heading — Second Line', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
+    defineField({ name: 'heroDescription', title: 'Description', type: 'text', rows: 4, fieldset: 'hero', validation: (rule) => rule.required() }),
+    defineField({ name: 'heroImage', title: 'Background Image', type: 'image', options: { hotspot: true }, fieldset: 'hero', description: 'The large hero photo. Recommended: 1920px wide or larger.', validation: (rule) => rule.required() }),
+    defineField({ name: 'heroImageAlt', title: 'Image Alt Text', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
     defineField({ name: 'heroPrimaryButtonLabel', title: 'Primary Button Label', type: 'string', fieldset: 'hero' }),
     defineField({ name: 'heroPrimaryButtonLink', title: 'Primary Button Link', type: 'string', fieldset: 'hero', initialValue: '/contact' }),
     defineField({ name: 'heroSecondaryButtonLabel', title: 'Secondary Button Label', type: 'string', fieldset: 'hero' }),
     defineField({ name: 'heroSecondaryButtonLink', title: 'Secondary Button Link', type: 'string', fieldset: 'hero', initialValue: '/services' }),
 
     defineField({ name: 'aboutEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'about' }),
-    defineField({ name: 'aboutHeading', title: 'Heading', type: 'string', fieldset: 'about' }),
-    defineField({ name: 'aboutParagraph1', title: 'Paragraph 1', type: 'text', rows: 5, fieldset: 'about' }),
+    defineField({ name: 'aboutHeading', title: 'Heading', type: 'string', fieldset: 'about', validation: (rule) => rule.required() }),
+    defineField({ name: 'aboutParagraph1', title: 'Paragraph 1', type: 'text', rows: 5, fieldset: 'about', validation: (rule) => rule.required() }),
     defineField({ name: 'aboutParagraph2', title: 'Paragraph 2', type: 'text', rows: 5, fieldset: 'about' }),
     defineField({ name: 'aboutLinkLabel', title: 'Link Label', type: 'string', fieldset: 'about' }),
     defineField({ name: 'aboutLink', title: 'Link', type: 'string', fieldset: 'about', initialValue: '/about' }),
-    imageField('aboutImage1', 'Photo 1', 'Portrait-oriented photo.', 'about'),
-    imageField('aboutImage2', 'Photo 2', 'Portrait-oriented photo.', 'about'),
-    defineField({ name: 'aboutImage1Alt', title: 'Photo 1 Alt Text', type: 'string', fieldset: 'about' }),
-    defineField({ name: 'aboutImage2Alt', title: 'Photo 2 Alt Text', type: 'string', fieldset: 'about' }),
+    defineField({ name: 'aboutImage1', title: 'Photo 1', type: 'image', options: { hotspot: true }, fieldset: 'about', description: 'Portrait-oriented photo.', validation: (rule) => rule.required() }),
+    defineField({ name: 'aboutImage2', title: 'Photo 2', type: 'image', options: { hotspot: true }, fieldset: 'about', description: 'Portrait-oriented photo.', validation: (rule) => rule.required() }),
+    defineField({ name: 'aboutImage1Alt', title: 'Photo 1 Alt Text', type: 'string', fieldset: 'about', validation: (rule) => rule.required() }),
+    defineField({ name: 'aboutImage2Alt', title: 'Photo 2 Alt Text', type: 'string', fieldset: 'about', validation: (rule) => rule.required() }),
 
     defineField({
       name: 'stats', title: 'Stats', type: 'array', fieldset: 'stats', validation: (rule) => rule.max(4),
@@ -65,27 +65,27 @@ export const homePage = defineType({
     }),
 
     defineField({ name: 'servicesEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'services' }),
-    defineField({ name: 'servicesHeading', title: 'Heading', type: 'string', fieldset: 'services' }),
+    defineField({ name: 'servicesHeading', title: 'Heading', type: 'string', fieldset: 'services', validation: (rule) => rule.required() }),
     defineField({ name: 'servicesDescription', title: 'Description', type: 'text', rows: 3, fieldset: 'services' }),
     defineField({ name: 'servicesButtonLabel', title: 'Button Label', type: 'string', fieldset: 'services' }),
     defineField({ name: 'servicesButtonLink', title: 'Button Link', type: 'string', fieldset: 'services', initialValue: '/services' }),
     defineField({ name: 'featuredServices', title: 'Services to Show', type: 'array', fieldset: 'services', of: [{ type: 'reference', to: [{ type: 'service' }] }], validation: (rule) => rule.max(3) }),
 
-    defineField({ name: 'quoteImage', title: 'Background Image', type: 'image', fieldset: 'quote', options: { hotspot: true } }),
-    defineField({ name: 'quoteImageAlt', title: 'Image Alt Text', type: 'string', fieldset: 'quote' }),
-    defineField({ name: 'quoteText', title: 'Quote', type: 'text', rows: 7, fieldset: 'quote' }),
-    defineField({ name: 'quoteAuthor', title: 'Author', type: 'string', fieldset: 'quote' }),
+    defineField({ name: 'quoteImage', title: 'Background Image', type: 'image', fieldset: 'quote', options: { hotspot: true }, validation: (rule) => rule.required() }),
+    defineField({ name: 'quoteImageAlt', title: 'Image Alt Text', type: 'string', fieldset: 'quote', validation: (rule) => rule.required() }),
+    defineField({ name: 'quoteText', title: 'Quote', type: 'text', rows: 7, fieldset: 'quote', validation: (rule) => rule.required() }),
+    defineField({ name: 'quoteAuthor', title: 'Author', type: 'string', fieldset: 'quote', validation: (rule) => rule.required() }),
 
     defineField({ name: 'portfolioEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'portfolio' }),
-    defineField({ name: 'portfolioHeading', title: 'Heading', type: 'string', fieldset: 'portfolio' }),
+    defineField({ name: 'portfolioHeading', title: 'Heading', type: 'string', fieldset: 'portfolio', validation: (rule) => rule.required() }),
     defineField({ name: 'portfolioButtonLabel', title: 'Button Label', type: 'string', fieldset: 'portfolio' }),
     defineField({ name: 'portfolioButtonLink', title: 'Button Link', type: 'string', fieldset: 'portfolio', initialValue: '/portfolio' }),
     defineField({ name: 'featuredAlbums', title: 'Albums to Show', type: 'array', fieldset: 'portfolio', of: [{ type: 'reference', to: [{ type: 'album' }] }], validation: (rule) => rule.max(4) }),
 
     defineField({ name: 'approachEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'approach' }),
-    defineField({ name: 'approachHeading', title: 'Heading', type: 'string', fieldset: 'approach' }),
-    defineField({ name: 'approachImage', title: 'Photo', type: 'image', fieldset: 'approach', options: { hotspot: true } }),
-    defineField({ name: 'approachImageAlt', title: 'Photo Alt Text', type: 'string', fieldset: 'approach' }),
+    defineField({ name: 'approachHeading', title: 'Heading', type: 'string', fieldset: 'approach', validation: (rule) => rule.required() }),
+    defineField({ name: 'approachImage', title: 'Photo', type: 'image', fieldset: 'approach', options: { hotspot: true }, validation: (rule) => rule.required() }),
+    defineField({ name: 'approachImageAlt', title: 'Photo Alt Text', type: 'string', fieldset: 'approach', validation: (rule) => rule.required() }),
     defineField({
       name: 'approachSteps', title: 'Steps', type: 'array', fieldset: 'approach', of: [{
         type: 'object', name: 'approachStep', fields: [
@@ -100,7 +100,7 @@ export const homePage = defineType({
     defineField({ name: 'testimonialsHeading', title: 'Heading', type: 'string', fieldset: 'testimonials' }),
     defineField({ name: 'testimonialsSubtext', title: 'Intro Text', type: 'text', rows: 3, fieldset: 'testimonials' }),
     defineField({
-      name: 'testimonials', title: 'Testimonials', type: 'array', fieldset: 'testimonials', of: [{
+      name: 'testimonials', title: 'Testimonials', type: 'array', fieldset: 'testimonials', description: 'Leave empty to hide the testimonials section on the homepage entirely.', of: [{
         type: 'object', name: 'homeTestimonial', fields: [
           defineField({ name: 'quote', title: 'Quote', type: 'text', rows: 5, validation: (rule) => rule.required() }),
           defineField({ name: 'author', title: 'Author', type: 'string', validation: (rule) => rule.required() }),
@@ -110,15 +110,15 @@ export const homePage = defineType({
     }),
 
     defineField({ name: 'ctaEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'cta' }),
-    defineField({ name: 'ctaHeadingLine1', title: 'Heading — First Line', type: 'string', fieldset: 'cta' }),
-    defineField({ name: 'ctaHeadingLine2', title: 'Heading — Second Line', type: 'string', fieldset: 'cta' }),
-    defineField({ name: 'ctaHeadingScript', title: 'Heading — Script Word', type: 'string', fieldset: 'cta' }),
-    defineField({ name: 'ctaDescription', title: 'Description', type: 'text', rows: 5, fieldset: 'cta' }),
+    defineField({ name: 'ctaHeadingLine1', title: 'Heading — First Line', type: 'string', fieldset: 'cta', validation: (rule) => rule.required() }),
+    defineField({ name: 'ctaHeadingLine2', title: 'Heading — Second Line', type: 'string', fieldset: 'cta', validation: (rule) => rule.required() }),
+    defineField({ name: 'ctaHeadingScript', title: 'Heading — Script Word', type: 'string', fieldset: 'cta', validation: (rule) => rule.required() }),
+    defineField({ name: 'ctaDescription', title: 'Description', type: 'text', rows: 5, fieldset: 'cta', validation: (rule) => rule.required() }),
     defineField({ name: 'ctaButtonLabel', title: 'Button Label', type: 'string', fieldset: 'cta' }),
     defineField({ name: 'ctaButtonLink', title: 'Button Link', type: 'string', fieldset: 'cta', initialValue: '/contact' }),
     defineField({ name: 'ctaDirectContactText', title: 'Direct Contact Line', type: 'string', fieldset: 'cta', description: 'Short text before the email address, e.g. “Or reach me directly at”.' }),
-    defineField({ name: 'ctaImage', title: 'Background Image', type: 'image', fieldset: 'cta', options: { hotspot: true } }),
-    defineField({ name: 'ctaImageAlt', title: 'Image Alt Text', type: 'string', fieldset: 'cta' }),
+    defineField({ name: 'ctaImage', title: 'Background Image', type: 'image', fieldset: 'cta', options: { hotspot: true }, validation: (rule) => rule.required() }),
+    defineField({ name: 'ctaImageAlt', title: 'Image Alt Text', type: 'string', fieldset: 'cta', validation: (rule) => rule.required() }),
 
     defineField({ name: 'seo', title: 'SEO Settings', type: 'seo', fieldset: 'seo' }),
   ],

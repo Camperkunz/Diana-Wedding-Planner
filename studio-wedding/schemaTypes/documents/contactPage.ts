@@ -1,109 +1,46 @@
-// schemas/contactPage.ts
 import { defineType, defineField } from 'sanity'
 
 export const contactPage = defineType({
   name: 'contactPage',
   title: 'Contact Page',
   type: 'document',
-  description: 'Edit the contact page copy, custom form fields, and success message.',
+  description: 'Edit the contact page copy, form labels and success message. Contact details come from Site Settings.',
+  initialValue: { heroEyebrow: 'Contact', heroHeadingLine1: "Let's", heroHeadingScript: 'talk', formHeading: 'Tell me about your wedding', nameLabel: 'Your Name', emailLabel: 'Email Address', weddingDateLabel: 'Wedding Date', optionalLabel: '(if known)', messageLabel: 'Tell me about your wedding', submitLabel: 'Send Message', successHeading: 'Message sent', sendAnotherLabel: 'Send another message', contactInfoHeading: 'Other ways to reach me', contactEmailLabel: 'Email', contactPhoneLabel: 'Phone', contactLocationLabel: 'Location', instagramLabel: 'Instagram', instagramHandle: '@dianaweddings' },
   fieldsets: [
     { name: 'hero', title: '1. Hero', options: { collapsible: true, collapsed: true } },
-    { name: 'formSettings', title: '2. Form Settings & Email Recipient', options: { collapsible: true, collapsed: true } },
-    { name: 'formFields', title: '3. Custom Form Fields Builder', options: { collapsible: true, collapsed: true } },
-    { name: 'success', title: '4. Form Success Message', options: { collapsible: true, collapsed: true } },
-    { name: 'contactInfo', title: '5. Contact Information', options: { collapsible: true, collapsed: true } },
+    { name: 'form', title: '2. Contact Form', options: { collapsible: true, collapsed: true } },
+    { name: 'success', title: '3. Form Success Message', options: { collapsible: true, collapsed: true } },
+    { name: 'contactInfo', title: '4. Contact Information', options: { collapsible: true, collapsed: true } },
     { name: 'seo', title: 'SEO', options: { collapsible: true, collapsed: true } },
   ],
   fields: [
-    // Hero
     defineField({ name: 'heroEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'hero' }),
-    defineField({ name: 'heroHeadingLine1', title: 'Heading — First Part', type: 'string', fieldset: 'hero' }),
-    defineField({ name: 'heroHeadingScript', title: 'Heading — Script Word', type: 'string', fieldset: 'hero' }),
-    defineField({ name: 'heroImage', title: 'Background Photo', type: 'image', options: { hotspot: true }, fieldset: 'hero' }),
-    defineField({ name: 'heroImageAlt', title: 'Photo Alt Text', type: 'string', fieldset: 'hero' }),
-
-    // Form Settings
-    defineField({ name: 'formHeading', title: 'Heading', type: 'string', fieldset: 'formSettings' }),
-    defineField({ name: 'formDescription', title: 'Description', type: 'text', rows: 4, fieldset: 'formSettings' }),
-    defineField({
-      name: 'recipientEmail',
-      title: 'Form Submissions Recipient Email',
-      description: 'The email address where submission notifications will be sent.',
-      type: 'string',
-      fieldset: 'formSettings'
-    }),
-    defineField({ name: 'submitLabel', title: 'Submit Button Label', type: 'string', fieldset: 'formSettings' }),
-
-    // Dynamic Form Fields Builder
-    defineField({
-      name: 'customFields',
-      title: 'Form Fields',
-      description: 'Add and order the fields shown on the contact form.',
-      type: 'array',
-      fieldset: 'formFields',
-      of: [
-        {
-          type: 'object',
-          name: 'field',
-          title: 'Field',
-          fields: [
-            defineField({ name: 'label', title: 'Field Label', type: 'string', validation: (Rule) => Rule.required() }),
-            defineField({ name: 'placeholder', title: 'Placeholder Text', type: 'string' }),
-            defineField({
-              name: 'fieldType',
-              title: 'Field Type',
-              type: 'string',
-              initialValue: 'text',
-              options: {
-                list: [
-                  { title: 'Single Line Text', value: 'text' },
-                  { title: 'Email Address', value: 'email' },
-                  { title: 'Date Picker', value: 'date' },
-                  { title: 'Multi-line Text (Textarea)', value: 'textarea' },
-                  { title: 'Dropdown Select', value: 'select' },
-                ],
-              },
-              validation: (Rule) => Rule.required(),
-            }),
-            defineField({
-              name: 'options',
-              title: 'Dropdown Options',
-              description: 'Add list of options for user to select from (used when Field Type is Dropdown Select).',
-              type: 'array',
-              of: [{ type: 'string' }],
-              hidden: ({ parent }) => parent?.fieldType !== 'select',
-            }),
-            defineField({ name: 'required', title: 'Is Required?', type: 'boolean', initialValue: false }),
-          ],
-          preview: {
-            select: { title: 'label', subtitle: 'fieldType', required: 'required' },
-            prepare({ title, subtitle, required }) {
-              return {
-                title: `${title || 'Untitled Field'} ${required ? '*' : ''}`,
-                subtitle: subtitle ? subtitle.toUpperCase() : 'TEXT',
-              }
-            },
-          },
-        },
-      ],
-    }),
-
-    // Success Message
+    defineField({ name: 'heroHeadingLine1', title: 'Heading — First Part', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
+    defineField({ name: 'heroHeadingScript', title: 'Heading — Script Word', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
+    defineField({ name: 'heroImage', title: 'Background Photo', type: 'image', options: { hotspot: true }, fieldset: 'hero', validation: (rule) => rule.required() }),
+    defineField({ name: 'heroImageAlt', title: 'Photo Alt Text', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
+    defineField({ name: 'formHeading', title: 'Heading', type: 'string', fieldset: 'form', validation: (rule) => rule.required() }),
+    defineField({ name: 'formDescription', title: 'Description', type: 'text', rows: 4, fieldset: 'form' }),
+    defineField({ name: 'nameLabel', title: 'Name Field Label', type: 'string', fieldset: 'form' }),
+    defineField({ name: 'namePlaceholder', title: 'Name Placeholder', type: 'string', fieldset: 'form' }),
+    defineField({ name: 'emailLabel', title: 'Email Field Label', type: 'string', fieldset: 'form' }),
+    defineField({ name: 'emailPlaceholder', title: 'Email Placeholder', type: 'string', fieldset: 'form' }),
+    defineField({ name: 'weddingDateLabel', title: 'Wedding Date Label', type: 'string', fieldset: 'form' }),
+    defineField({ name: 'optionalLabel', title: 'Optional Text', type: 'string', fieldset: 'form' }),
+    defineField({ name: 'messageLabel', title: 'Message Field Label', type: 'string', fieldset: 'form' }),
+    defineField({ name: 'messagePlaceholder', title: 'Message Placeholder', type: 'text', rows: 3, fieldset: 'form' }),
+    defineField({ name: 'submitLabel', title: 'Submit Button Label', type: 'string', fieldset: 'form' }),
     defineField({ name: 'successHeading', title: 'Success Heading', type: 'string', fieldset: 'success' }),
     defineField({ name: 'successDescription', title: 'Success Description', type: 'text', rows: 5, fieldset: 'success' }),
     defineField({ name: 'sendAnotherLabel', title: 'Send Another Message Label', type: 'string', fieldset: 'success' }),
-
-    // Contact Info
-    defineField({ name: 'contactInfoHeading', title: 'Contact Info Heading', type: 'string', fieldset: 'contactInfo' }),
+    defineField({ name: 'contactInfoHeading', title: 'Contact Info Heading', type: 'string', fieldset: 'contactInfo', validation: (rule) => rule.required() }),
     defineField({ name: 'contactEmailLabel', title: 'Email Label', type: 'string', fieldset: 'contactInfo' }),
     defineField({ name: 'contactPhoneLabel', title: 'Phone Label', type: 'string', fieldset: 'contactInfo' }),
     defineField({ name: 'contactLocationLabel', title: 'Location Label', type: 'string', fieldset: 'contactInfo' }),
     defineField({ name: 'instagramLabel', title: 'Instagram Label', type: 'string', fieldset: 'contactInfo' }),
     defineField({ name: 'instagramHandle', title: 'Instagram Handle', type: 'string', fieldset: 'contactInfo' }),
     defineField({ name: 'directReplyText', title: 'Direct Reply Note', type: 'text', rows: 3, fieldset: 'contactInfo' }),
-
-    // SEO
     defineField({ name: 'seo', title: 'Search & Social Preview', type: 'seo', fieldset: 'seo' }),
   ],
-  preview: { prepare: () => ({ title: 'Contact Page', subtitle: 'Dynamic contact form & page content' }) },
+  preview: { prepare: () => ({ title: 'Contact Page', subtitle: 'Fixed design · editable content only' }) },
 })

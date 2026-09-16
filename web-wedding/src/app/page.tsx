@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, Quote, Heart, Check } from 'lucide-react';
+import { ArrowRight, Heart, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   getHomePage,
@@ -7,6 +7,8 @@ import {
   getAlbums,
   getServices,
 } from '@/lib/sanity-data';
+import { TestimonialsSection } from '@/components/testimonials-section';
+import { StatsSection } from '@/components/stats-section';
 
 const fallback = {
   heroEyebrow: 'Ottawa · Wedding Planner & Coordinator',
@@ -300,23 +302,11 @@ export default async function Home() {
       </section>
 
       {/* STATS */}
-      <section className="bg-secondary/50 py-20 md:py-16">
-        <div className="container-wide">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-6">
-            {stats.map((stat: any, i: number) => (
-              <div key={i} className="text-center">
-                <p className="font-serif text-4xl md:text-6xl text-accent mb-4">
-                  {stat.value}
-                </p>
-
-                <p className="text-xs md:text-sm uppercase tracking-wide text-muted-foreground font-light">
-                  {stat.label}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <StatsSection
+        stats={stats}
+        className="bg-secondary/50 py-20 md:py-16"
+        valueClassName="font-serif text-4xl md:text-6xl text-accent mb-4"
+      />
 
       {/* SERVICES */}
       <section className="py-28 md:py-40 bg-background">
@@ -540,45 +530,12 @@ export default async function Home() {
       </section>
 
       {/* TESTIMONIALS */}
-      <section className="py-28 md:py-40 bg-background">
-        <div className="container-wide">
-          <div className="text-center max-w-2xl mx-auto mb-20">
-            <p className="text-xs uppercase tracking-wide-lg text-accent mb-6">
-              {content.testimonialsEyebrow}
-            </p>
-
-            <h2 className="font-serif text-3xl md:text-5xl leading-tight mb-4 text-balance">
-              {content.testimonialsHeading}
-            </h2>
-
-            {content.testimonialsSubtext && (
-              <p className="text-muted-foreground text-sm font-light">
-                {content.testimonialsSubtext}
-              </p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
-            {testimonials.map((t: any, i: number) => (
-              <article key={i} className="flex flex-col">
-                <Quote className="w-8 h-8 text-accent/25 mb-6" />
-
-                <p className="text-foreground/80 leading-relaxed flex-1 italic font-light text-lg">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-
-                <div className="mt-8 pt-5 border-t border-border/50">
-                  <p className="font-serif text-lg">{t.author}</p>
-
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground mt-1 font-light">
-                    {t.weddingType}
-                  </p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      <TestimonialsSection
+        eyebrow={content.testimonialsEyebrow}
+        heading={content.testimonialsHeading}
+        subtext={content.testimonialsSubtext}
+        testimonials={testimonials}
+      />
 
       {/* CTA */}
       <section className="relative py-36 md:py-44 overflow-hidden">

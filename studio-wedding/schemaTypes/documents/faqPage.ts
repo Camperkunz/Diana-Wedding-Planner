@@ -13,10 +13,10 @@ export const faqPage = defineType({
   ],
   fields: [
     defineField({ name: 'heroEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'hero' }),
-    defineField({ name: 'heroHeadingLine1', title: 'Heading — First Part', type: 'string', fieldset: 'hero' }),
-    defineField({ name: 'heroHeadingScript', title: 'Heading — Script Word', type: 'string', fieldset: 'hero' }),
-    defineField({ name: 'heroImage', title: 'Background Photo', type: 'image', options: { hotspot: true }, fieldset: 'hero' }),
-    defineField({ name: 'heroImageAlt', title: 'Photo Alt Text', type: 'string', fieldset: 'hero' }),
+    defineField({ name: 'heroHeadingLine1', title: 'Heading — First Part', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
+    defineField({ name: 'heroHeadingScript', title: 'Heading — Script Word', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
+    defineField({ name: 'heroImage', title: 'Background Photo', type: 'image', options: { hotspot: true }, fieldset: 'hero', validation: (rule) => rule.required() }),
+    defineField({ name: 'heroImageAlt', title: 'Photo Alt Text', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
     defineField({
       name: 'items', title: 'FAQ Items', type: 'array', fieldset: 'questions', of: [{
         type: 'object', name: 'faqItem', fields: [
@@ -26,8 +26,8 @@ export const faqPage = defineType({
         ]
       }]
     }),
-    defineField({ name: 'contactHeading', title: 'Heading', type: 'string', fieldset: 'contact' }),
-    defineField({ name: 'contactDescription', title: 'Description', type: 'text', rows: 5, fieldset: 'contact' }),
+    defineField({ name: 'contactHeading', title: 'Heading', type: 'string', fieldset: 'contact', validation: (rule) => rule.required() }),
+    defineField({ name: 'contactDescription', title: 'Description', type: 'text', rows: 5, fieldset: 'contact', validation: (rule) => rule.required() }),
     defineField({ name: 'contactButtonLabel', title: 'Button Label', type: 'string', fieldset: 'contact' }),
     defineField({ name: 'contactButtonLink', title: 'Button Link', type: 'string', fieldset: 'contact', initialValue: '/contact' }),
     defineField({ name: 'seo', title: 'Search & Social Preview', type: 'seo', fieldset: 'seo' }),
