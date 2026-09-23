@@ -279,23 +279,27 @@ export default async function Home() {
             </Link>
           </div>
 
-          <div className="order-1 lg:order-2 grid grid-cols-2 gap-6">
-            <div className="aspect-[3/4] overflow-hidden rounded-sm shadow-md">
-              <img
-                src={content.aboutImage1}
-                alt={content.aboutImage1Alt}
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
-            </div>
+          <div className="order-1 lg:order-2">
+            <div className="relative w-3/4 mx-auto">
+              {/* Bigger image */}
+              <div className="overflow-hidden rounded-sm shadow-md">
+                <img
+                  src={content.aboutImage1}
+                  alt={content.aboutImage1Alt}
+                  className="aspect-[4/5] w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
 
-            <div className="aspect-[3/4] overflow-hidden rounded-sm shadow-md mt-12">
-              <img
-                src={content.aboutImage2}
-                alt={content.aboutImage2Alt}
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
+              <div className="absolute -bottom-10 -left-6 hidden sm:block w-[45%] overflow-hidden rounded-sm border-[8px] border-background lg:-left-12">
+                {/* Smaller image */}
+                <img
+                  src={content.aboutImage2}
+                  alt={content.aboutImage2Alt}
+                  className="aspect-[3/4] w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
             </div>
           </div>
         </div>
