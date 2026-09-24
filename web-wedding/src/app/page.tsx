@@ -452,11 +452,11 @@ export default async function Home() {
           <img
             src={content.ctaImage}
             alt={content.ctaImageAlt}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover blur-[2px] scale-105"
             loading="lazy"
           />
 
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-accent/20" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-accent/20" />
         </div>
 
         <div className="relative z-10 container-narrow text-center">

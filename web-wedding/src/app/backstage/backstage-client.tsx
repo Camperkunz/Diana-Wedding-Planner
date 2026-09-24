@@ -40,7 +40,7 @@ export default function BackstageClient({
     return (
         <>
             <section className="relative h-[50vh] min-h-[350px] w-full overflow-hidden">
-                <div className="absolute inset-0">
+                <div className="absolute inset-0 ">
                     <img
                         src={content.heroImage || '/placeholder.jpg'}
                         alt={content.heroImageAlt || 'Hero background'}
