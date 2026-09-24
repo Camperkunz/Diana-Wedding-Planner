@@ -49,8 +49,8 @@ export const homePage = defineType({
     defineField({ name: 'aboutParagraph2', title: 'Paragraph 2', type: 'text', rows: 5, fieldset: 'about' }),
     defineField({ name: 'aboutLinkLabel', title: 'Link Label', type: 'string', fieldset: 'about' }),
     defineField({ name: 'aboutLink', title: 'Link', type: 'string', fieldset: 'about', initialValue: '/about' }),
-    defineField({ name: 'aboutImage1', title: 'Photo 1', type: 'image', options: { hotspot: true }, fieldset: 'about', description: 'Portrait-oriented photo.', validation: (rule) => rule.required() }),
-    defineField({ name: 'aboutImage2', title: 'Photo 2', type: 'image', options: { hotspot: true }, fieldset: 'about', description: 'Portrait-oriented photo.', validation: (rule) => rule.required() }),
+    defineField({ name: 'aboutImage1', title: 'Photo 1', type: 'image', options: { hotspot: true }, fieldset: 'about', description: 'Main (bigger) photo.', validation: (rule) => rule.required() }),
+    defineField({ name: 'aboutImage2', title: 'Photo 2', type: 'image', options: { hotspot: true }, fieldset: 'about', description: 'Smaller photo.', validation: (rule) => rule.required() }),
     defineField({ name: 'aboutImage1Alt', title: 'Photo 1 Alt Text', type: 'string', fieldset: 'about', validation: (rule) => rule.required() }),
     defineField({ name: 'aboutImage2Alt', title: 'Photo 2 Alt Text', type: 'string', fieldset: 'about', validation: (rule) => rule.required() }),
 

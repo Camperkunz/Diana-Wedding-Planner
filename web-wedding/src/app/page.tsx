@@ -9,92 +9,9 @@ import {
 } from '@/lib/sanity-data';
 import { TestimonialsSection } from '@/components/testimonials-section';
 import { StatsSection } from '@/components/stats-section';
+import { FadeIn } from '@/components/fade-in';
 
-const fallback = {
-  heroEyebrow: 'Ottawa · Wedding Planner & Coordinator',
-  heroHeadingLine1: 'Your wedding,',
-  heroHeadingScript: 'personally',
-  heroHeadingLine2: 'planned.',
-  heroDescription:
-    "I'm Diana — an independent wedding planner in Ottawa. Not an agency, not a team. Just me, from first consultation to final toast.",
-  heroImage:
-    'https://images.pexels.com/photos/16743493/pexels-photo-16743493.jpeg?auto=compress&cs=tinysrgb&w=1920',
-  heroImageAlt:
-    'Elegant outdoor wedding ceremony with white draped canopy and floral arrangements',
-  heroPrimaryButtonLabel: 'Get in Touch',
-  heroPrimaryButtonLink: '/contact',
-  heroSecondaryButtonLabel: 'View Services',
-  heroSecondaryButtonLink: '/services',
-
-  aboutEyebrow: "Hi, I'm Diana",
-  aboutHeading: 'The planner who picks up the phone — every time.',
-  aboutParagraph1:
-    "I've been planning weddings in and around Ottawa for nearly a decade. Not because I stumbled into it — because I love the part where two people realize their day is actually happening, and it's exactly what they wanted.",
-  aboutParagraph2:
-    "I work with a limited number of couples each year so that every wedding gets my full attention. When you email, I reply. When you call, I answer. When the day comes, I'm the one standing in the back of the room making sure everything runs — not a coordinator I handed you off to six months ago.",
-  aboutLinkLabel: 'More about Diana',
-  aboutLink: '/about',
-
-  aboutImage1:
-    'https://images.pexels.com/photos/4968707/pexels-photo-4968707.jpeg?auto=compress&cs=tinysrgb&w=800',
-  aboutImage2:
-    'https://images.pexels.com/photos/9052841/pexels-photo-9052841.jpeg?auto=compress&cs=tinysrgb&w=800',
-  aboutImage1Alt: 'Diana writing in a planner at a marble table',
-  aboutImage2Alt:
-    'Diana smiling with planning notes, exuding professionalism',
-
-  stats: [
-    { value: '120+', label: 'Weddings Planned' },
-    { value: '9', label: 'Years of Experience' },
-    { value: '40+', label: 'Venue Partnerships' },
-    { value: '100%', label: 'Personally Involved' },
-  ],
-
-  servicesEyebrow: 'What I Do',
-  servicesHeading: 'Three ways we can work together',
-  servicesDescription:
-    'From full-service planning to day-of coordination — every option means you work with me, personally.',
-  servicesButtonLabel: 'View All Services',
-  servicesButtonLink: '/services',
-
-  quoteImage:
-    'https://images.pexels.com/photos/31217382/pexels-photo-31217382.jpeg?auto=compress&cs=tinysrgb&w=1920',
-  quoteImageAlt:
-    'Outdoor wedding ceremony with floral arch and white chairs',
-  quoteText:
-    "I don't believe in cookie-cutter weddings. Every couple I work with gets a plan built around their story — not a template I've used fifty times. That's the whole point of hiring one person instead of an agency.",
-  quoteAuthor: '— Diana',
-
-  portfolioEyebrow: 'Recent Weddings',
-  portfolioHeading: 'A few of my favourite days',
-  portfolioButtonLabel: 'See All Weddings',
-  portfolioButtonLink: '/portfolio',
-
-  approachEyebrow: 'My Approach',
-  approachHeading: 'Why working with me is different',
-  approachImage:
-    'https://images.pexels.com/photos/6953952/pexels-photo-6953952.jpeg?auto=compress&cs=tinysrgb&w=800',
-  approachImageAlt:
-    'Diana working at a table with a notebook, focused and thoughtful',
-
-  testimonialsEyebrow: 'From Couples',
-  testimonialsHeading: 'What they say after the last dance',
-  testimonialsSubtext: '',
-
-  ctaEyebrow: "Let's Begin",
-  ctaHeadingLine1: 'Your wedding deserves someone',
-  ctaHeadingLine2: 'who shows up —',
-  ctaHeadingScript: 'personally',
-  ctaDirectContactText: 'Or reach me directly at',
-  ctaDescription:
-    "If you're looking for a planner who will know your wedding inside and out by the time the doors open, let's talk. No pressure, no sales pitch — just a conversation about what you're dreaming up.",
-  ctaButtonLabel: 'Start a Conversation',
-  ctaButtonLink: '/contact',
-  ctaImage:
-    'https://images.pexels.com/photos/5824565/pexels-photo-5824565.jpeg?auto=compress&cs=tinysrgb&w=1920',
-  ctaImageAlt:
-    'Bride and groom sharing a kiss at their outdoor wedding ceremony',
-};
+const fallback = {};
 
 export async function generateMetadata() {
   const [home, settings] = await Promise.all([
@@ -136,11 +53,6 @@ export default async function Home() {
     getServices(),
   ]);
 
-  /*
-   * Sanity can return null for optional fields.
-   * We don't want null values from CMS to overwrite
-   * our fallback values.
-   */
   const content = {
     ...fallback,
     ...Object.fromEntries(
@@ -160,32 +72,13 @@ export default async function Home() {
 
   const steps = content.approachSteps?.length
     ? content.approachSteps
-    : [
-      {
-        number: '01',
-        title: 'I listen first.',
-        description:
-          'Your priorities, your people, your pace. Everything starts with understanding what matters to you.',
-      },
-      {
-        number: '02',
-        title: 'I build the plan.',
-        description:
-          'Every detail gets a home — vendors, timelines, logistics, and the little things that make the day yours.',
-      },
-      {
-        number: '03',
-        title: 'I stay with you.',
-        description:
-          'From our first conversation to the last dance, you work directly with me. No handoffs, no surprises.',
-      },
-    ];
+    : [];
 
   const testimonials = content.testimonials?.length
     ? content.testimonials
     : [];
 
-  const stats = content.stats?.length ? content.stats : fallback.stats;
+  const stats = content.stats?.length ? content.stats : [];
 
   return (
     <>
@@ -195,24 +88,18 @@ export default async function Home() {
           <img
             src={content.heroImage}
             alt={content.heroImageAlt}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover blur-[2px] scale-105"
           />
 
           <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-accent/30" />
         </div>
 
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
-          <p
-            className="text-white/80 text-xs md:text-sm uppercase tracking-wide-lg mb-6 fade-in"
-            style={{ animationDelay: '0.1s' }}
-          >
+          <p className="text-white/80 text-xs md:text-sm uppercase tracking-wide-lg mb-6">
             {content.heroEyebrow}
           </p>
 
-          <h1
-            className="font-serif text-white text-5xl md:text-7xl lg:text-8xl font-normal leading-[1.1] max-w-4xl text-balance fade-in-up"
-            style={{ animationDelay: '0.2s' }}
-          >
+          <h1 className="font-serif text-white text-5xl md:text-7xl lg:text-8xl font-normal leading-[1.1] max-w-4xl text-balance">
             {content.heroHeadingLine1}
             <br />
             <span className="font-script font-normal">
@@ -221,17 +108,11 @@ export default async function Home() {
             {content.heroHeadingLine2}
           </h1>
 
-          <p
-            className="text-white text-base md:text-lg font-light mt-8 max-w-2xl leading-relaxed fade-in-up"
-            style={{ animationDelay: '0.4s' }}
-          >
+          <p className="text-white text-base md:text-lg font-light mt-8 max-w-2xl leading-relaxed">
             {content.heroDescription}
           </p>
 
-          <div
-            className="flex flex-col sm:flex-row gap-4 mt-12 fade-in-up"
-            style={{ animationDelay: '0.6s' }}
-          >
+          <div className="flex flex-col sm:flex-row gap-4 mt-12">
             <Link
               href={content.heroPrimaryButtonLink || '/contact'}
               className="bg-accent text-accent-foreground px-12 py-3.5 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-lg hover:shadow-xl"
@@ -256,32 +137,33 @@ export default async function Home() {
       {/* ABOUT */}
       <section className="py-28 md:py-40 bg-background">
         <div className="container-wide grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-          <div className="order-2 lg:order-1">
-            <p className="text-xs uppercase tracking-wide-lg text-accent mb-6">
-              {content.aboutEyebrow}
-            </p>
+          <FadeIn className="order-2 lg:order-1">
+            <div>
+              <p className="text-xs uppercase tracking-wide-lg text-accent mb-6">
+                {content.aboutEyebrow}
+              </p>
 
-            <h2 className="font-serif text-3xl md:text-5xl leading-tight mb-8 text-balance">
-              {content.aboutHeading}
-            </h2>
+              <h2 className="font-serif text-3xl md:text-5xl leading-tight mb-8 text-balance">
+                {content.aboutHeading}
+              </h2>
 
-            <div className="space-y-6 text-muted-foreground text-base md:text-lg font-light leading-relaxed">
-              <p>{content.aboutParagraph1}</p>
-              <p>{content.aboutParagraph2}</p>
+              <div className="space-y-6 text-muted-foreground text-base md:text-lg font-light leading-relaxed">
+                <p>{content.aboutParagraph1}</p>
+                <p>{content.aboutParagraph2}</p>
+              </div>
+
+              <Link
+                href={content.aboutLink || '/about'}
+                className="inline-flex items-center gap-2 mt-10 text-sm uppercase tracking-wide text-accent hover:gap-4 transition-all duration-300"
+              >
+                {content.aboutLinkLabel || 'More about Diana'}
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
+          </FadeIn>
 
-            <Link
-              href={content.aboutLink || '/about'}
-              className="inline-flex items-center gap-2 mt-10 text-sm uppercase tracking-wide text-accent hover:gap-4 transition-all duration-300"
-            >
-              {content.aboutLinkLabel || 'More about Diana'}
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          <div className="order-1 lg:order-2">
+          <FadeIn delay={150} className="order-1 lg:order-2">
             <div className="relative w-3/4 mx-auto">
-              {/* Bigger image */}
               <div className="overflow-hidden rounded-sm shadow-md">
                 <img
                   src={content.aboutImage1}
@@ -292,7 +174,6 @@ export default async function Home() {
               </div>
 
               <div className="absolute -bottom-10 -left-6 hidden sm:block w-[45%] overflow-hidden rounded-sm border-[8px] border-background lg:-left-12">
-                {/* Smaller image */}
                 <img
                   src={content.aboutImage2}
                   alt={content.aboutImage2Alt}
@@ -301,88 +182,93 @@ export default async function Home() {
                 />
               </div>
             </div>
-          </div>
+          </FadeIn>
         </div>
       </section>
 
       {/* STATS */}
-      <StatsSection
-        stats={stats}
-        className="bg-secondary/50 py-20 md:py-16"
-        valueClassName="font-serif text-4xl md:text-6xl text-accent mb-4"
-      />
+      <FadeIn>
+        <StatsSection
+          stats={stats}
+          className="bg-secondary/50 py-20 md:py-16"
+          valueClassName="font-serif text-4xl md:text-6xl text-accent mb-4"
+        />
+      </FadeIn>
 
       {/* SERVICES */}
       <section className="py-28 md:py-40 bg-background">
         <div className="container-wide">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-6 lg:items-center">
-            <div>
-              <p className="text-xs uppercase tracking-wide-lg text-accent mb-6">
-                {content.servicesEyebrow}
-              </p>
+          <FadeIn>
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-6 lg:items-center">
+              <div>
+                <p className="text-xs uppercase tracking-wide-lg text-accent mb-6">
+                  {content.servicesEyebrow}
+                </p>
 
-              <h2 className="font-serif text-3xl md:text-5xl leading-tight mb-4 text-balance">
-                {content.servicesHeading}
-              </h2>
+                <h2 className="font-serif text-3xl md:text-5xl leading-tight mb-4 text-balance">
+                  {content.servicesHeading}
+                </h2>
 
-              <p className="text-muted-foreground text-base md:text-lg font-light leading-relaxed max-w-xl">
-                {content.servicesDescription}
-              </p>
+                <p className="text-muted-foreground text-base md:text-lg font-light leading-relaxed max-w-xl">
+                  {content.servicesDescription}
+                </p>
+              </div>
+
+              <Link
+                href={content.servicesButtonLink || '/services'}
+                className="inline-flex items-center gap-2 border border-accent text-accent px-8 py-3 text-sm uppercase tracking-wide hover:bg-accent hover:text-accent-foreground transition-all duration-300 shrink-0"
+              >
+                {content.servicesButtonLabel || 'View All Services'}
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
-
-            <Link
-              href={content.servicesButtonLink || '/services'}
-              className="inline-flex items-center gap-2 border border-accent text-accent px-8 py-3 text-sm uppercase tracking-wide hover:bg-accent hover:text-accent-foreground transition-all duration-300 shrink-0"
-            >
-              {content.servicesButtonLabel || 'View All Services'}
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
+          </FadeIn>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-12">
             {services.map((service: any, i: number) => (
-              <Link
-                key={service._id || i}
-                href="/services"
-                className="group flex flex-col"
-              >
-                <div className="aspect-[4/3] overflow-hidden rounded-sm mb-4 relative">
-                  <img
-                    src={service.image}
-                    alt={service.imageAlt || service.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                    loading="lazy"
-                  />
-                </div>
+              <FadeIn key={service._id || i} delay={i * 150}>
+                <Link
+                  href="/services"
+                  className="group flex flex-col h-full"
+                >
+                  <div className="aspect-[4/3] overflow-hidden rounded-sm mb-4 relative">
+                    <img
+                      src={service.image}
+                      alt={service.imageAlt || service.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      loading="lazy"
+                    />
+                  </div>
 
-                <span className="font-serif text-2xl md:text-3xl text-accent/30 leading-none shrink-0">
-                  0{i + 1}
-                </span>
+                  <span className="font-serif text-2xl md:text-3xl text-accent/30 leading-none shrink-0">
+                    0{i + 1}
+                  </span>
 
-                <h3 className="font-serif text-2xl md:text-3xl lg:text-4xl mb-4 group-hover:text-accent transition-colors duration-300">
-                  {service.name}
-                </h3>
+                  <h3 className="font-serif text-2xl md:text-3xl lg:text-4xl mb-4 group-hover:text-accent transition-colors duration-300">
+                    {service.name}
+                  </h3>
 
-                <p className="text-muted-foreground text-md font-light leading-relaxed mb-5">
-                  {service.shortDescription}
-                </p>
+                  <p className="text-muted-foreground text-md font-light leading-relaxed mb-5">
+                    {service.shortDescription}
+                  </p>
 
-                <div className="w-full h-px bg-border/60 mb-5" />
+                  <div className="w-full h-px bg-border/60 mb-5" />
 
-                <ul className="space-y-2.5 mb-6">
-                  {(service.includes || [])
-                    .slice(0, 4)
-                    .map((item: string, j: number) => (
-                      <li
-                        key={j}
-                        className="flex items-start gap-3 text-sm text-foreground/80 font-light"
-                      >
-                        <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                        {item}
-                      </li>
-                    ))}
-                </ul>
-              </Link>
+                  <ul className="space-y-2.5 mb-6">
+                    {(service.includes || [])
+                      .slice(0, 4)
+                      .map((item: string, j: number) => (
+                        <li
+                          key={j}
+                          className="flex items-start gap-3 text-sm text-foreground/80 font-light"
+                        >
+                          <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                          {item}
+                        </li>
+                      ))}
+                  </ul>
+                </Link>
+              </FadeIn>
             ))}
           </div>
         </div>
@@ -402,76 +288,89 @@ export default async function Home() {
         </div>
 
         <div className="relative z-10 max-w-2xl mx-auto px-6 text-center">
-          <Heart className="w-8 h-8 text-white/50 mx-auto mb-8" />
+          <FadeIn>
+            <Heart className="w-8 h-8 text-white/50 mx-auto mb-8" />
 
-          <blockquote className="font-serif text-2xl md:text-3xl leading-relaxed text-balance italic text-white/95 font-normal">
-            &ldquo;{content.quoteText}&rdquo;
-          </blockquote>
+            <blockquote className="font-serif text-2xl md:text-3xl leading-relaxed text-balance italic text-white/95 font-normal">
+              &ldquo;{content.quoteText}&rdquo;
+            </blockquote>
 
-          <p className="font-script text-3xl text-white/90 mt-8">
-            {content.quoteAuthor}
-          </p>
+            <p className="font-script text-3xl text-white/90 mt-8">
+              {content.quoteAuthor}
+            </p>
+          </FadeIn>
         </div>
       </section>
 
       {/* PORTFOLIO */}
       <section className="py-28 md:py-40 bg-background">
         <div className="container-wide">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-wide-lg text-accent mb-6">
-                {content.portfolioEyebrow}
-              </p>
+          <FadeIn>
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-wide-lg text-accent mb-6">
+                  {content.portfolioEyebrow}
+                </p>
 
-              <h2 className="font-serif text-3xl md:text-5xl leading-tight text-balance">
-                {content.portfolioHeading}
-              </h2>
+                <h2 className="font-serif text-3xl md:text-5xl leading-tight text-balance">
+                  {content.portfolioHeading}
+                </h2>
+              </div>
+
+              <Link
+                href={content.portfolioButtonLink || '/portfolio'}
+                className="inline-flex items-center gap-2 text-sm uppercase tracking-wide text-accent hover:gap-4 transition-all duration-300"
+              >
+                {content.portfolioButtonLabel || 'See All Weddings'}
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
-
-            <Link
-              href={content.portfolioButtonLink || '/portfolio'}
-              className="inline-flex items-center gap-2 text-sm uppercase tracking-wide text-accent hover:gap-4 transition-all duration-300"
-            >
-              {content.portfolioButtonLabel || 'See All Weddings'}
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
+          </FadeIn>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
             {albums.map((album: any, i: number) => (
-              <Link
+              <FadeIn
                 key={album._id || i}
-                href={
-                  album.slug
-                    ? `/portfolio/${album.slug}`
-                    : '/portfolio'
-                }
+                delay={i * 100}
                 className={cn(
-                  'group relative overflow-hidden rounded-sm hover:shadow-xl transition-all duration-500',
                   i === 0
-                    ? 'sm:col-span-2 lg:col-span-2 aspect-[16/10]'
-                    : 'aspect-[16/10] sm:aspect-[4/5]'
+                    ? 'sm:col-span-2 lg:col-span-2'
+                    : 'sm:col-span-1'
                 )}
               >
-                <img
-                  src={album.coverImage}
-                  alt={album.coverImageAlt || album.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  loading="lazy"
-                />
+                <Link
+                  href={
+                    album.slug
+                      ? `/portfolio/${album.slug}`
+                      : '/portfolio'
+                  }
+                  className={cn(
+                    'group relative overflow-hidden rounded-sm hover:shadow-xl transition-all duration-500 block w-full',
+                    i === 0
+                      ? 'aspect-[16/10]'
+                      : 'aspect-[16/10] sm:aspect-[4/5]'
+                  )}
+                >
+                  <img
+                    src={album.coverImage}
+                    alt={album.coverImageAlt || album.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    loading="lazy"
+                  />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
-                <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-7">
-                  <p className="text-white/70 text-xs uppercase tracking-wide mb-1.5">
-                    {album.category}
-                  </p>
+                  <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-7">
+                    <p className="text-white/70 text-xs uppercase tracking-wide mb-1.5">
+                      {album.category}
+                    </p>
 
-                  <h3 className="font-serif text-white text-xl lg:text-2xl">
-                    {album.title}
-                  </h3>
-                </div>
-              </Link>
+                    <h3 className="font-serif text-white text-xl lg:text-2xl">
+                      {album.title}
+                    </h3>
+                  </div>
+                </Link>
+              </FadeIn>
             ))}
           </div>
         </div>
@@ -482,19 +381,21 @@ export default async function Home() {
         <div className="container-wide">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
             <div className="lg:col-span-2">
-              <div className="mb-16">
-                <p className="text-xs uppercase tracking-wide-lg text-accent mb-6">
-                  {content.approachEyebrow}
-                </p>
+              <FadeIn>
+                <div className="mb-16">
+                  <p className="text-xs uppercase tracking-wide-lg text-accent mb-6">
+                    {content.approachEyebrow}
+                  </p>
 
-                <h2 className="font-serif text-3xl md:text-5xl leading-tight text-balance">
-                  {content.approachHeading}
-                </h2>
-              </div>
+                  <h2 className="font-serif text-3xl md:text-5xl leading-tight text-balance">
+                    {content.approachHeading}
+                  </h2>
+                </div>
+              </FadeIn>
 
               <div>
                 {steps.map((step: any, i: number) => (
-                  <div key={i}>
+                  <FadeIn key={i} delay={i * 100}>
                     {i > 0 && (
                       <div className="w-full h-px bg-border/60 my-10" />
                     )}
@@ -514,32 +415,36 @@ export default async function Home() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </FadeIn>
                 ))}
               </div>
             </div>
 
             <div className="hidden lg:block">
-              <div className="sticky top-28 aspect-[3/4] overflow-hidden rounded-sm shadow-md">
-                <img
-                  src={content.approachImage}
-                  alt={content.approachImageAlt}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              </div>
+              <FadeIn delay={200} className="sticky top-28">
+                <div className="aspect-[3/4] overflow-hidden rounded-sm shadow-md">
+                  <img
+                    src={content.approachImage}
+                    alt={content.approachImageAlt}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              </FadeIn>
             </div>
           </div>
         </div>
       </section>
 
       {/* TESTIMONIALS */}
-      <TestimonialsSection
-        eyebrow={content.testimonialsEyebrow}
-        heading={content.testimonialsHeading}
-        subtext={content.testimonialsSubtext}
-        testimonials={testimonials}
-      />
+      <FadeIn>
+        <TestimonialsSection
+          eyebrow={content.testimonialsEyebrow}
+          heading={content.testimonialsHeading}
+          subtext={content.testimonialsSubtext}
+          testimonials={testimonials}
+        />
+      </FadeIn>
 
       {/* CTA */}
       <section className="relative py-36 md:py-44 overflow-hidden">
@@ -555,43 +460,45 @@ export default async function Home() {
         </div>
 
         <div className="relative z-10 container-narrow text-center">
-          <p className="text-white/70 text-xs uppercase tracking-wide-lg mb-6">
-            {content.ctaEyebrow}
-          </p>
+          <FadeIn>
+            <p className="text-white/70 text-xs uppercase tracking-wide-lg mb-6">
+              {content.ctaEyebrow}
+            </p>
 
-          <h2 className="font-serif text-white text-3xl md:text-5xl lg:text-6xl font-normal leading-tight mb-8 text-balance">
-            {content.ctaHeadingLine1}
-            <br />
-            {content.ctaHeadingLine2}{' '}
-            <span className="font-script font-normal">
-              {content.ctaHeadingScript}
-            </span>
-            .
-          </h2>
+            <h2 className="font-serif text-white text-3xl md:text-5xl lg:text-6xl font-normal leading-tight mb-8 text-balance">
+              {content.ctaHeadingLine1}
+              <br />
+              {content.ctaHeadingLine2}{' '}
+              <span className="font-script font-normal">
+                {content.ctaHeadingScript}
+              </span>
+              .
+            </h2>
 
-          <p className="text-white/80 text-base md:text-lg font-light max-w-2xl mx-auto mb-12 leading-relaxed">
-            {content.ctaDescription}
-          </p>
+            <p className="text-white/80 text-base md:text-lg font-light max-w-2xl mx-auto mb-12 leading-relaxed">
+              {content.ctaDescription}
+            </p>
 
-          <Link
-            href={content.ctaButtonLink || '/contact'}
-            className="inline-flex items-center gap-3 bg-accent text-accent-foreground px-12 py-4 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-xl hover:shadow-2xl"
-          >
-            {content.ctaButtonLabel || 'Start a Conversation'}
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+            <Link
+              href={content.ctaButtonLink || '/contact'}
+              className="inline-flex items-center gap-3 bg-accent text-accent-foreground px-12 py-4 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-xl hover:shadow-2xl"
+            >
+              {content.ctaButtonLabel || 'Start a Conversation'}
+              <ArrowRight className="w-4 h-4" />
+            </Link>
 
-          <p className="text-white/50 text-sm mt-8 font-light">
-            {content.ctaDirectContactText}{' '}
-            {settings?.email && (
-              <a
-                href={`mailto:${settings.email}`}
-                className="text-white/80 hover:text-accent transition-colors"
-              >
-                {settings.email}
-              </a>
-            )}
-          </p>
+            <p className="text-white/50 text-sm mt-8 font-light">
+              {content.ctaDirectContactText}{' '}
+              {settings?.email && (
+                <a
+                  href={`mailto:${settings.email}`}
+                  className="text-white/80 hover:text-accent transition-colors"
+                >
+                  {settings.email}
+                </a>
+              )}
+            </p>
+          </FadeIn>
         </div>
       </section>
     </>
