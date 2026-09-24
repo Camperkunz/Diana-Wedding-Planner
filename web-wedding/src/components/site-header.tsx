@@ -49,7 +49,7 @@ function getSocialIcon(platform?: string) {
 
 export function SiteHeader({ settings, layout }: Props) {
   const pathname = usePathname();
-  const [scrolled, setScrolled] = useState(false);
+  const [opaque, setOpaque] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const allNavLinks = layout?.navLinks?.length ? layout.navLinks.map((item) => ({ href: item.link, label: item.label })) : fallbackLinks;
   const contactLink = allNavLinks.find((item) => item.href === '/contact' || item.label.toLowerCase() === 'contact') || { href: '/contact', label: 'Contact' };
@@ -57,13 +57,16 @@ export function SiteHeader({ settings, layout }: Props) {
   const logo = layout?.headerLogo || settings?.logo;
   const logoAlt = layout?.headerLogoAlt || settings?.logoAlt || `${settings?.name || 'Site'} logo`;
 
-  const opaque = scrolled || !hasHero(pathname || '/');
-
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener('scroll', onScroll);
+    const updateHeader = () => {
+      const path = window.location.pathname;
+      setOpaque(window.scrollY > 20 || !hasHero(path));
+    };
+
+    updateHeader();
+    window.addEventListener('scroll', updateHeader, { passive: true });
+
+    return () => window.removeEventListener('scroll', updateHeader);
   }, []);
 
   useEffect(() => {
@@ -176,7 +179,7 @@ export function SiteHeader({ settings, layout }: Props) {
         <button
           className={cn(
             'lg:hidden p-2 -mr-2 transition-colors duration-300',
-            scrolled ? 'text-foreground' : 'text-white'
+            opaque ? 'text-foreground' : 'text-white'
           )}
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
