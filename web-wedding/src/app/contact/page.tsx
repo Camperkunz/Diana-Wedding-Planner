@@ -1,5 +1,12 @@
 import ContactClient from './contact-client';
-import { getSiteSettings, getSiteLayout, getContactPage, sanityImage, buildSeoMetadata } from '@/lib/sanity-data';
+import {
+    getSiteSettings,
+    getSiteLayout,
+    getContactPage,
+    getServices,
+    sanityImage,
+    buildSeoMetadata
+} from '@/lib/sanity-data';
 
 export async function generateMetadata() {
     const page = await getContactPage();
@@ -7,10 +14,11 @@ export async function generateMetadata() {
 }
 
 export default async function ContactPage() {
-    const [page, settings, layout] = await Promise.all([
+    const [page, settings, layout, services] = await Promise.all([
         getContactPage(),
         getSiteSettings(),
         getSiteLayout(),
+        getServices(),
     ]);
 
     const targetEmail = page?.recipientEmail || settings?.email || layout?.footerEmail;
@@ -18,6 +26,7 @@ export default async function ContactPage() {
     return (
         <ContactClient
             recipientEmail={targetEmail}
+            services={services}
             settings={{
                 email: settings?.email || layout?.footerEmail,
                 phone: settings?.phone || layout?.footerPhone,

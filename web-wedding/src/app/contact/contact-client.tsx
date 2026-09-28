@@ -7,7 +7,7 @@ import { sendEmailAction } from '@/app/actions/sendEmail';
 
 interface ServiceItem {
   _id: string;
-  title: string;
+  name: string;
 }
 
 interface CustomField {
@@ -84,34 +84,34 @@ export default function ContactClient({ recipientEmail, services, settings, cont
   return (
     <>
       {/* Hero */}
-      <section className="relative h-[50vh] min-h-[350px] w-full overflow-hidden">
+      <section className="relative h-[10vh] md:h-[20vh] min-h-[300px] md:min-h-[350px] max-h-[450px] w-full overflow-hidden">
         <div className="absolute inset-0">
           {content.heroImage && (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={content.heroImage}
               alt={content.heroImageAlt || 'Hero Image'}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover blur-[2px] scale-105"
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-accent/10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-accent/30" />
         </div>
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6 pt-20">
-          <p className="text-white/80 text-xs md:text-sm uppercase tracking-wide-lg mb-6">
+          <p className="text-white/80 text-xs md:text-sm uppercase tracking-wide-lg mb-2">
             {content.heroEyebrow}
           </p>
-          <h1 className="font-serif text-white text-4xl md:text-6xl lg:text-7xl font-normal leading-tight text-balance">
+          <h1 className="font-serif text-white text-5xl md:text-6xl lg:text-7xl font-normal leading-tight text-balance">
             {content.heroHeadingLine1} <span className="font-script font-normal">{content.heroHeadingScript}</span>
           </h1>
         </div>
       </section>
 
       {/* Contact Section */}
-      <section className="py-28 md:py-36 bg-background">
+      <section className="py-16 md:py-28 bg-background">
         <div className="container-wide">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-16 lg:gap-20">
-            {/* Form Column */}
-            <div className="lg:col-span-3">
+            {/* Form Column - Displays second on mobile, first on desktop */}
+            <div className="order-2 lg:order-1 lg:col-span-3">
               <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-6 text-balance">
                 {content.formHeading}
               </h2>
@@ -162,13 +162,13 @@ export default function ContactClient({ recipientEmail, services, settings, cont
                                 required={field.required}
                                 value={formData[field.label] || ''}
                                 onChange={(e) => handleInputChange(field.label, e.target.value)}
-                                className="w-full appearance-none rounded-sm border border-input bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all pr-10"
+                                className="w-full px-4 py-3 rounded-sm border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all appearance-none"
                               >
                                 <option value="" disabled>
                                   {field.placeholder || 'Select an option...'}
                                 </option>
 
-                                {/* Рендерим опции, заданные вручную */}
+                                {/* Manual rendering */}
                                 {field.fieldType === 'select' &&
                                   field.options?.map((option, optionIdx) => (
                                     <option key={optionIdx} value={option}>
@@ -176,16 +176,16 @@ export default function ContactClient({ recipientEmail, services, settings, cont
                                     </option>
                                   ))}
 
-                                {/* Рендерим опции из загруженного массива services */}
+                                {/* Services Reference */}
                                 {field.fieldType === 'servicesReference' &&
                                   services?.map((service) => (
-                                    <option key={service._id} value={service.title}>
-                                      {service.title}
+                                    <option key={service._id} value={service.name}>
+                                      {service.name}
                                     </option>
                                   ))}
                               </select>
 
-                              {/* Кастомный стрелочный индикатор */}
+                              {/* Custom dropdown arrow */}
                               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground">
                                 <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
                                   <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
@@ -242,22 +242,23 @@ export default function ContactClient({ recipientEmail, services, settings, cont
               )}
             </div>
 
-            {/* Contact Info Column */}
-            <div className="lg:col-span-2">
-              <div className="bg-secondary/40 rounded-sm p-8 border border-border/50 sticky top-28">
-                <h3 className="font-serif text-2xl mb-8">{content.contactInfoHeading}</h3>
-                <ul className="space-y-6">
+            {/* Contact Info Column - Displays first on mobile, second on desktop */}
+            <div className="order-1 lg:order-2 lg:col-span-2 relative">
+              <div className="bg-card rounded-3xl p-8 md:p-10 border border-border/40 shadow-xl sticky top-28">
+                <h3 className="font-serif text-3xl mb-8 text-foreground">{content.contactInfoHeading}</h3>
+
+                <ul className="space-y-2">
                   {settings.email && (
                     <li>
-                      <a href={`mailto:${settings.email}`} className="flex items-start gap-4 group">
-                        <div className="w-10 h-10 bg-accent/10 flex items-center justify-center shrink-0 group-hover:bg-accent/20 transition-colors">
-                          <Mail className="w-5 h-5 text-accent" />
+                      <a href={`mailto:${settings.email}`} className="flex items-center gap-5 p-3 -mx-3 rounded-2xl hover:bg-muted/50 transition-colors group">
+                        <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0 group-hover:bg-accent group-hover:text-accent-foreground transition-all duration-300">
+                          <Mail className="w-5 h-5 text-accent group-hover:text-current" />
                         </div>
                         <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1 font-light">
+                          <p className="text-sm uppercase tracking-wide text-muted-foreground mb-1 font-light">
                             {content.contactEmailLabel}
                           </p>
-                          <p className="text-foreground group-hover:text-accent transition-colors font-light">
+                          <p className="text-base text-foreground font-medium group-hover:text-accent transition-colors">
                             {settings.email}
                           </p>
                         </div>
@@ -265,33 +266,28 @@ export default function ContactClient({ recipientEmail, services, settings, cont
                     </li>
                   )}
                   {settings.phone && (
-                    <li className="flex items-start gap-4">
-                      <div className="w-10 h-10 bg-accent/10 flex items-center justify-center shrink-0">
+                    <li className="flex items-center gap-5 p-3 -mx-3 rounded-2xl">
+                      <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
                         <Phone className="w-5 h-5 text-accent" />
                       </div>
                       <div>
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1 font-light">
+                        <p className="text-sm uppercase tracking-wide text-muted-foreground mb-1 font-light">
                           {content.contactPhoneLabel}
                         </p>
-                        <p className="text-foreground font-light">{settings.phone}</p>
+                        <p className="text-base text-foreground font-medium">{settings.phone}</p>
                       </div>
                     </li>
                   )}
                   {settings.location && (
-                    <li className="flex items-start gap-4">
-                      <div className="w-10 h-10 bg-accent/10 flex items-center justify-center shrink-0">
+                    <li className="flex items-center gap-5 p-3 -mx-3 rounded-2xl">
+                      <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
                         <MapPin className="w-5 h-5 text-accent" />
                       </div>
                       <div>
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1 font-light">
+                        <p className="text-sm uppercase tracking-wide text-muted-foreground mb-1 font-light">
                           {content.contactLocationLabel}
                         </p>
-                        <p className="text-foreground font-light">{settings.location}</p>
-                        {settings.serviceArea && (
-                          <p className="text-sm text-muted-foreground mt-1 font-light">
-                            {settings.serviceArea}
-                          </p>
-                        )}
+                        <p className="text-base text-foreground font-medium">{settings.location}</p>
                       </div>
                     </li>
                   )}
@@ -300,16 +296,16 @@ export default function ContactClient({ recipientEmail, services, settings, cont
                       href={settings.socialLinks.find((item) => item.platform === 'instagram')?.url || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-start gap-4 group"
+                      className="flex items-center gap-5 p-3 -mx-3 rounded-2xl hover:bg-muted/50 transition-colors group"
                     >
-                      <div className="w-10 h-10 bg-accent/10 flex items-center justify-center shrink-0 group-hover:bg-accent/20 transition-colors">
-                        <Instagram className="w-5 h-5 text-accent" />
+                      <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0 group-hover:bg-accent group-hover:text-accent-foreground transition-all duration-300">
+                        <Instagram className="w-5 h-5 text-accent group-hover:text-current" />
                       </div>
                       <div>
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1 font-light">
+                        <p className="text-sm uppercase tracking-wide text-muted-foreground mb-1 font-light">
                           {content.instagramLabel}
                         </p>
-                        <p className="text-foreground group-hover:text-accent transition-colors font-light">
+                        <p className="text-base text-foreground font-medium group-hover:text-accent transition-colors">
                           {content.instagramHandle}
                         </p>
                       </div>
@@ -317,7 +313,7 @@ export default function ContactClient({ recipientEmail, services, settings, cont
                   </li>
                 </ul>
 
-                <div className="mt-10 pt-6 border-t border-border/50">
+                <div className="mt-6 pt-4 border-t border-border/60">
                   <p className="text-sm text-muted-foreground font-light leading-relaxed">
                     {content.directReplyText}
                   </p>
