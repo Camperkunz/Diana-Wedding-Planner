@@ -37,7 +37,7 @@ export default async function PortfolioPage() {
             />
 
             {/* Portfolio Grid Section */}
-            <section className="py-28 md:py-40 bg-background">
+            <section className="py-16 md:py-20 bg-background">
                 <div className="container-wide">
                     <p className="text-muted-foreground text-base md:text-lg font-light leading-relaxed max-w-2xl mb-16">
                         {c.introText}

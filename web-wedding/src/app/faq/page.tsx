@@ -39,7 +39,7 @@ export default async function FaqPage() {
             />
 
             {/* FAQ Accordion Section */}
-            <section className="py-28 md:py-36 bg-background">
+            <section className="py-16 md:py-20 bg-background">
                 <div className="container-narrow">
                     {categories.map((category: any) => (
                         <div key={category} className="mb-14">

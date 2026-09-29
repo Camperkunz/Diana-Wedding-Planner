@@ -92,7 +92,7 @@ export default function ContactClient({ recipientEmail, services, settings, c }:
       />
 
       {/* Contact Section */}
-      <section className="py-16 md:py-28 bg-background">
+      <section className="py-16 md:py-20 bg-background">
         <div className="container-wide">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-16 lg:gap-20">
             {/* Form Column - Displays second on mobile, first on desktop */}

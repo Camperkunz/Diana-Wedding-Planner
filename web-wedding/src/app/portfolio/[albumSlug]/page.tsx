@@ -63,7 +63,7 @@ export default async function AlbumPage({
       </HeroSection>
 
       {/* Story */}
-      <section className="py-24 md:py-32 bg-background">
+      <section className="py-16 md:py-20 bg-background">
         <div className="container-narrow">
           <div className="max-w-3xl mx-auto">
             <p className="text-xs uppercase tracking-wide-lg text-accent mb-6">
@@ -90,7 +90,7 @@ export default async function AlbumPage({
                 <img
                   src={photo.src}
                   alt={photo.alt}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  className="w-full h-full object-cover"
                   loading="lazy"
                 />
                 {photo.caption && (

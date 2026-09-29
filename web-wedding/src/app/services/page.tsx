@@ -32,7 +32,7 @@ export default async function ServicesPage() {
       />
 
       {/* Overview Section */}
-      <section className="py-28 md:py-40 bg-background">
+      <section className="py-16 md:py-20 bg-background">
         <div className="container-narrow text-center">
           <p className="text-xs uppercase tracking-wide-lg text-accent mb-6">
             {c.overviewEyebrow}

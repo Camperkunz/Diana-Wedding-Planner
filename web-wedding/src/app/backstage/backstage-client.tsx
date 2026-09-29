@@ -47,7 +47,7 @@ export default function BackstageClient({
                 imageAlt={content.heroImageAlt}
             />
 
-            <section className="py-24 md:py-32 bg-background">
+            <section className="py-16 md:py-20 bg-background">
                 <div className="container-narrow text-center">
                     <p className="text-muted-foreground text-base md:text-lg font-light leading-relaxed max-w-2xl mx-auto">
                         {content.introText || content.intro}
@@ -68,7 +68,7 @@ export default function BackstageClient({
                                     <img
                                         src={video.thumbnail || '/placeholder-thumb.jpg'}
                                         alt={video.thumbnailAlt || video.title}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                        className="w-full h-full object-cover"
                                         loading="lazy"
                                     />
                                     <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">

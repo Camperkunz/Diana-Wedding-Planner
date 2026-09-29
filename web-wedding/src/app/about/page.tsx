@@ -43,7 +43,7 @@ export default async function AboutPage() {
       />
 
       {/* Story Section */}
-      <section className="py-28 md:py-40 bg-background">
+      <section className="py-16 md:py-20 bg-background">
         <div className="container-narrow">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 items-start">
             {/* Story Text */}
