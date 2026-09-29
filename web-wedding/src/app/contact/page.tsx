@@ -4,9 +4,9 @@ import {
     getSiteLayout,
     getContactPage,
     getServices,
-    sanityImage,
     buildSeoMetadata
 } from '@/lib/sanity-data';
+import { sanityImage } from '@/lib/sanity-image';
 
 export async function generateMetadata() {
     const page = await getContactPage();
@@ -34,7 +34,7 @@ export default async function ContactPage() {
                 serviceArea: settings?.serviceArea || layout?.footerAddress,
                 socialLinks: layout?.footerSocialLinks || settings?.socialLinks || [],
             }}
-            content={{
+            c={{
                 ...page,
                 heroImage: sanityImage(page?.heroImage),
             }}

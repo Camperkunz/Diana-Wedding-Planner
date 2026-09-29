@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { withAutoplay } from '@/lib/video-embed';
 import { ArrowRight, Play, X } from 'lucide-react';
+import HeroSection from '@/components/ui/HeroSection';
 
 export type Video = {
     id?: string;
@@ -39,31 +40,14 @@ export default function BackstageClient({
 
     return (
         <>
-            <section className="relative h-[50vh] min-h-[350px] w-full overflow-hidden">
-                <div className="absolute inset-0 ">
-                    <img
-                        src={content.heroImage || '/placeholder.jpg'}
-                        alt={content.heroImageAlt || 'Hero background'}
-                        className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-accent/10" />
-                </div>
-                <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6 pt-20">
-                    {content.heroEyebrow && (
-                        <p className="text-white/80 text-xs md:text-sm uppercase tracking-wide-lg mb-6">
-                            {content.heroEyebrow}
-                        </p>
-                    )}
-                    <h1 className="font-serif text-white text-4xl md:text-6xl lg:text-7xl font-normal leading-tight text-balance">
-                        {content.heroHeadingLine1 || content.title}{' '}
-                        {content.heroHeadingScript && (
-                            <span className="font-script font-normal">
-                                {content.heroHeadingScript}
-                            </span>
-                        )}
-                    </h1>
-                </div>
-            </section>
+            {/* Hero Section */}
+            <HeroSection
+                eyebrow={content.heroEyebrow}
+                headingLine1={content.heroHeadingLine1 || content.title}
+                headingScript={content.heroHeadingScript}
+                image={content.heroImage}
+                imageAlt={content.heroImageAlt}
+            />
 
             <section className="py-24 md:py-32 bg-background">
                 <div className="container-narrow text-center">

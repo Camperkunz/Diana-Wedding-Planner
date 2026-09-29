@@ -8,20 +8,9 @@ import {
 } from '@/components/ui/accordion';
 import { getFaqPage, sanityImage, buildSeoMetadata } from '@/lib/sanity-data';
 import { getFaqItems } from '@/lib/data';
+import HeroSection from '@/components/ui/HeroSection';
 
-const fallback = {
-    heroEyebrow: 'FAQ',
-    heroHeadingLine1: 'Common',
-    heroHeadingScript: 'questions',
-    heroImage:
-        'https://images.pexels.com/photos/33661438/pexels-photo-33661438.jpeg?auto=compress&cs=tinysrgb&w=1920',
-    heroImageAlt: 'Bride preparing for her wedding day in front of a mirror',
-    contactHeading: 'Still have questions?',
-    contactDescription:
-        "The best way to get answers is a conversation. Reach out — no question is too small, and there's no obligation.",
-    contactButtonLabel: 'Get in Touch',
-    contactButtonLink: '/contact',
-};
+const fallback = {};
 
 export async function generateMetadata() {
     const page = await getFaqPage();
@@ -42,27 +31,13 @@ export default async function FaqPage() {
     return (
         <>
             {/* Hero Section */}
-            <section className="relative h-[50vh] min-h-[350px] w-full overflow-hidden">
-                <div className="absolute inset-0">
-                    <img
-                        src={sanityImage(c.heroImage) || fallback.heroImage}
-                        alt={c.heroImageAlt}
-                        className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-accent/10" />
-                </div>
-                <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6 pt-20">
-                    <p className="text-white/80 text-xs md:text-sm uppercase tracking-wide-lg mb-6">
-                        {c.heroEyebrow}
-                    </p>
-                    <h1 className="font-serif text-white text-4xl md:text-6xl lg:text-7xl font-normal leading-tight text-balance">
-                        {c.heroHeadingLine1}{' '}
-                        <span className="font-script font-normal">
-                            {c.heroHeadingScript}
-                        </span>
-                    </h1>
-                </div>
-            </section>
+            <HeroSection
+                eyebrow={c.heroEyebrow}
+                headingLine1={c.heroHeadingLine1 || c.title}
+                headingScript={c.heroHeadingScript}
+                image={c.heroImage}
+                imageAlt={c.heroImageAlt}
+            />
 
             {/* FAQ Accordion Section */}
             <section className="py-28 md:py-36 bg-background">

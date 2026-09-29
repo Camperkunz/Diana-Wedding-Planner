@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Mail, Phone, MapPin, Instagram, Send, Check } from 'lucide-react';
 import { sendEmailAction } from '@/app/actions/sendEmail';
+import HeroSection from '@/components/ui/HeroSection';
 
 interface ServiceItem {
   _id: string;
@@ -29,7 +30,7 @@ interface ContactClientProps {
     serviceArea?: string;
     socialLinks: { platform: string; url: string }[];
   };
-  content: {
+  c: {
     heroEyebrow?: string;
     heroHeadingLine1?: string;
     heroHeadingScript?: string;
@@ -52,7 +53,7 @@ interface ContactClientProps {
   };
 }
 
-export default function ContactClient({ recipientEmail, services, settings, content }: ContactClientProps) {
+export default function ContactClient({ recipientEmail, services, settings, c }: ContactClientProps) {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -84,27 +85,13 @@ export default function ContactClient({ recipientEmail, services, settings, cont
   return (
     <>
       {/* Hero */}
-      <section className="relative h-[10vh] md:h-[20vh] min-h-[300px] md:min-h-[350px] max-h-[450px] w-full overflow-hidden">
-        <div className="absolute inset-0">
-          {content.heroImage && (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
-              src={content.heroImage}
-              alt={content.heroImageAlt || 'Hero Image'}
-              className="w-full h-full object-cover blur-[2px] scale-105"
-            />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-accent/30" />
-        </div>
-        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6 pt-20">
-          <p className="text-white/80 text-xs md:text-sm uppercase tracking-wide-lg mb-2">
-            {content.heroEyebrow}
-          </p>
-          <h1 className="font-serif text-white text-5xl md:text-6xl lg:text-7xl font-normal leading-tight text-balance">
-            {content.heroHeadingLine1} <span className="font-script font-normal">{content.heroHeadingScript}</span>
-          </h1>
-        </div>
-      </section>
+      <HeroSection
+        eyebrow={c.heroEyebrow}
+        headingLine1={c.heroHeadingLine1}
+        headingScript={c.heroHeadingScript}
+        image={c.heroImage}
+        imageAlt={c.heroImageAlt}
+      />
 
       {/* Contact Section */}
       <section className="py-16 md:py-28 bg-background">
@@ -113,10 +100,10 @@ export default function ContactClient({ recipientEmail, services, settings, cont
             {/* Form Column - Displays second on mobile, first on desktop */}
             <div className="order-2 lg:order-1 lg:col-span-3">
               <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-6 text-balance">
-                {content.formHeading}
+                {c.formHeading}
               </h2>
               <p className="text-muted-foreground font-light mb-10 leading-relaxed">
-                {content.formDescription}
+                {c.formDescription}
               </p>
 
               {submitted ? (
@@ -124,9 +111,9 @@ export default function ContactClient({ recipientEmail, services, settings, cont
                   <div className="w-16 h-16 bg-accent/15 flex items-center justify-center mx-auto mb-8">
                     <Check className="w-8 h-8 text-accent" />
                   </div>
-                  <h3 className="font-serif text-2xl mb-4">{content.successHeading}</h3>
+                  <h3 className="font-serif text-2xl mb-4">{c.successHeading}</h3>
                   <p className="text-muted-foreground font-light leading-relaxed max-w-md mx-auto">
-                    {content.successDescription}{' '}
+                    {c.successDescription}{' '}
                     {settings.email && (
                       <a href={`mailto:${settings.email}`} className="text-accent">
                         {settings.email}
@@ -140,12 +127,12 @@ export default function ContactClient({ recipientEmail, services, settings, cont
                     }}
                     className="mt-8 text-sm text-muted-foreground hover:text-accent transition-colors"
                   >
-                    {content.sendAnotherLabel}
+                    {c.sendAnotherLabel}
                   </button>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  {content.customFields?.map((field, idx) => {
+                  {c.customFields?.map((field, idx) => {
                     const fieldId = field._key || `field-${idx}`;
                     return (
                       <div key={fieldId}>
@@ -235,7 +222,7 @@ export default function ContactClient({ recipientEmail, services, settings, cont
                     disabled={isSubmitting}
                     className="inline-flex items-center gap-3 bg-accent text-accent-foreground px-12 py-3.5 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50"
                   >
-                    {isSubmitting ? 'Sending...' : content.submitLabel}
+                    {isSubmitting ? 'Sending...' : c.submitLabel}
                     <Send className="w-4 h-4" />
                   </button>
                 </form>
@@ -245,7 +232,7 @@ export default function ContactClient({ recipientEmail, services, settings, cont
             {/* Contact Info Column - Displays first on mobile, second on desktop */}
             <div className="order-1 lg:order-2 lg:col-span-2 relative">
               <div className="bg-card rounded-3xl p-8 md:p-10 border border-border/40 shadow-xl sticky top-28">
-                <h3 className="font-serif text-3xl mb-8 text-foreground">{content.contactInfoHeading}</h3>
+                <h3 className="font-serif text-3xl mb-8 text-foreground">{c.contactInfoHeading}</h3>
 
                 <ul className="space-y-2">
                   {settings.email && (
@@ -256,7 +243,7 @@ export default function ContactClient({ recipientEmail, services, settings, cont
                         </div>
                         <div>
                           <p className="text-sm uppercase tracking-wide text-muted-foreground mb-1 font-light">
-                            {content.contactEmailLabel}
+                            {c.contactEmailLabel}
                           </p>
                           <p className="text-base text-foreground font-medium group-hover:text-accent transition-colors">
                             {settings.email}
@@ -272,7 +259,7 @@ export default function ContactClient({ recipientEmail, services, settings, cont
                       </div>
                       <div>
                         <p className="text-sm uppercase tracking-wide text-muted-foreground mb-1 font-light">
-                          {content.contactPhoneLabel}
+                          {c.contactPhoneLabel}
                         </p>
                         <p className="text-base text-foreground font-medium">{settings.phone}</p>
                       </div>
@@ -285,7 +272,7 @@ export default function ContactClient({ recipientEmail, services, settings, cont
                       </div>
                       <div>
                         <p className="text-sm uppercase tracking-wide text-muted-foreground mb-1 font-light">
-                          {content.contactLocationLabel}
+                          {c.contactLocationLabel}
                         </p>
                         <p className="text-base text-foreground font-medium">{settings.location}</p>
                       </div>
@@ -303,10 +290,10 @@ export default function ContactClient({ recipientEmail, services, settings, cont
                       </div>
                       <div>
                         <p className="text-sm uppercase tracking-wide text-muted-foreground mb-1 font-light">
-                          {content.instagramLabel}
+                          {c.instagramLabel}
                         </p>
                         <p className="text-base text-foreground font-medium group-hover:text-accent transition-colors">
-                          {content.instagramHandle}
+                          {c.instagramHandle}
                         </p>
                       </div>
                     </a>
@@ -315,7 +302,7 @@ export default function ContactClient({ recipientEmail, services, settings, cont
 
                 <div className="mt-6 pt-4 border-t border-border/60">
                   <p className="text-sm text-muted-foreground font-light leading-relaxed">
-                    {content.directReplyText}
+                    {c.directReplyText}
                   </p>
                 </div>
               </div>

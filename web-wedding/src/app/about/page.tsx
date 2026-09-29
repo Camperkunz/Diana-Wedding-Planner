@@ -3,12 +3,12 @@ import { ArrowRight, Heart, Award, MapPin } from 'lucide-react';
 import {
   getAboutPage,
   getSiteSettings,
-  sanityImage,
   buildSeoMetadata
 } from '@/lib/sanity-data';
+import { sanityImage } from '@/lib/sanity-image';
 import { getTestimonials, getStats } from '@/lib/data';
-import { TestimonialsSection } from '@/components/testimonials-section';
 import { StatsSection } from '@/components/stats-section';
+import HeroSection from '@/components/ui/HeroSection';
 
 // Fallback data
 const fallback = {};
@@ -34,26 +34,14 @@ export default async function AboutPage() {
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative h-[50vh] min-h-[350px] w-full overflow-hidden">
-        <div className="absolute inset-0 ">
-          <img
-            src={sanityImage(c.heroImage)}
-            alt={c.heroImageAlt}
-            className="w-full h-full object-cover object-top"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-accent/10" />
-        </div>
-        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6 pt-20">
-          <p className="text-white/80 text-xs md:text-sm uppercase tracking-wide-lg mb-6">
-            {c.heroEyebrow}
-          </p>
-          <h1 className="font-serif text-white text-4xl md:text-6xl lg:text-7xl font-normal leading-tight text-balance">
-            {c.heroHeadingLine1}{' '}
-            <span className="font-script font-normal">{c.heroHeadingScript}</span>
-          </h1>
-        </div>
-      </section>
+      {/* Hero */}
+      <HeroSection
+        eyebrow={c.heroEyebrow}
+        headingLine1={c.heroHeadingLine1}
+        headingScript={c.heroHeadingScript}
+        image={c.heroImage}
+        imageAlt={c.heroImageAlt}
+      />
 
       {/* Story Section */}
       <section className="py-28 md:py-40 bg-background">

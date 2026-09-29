@@ -328,12 +328,6 @@ function mapColor(value: any) {
   return value?.hex || undefined;
 }
 
-export function sanityImage(source: any, width = 1920) {
-  if (!source) return undefined;
-  if (typeof source === 'string') return source;
-  return urlFor(source).width(width).auto('format').url();
-}
-
 export async function getSiteDesign(): Promise<SiteDesign | null> {
   const data = await client.fetch(`*[_type == "siteDesign" && _id == "siteDesign"][0]{
     background, foreground, secondary, mutedForeground, accent, accentOverlay, accentForeground, border,
@@ -381,12 +375,12 @@ export async function getFaqPage() { return getFixedPage('faqPage'); }
 export async function getBackstagePage() { return getFixedPage('backstagePage'); }
 export async function getContactPage() { return getFixedPage('contactPage'); }
 
-export function buildSeoMetadata(seo: any, fallbackTitle: string, fallbackDescription: string) {
+export function buildSeoMetadata(seo: any, fallbackTitle: string, fallbackDescription?: string) {
   return {
     title: seo?.metaTitle || fallbackTitle,
     description: seo?.metaDescription || fallbackDescription,
     alternates: seo?.canonicalUrl ? { canonical: seo.canonicalUrl } : undefined,
     robots: seo?.noIndex ? { index: false, follow: !seo?.noFollow } : undefined,
-    openGraph: seo?.ogImage ? { images: [sanityImage(seo.ogImage, 1200) || ''] } : undefined,
+    openGraph: seo?.ogImage ? { images: [seo.ogImage] } : undefined,
   };
 }

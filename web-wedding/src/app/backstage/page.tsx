@@ -1,4 +1,5 @@
-import { getBackstagePage, getBackstageVideos, sanityImage } from '@/lib/sanity-data';
+import { getBackstagePage, getBackstageVideos } from '@/lib/sanity-data';
+import { sanityImage } from '@/lib/sanity-image';
 import { getEmbedUrl, getAutoThumbnail } from '@/lib/video-embed';
 import BackstageClient, { Video } from './backstage-client';
 

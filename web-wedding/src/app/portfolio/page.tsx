@@ -6,28 +6,15 @@ import {
     sanityImage,
     buildSeoMetadata,
 } from '@/lib/sanity-data';
+import HeroSection from '@/components/ui/HeroSection';
 
-const fallback = {
-    heroEyebrow: 'Portfolio',
-    heroHeadingScript: 'Weddings',
-    heroHeadingRest: "I've planned",
-    heroImage:
-        'https://images.pexels.com/photos/28613084/pexels-photo-28613084.jpeg?auto=compress&cs=tinysrgb&w=1920',
-    heroImageAlt:
-        'Outdoor wedding venue with elegant decorations and lake view',
-    introText:
-        'Every wedding below was planned personally — from first consultation to final toast. Click any album to see the full gallery and the story behind the day.',
-    ctaHeading: 'Want yours to be next?',
-    ctaButtonLabel: 'Get in Touch',
-    ctaButtonLink: '/contact',
-};
+const fallback = {};
 
 export async function generateMetadata() {
     const page = await getPortfolioPage();
     return buildSeoMetadata(
         page?.seo,
-        'Portfolio — Weddings Planned by Diana | Ottawa',
-        fallback.introText
+        'Portfolio — Weddings Planned by Diana | Ottawa'
     );
 }
 
@@ -43,27 +30,14 @@ export default async function PortfolioPage() {
     return (
         <>
             {/* Hero Section */}
-            <section className="relative h-[50vh] min-h-[350px] w-full overflow-hidden">
-                <div className="absolute inset-0">
-                    <img
-                        src={sanityImage(c.heroImage) || fallback.heroImage}
-                        alt={c.heroImageAlt}
-                        className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-accent/10" />
-                </div>
-                <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6 pt-20">
-                    <p className="text-white/80 text-xs md:text-sm uppercase tracking-wide-lg mb-6">
-                        {c.heroEyebrow}
-                    </p>
-                    <h1 className="font-serif text-white text-4xl md:text-6xl lg:text-7xl font-normal leading-tight text-balance">
-                        <span className="font-script font-normal">
-                            {c.heroHeadingScript}
-                        </span>{' '}
-                        {c.heroHeadingRest}
-                    </h1>
-                </div>
-            </section>
+            <HeroSection
+                eyebrow={c.heroEyebrow}
+                headingLine1={c.heroHeadingLine1}
+                headingLine2={c.heroHeadingLine2}
+                headingScript={c.heroHeadingScript}
+                image={c.heroImage}
+                imageAlt={c.heroImageAlt}
+            />
 
             {/* Portfolio Grid Section */}
             <section className="py-28 md:py-40 bg-background">
