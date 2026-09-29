@@ -1,5 +1,6 @@
 import { client } from '@/app/sanity/client';
 import { urlFor } from '@/app/sanity/image';
+import type { SanityImageSource } from '@sanity/image-url';
 
 export type SiteSettings = {
   name: string;
@@ -79,7 +80,8 @@ export type HomePageContent = {
   heroHeadingScript?: string;
   heroHeadingLine2?: string;
   heroDescription?: string;
-  heroImage?: string;
+  /** Raw Sanity image object: the hero builds sanitised, responsive URLs from it. */
+  heroImage?: SanityImageSource;
   heroImageAlt?: string;
   heroPrimaryButtonLabel?: string;
   heroPrimaryButtonLink?: string;
@@ -127,7 +129,8 @@ export type HomePageContent = {
   ctaDescription?: string;
   ctaButtonLabel?: string;
   ctaButtonLink?: string;
-  ctaImage?: string;
+  /** Raw Sanity image object: the CTA photo band builds sanitised, responsive URLs from it. */
+  ctaImage?: SanityImageSource;
   ctaImageAlt?: string;
 };
 
@@ -286,12 +289,12 @@ export async function getHomePage(): Promise<HomePageContent | null> {
   return {
     ...data,
     seo: data.seo ? { metaTitle: data.seo.metaTitle, metaDescription: data.seo.metaDescription, ogImage: data.seo.ogImage ? urlFor(data.seo.ogImage).width(1200).auto('format').url() : undefined, canonicalUrl: data.seo.canonicalUrl, noIndex: data.seo.noIndex, noFollow: data.seo.noFollow } : undefined,
-    heroImage: data.heroImage ? urlFor(data.heroImage).width(1920).auto('format').url() : undefined,
+    heroImage: data.heroImage,
     aboutImage1: data.aboutImage1 ? urlFor(data.aboutImage1).width(900).auto('format').url() : undefined,
     aboutImage2: data.aboutImage2 ? urlFor(data.aboutImage2).width(900).auto('format').url() : undefined,
     quoteImage: data.quoteImage ? urlFor(data.quoteImage).width(1920).auto('format').url() : undefined,
     approachImage: data.approachImage ? urlFor(data.approachImage).width(900).auto('format').url() : undefined,
-    ctaImage: data.ctaImage ? urlFor(data.ctaImage).width(1920).auto('format').url() : undefined,
+    ctaImage: data.ctaImage,
     stats: data.stats || [],
     featuredServices: (data.featuredServices || []).map(mapService),
     featuredAlbums: (data.featuredAlbums || []).map(mapAlbum),

@@ -1,14 +1,17 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { urlFor } from '@/app/sanity/image';
+import HeroSection from '@/components/ui/HeroSection';
+import SafeLink from '@/components/ui/SafeLink';
 
 function Button({ button }: { button?: any }) {
   if (!button?.label || !button?.link) return null;
   const className = button.style === 'outline'
     ? 'inline-flex items-center gap-2 border border-accent text-accent px-8 py-3 text-sm uppercase tracking-wide hover:bg-accent hover:text-accent-foreground transition-all duration-300'
     : 'inline-flex items-center gap-2 bg-accent text-accent-foreground px-10 py-3.5 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-lg hover:shadow-xl';
-  const external = /^https?:\/\//.test(button.link);
-  return external ? <a href={button.link} target="_blank" rel="noopener noreferrer" className={className}>{button.label}<ArrowRight className="w-4 h-4" /></a> : <Link href={button.link} className={className}>{button.label}<ArrowRight className="w-4 h-4" /></Link>;
+  // SafeLink allow-lists the scheme (no javascript:/data: from the CMS) and adds
+  // rel="noopener noreferrer" whenever the target leaves the site.
+  return <SafeLink href={button.link} className={className}>{button.label}<ArrowRight className="w-4 h-4" /></SafeLink>;
 }
 
 function RichText({ value }: { value?: any[] }) {
@@ -26,18 +29,15 @@ export function CmsSections({ sections }: { sections: any[] }) {
   return <>{sections.map((section) => {
     switch (section._type) {
       case 'heroSection':
-        return <section key={section._key} className="relative h-screen min-h-[600px] w-full overflow-hidden">
-          <div className="absolute inset-0">
-            {section.backgroundImage && <img src={urlFor(section.backgroundImage).width(2200).auto('format').url()} alt={section.backgroundImage.alt || section.heading || ''} className="w-full h-full object-cover" />}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-accent/20" />
-          </div>
-          <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
-            
-            <h1 className="font-serif text-white text-5xl md:text-7xl lg:text-8xl font-normal leading-[1.1] max-w-4xl text-balance">{section.heading}</h1>
-            {section.subheading && <p className="text-white text-base md:text-lg font-light mt-8 max-w-2xl leading-relaxed">{section.subheading}</p>}
-            <div className="flex flex-col sm:flex-row gap-4 mt-12"><Button button={section.primaryButton} /><Button button={section.secondaryButton} /></div>
-          </div>
-        </section>;
+        return <HeroSection
+          key={section._key}
+          size="fullscreen"
+          image={section.backgroundImage}
+          imageAlt={section.backgroundImage?.alt || section.heading}
+          headingLine1={section.heading}
+          description={section.subheading}
+          actions={<><Button button={section.primaryButton} /><Button button={section.secondaryButton} /></>}
+        />;
       case 'aboutSection':
         return <section key={section._key} className="py-28 md:py-40 bg-background">
           <div className="container-wide grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">

@@ -3,7 +3,6 @@ import { ArrowRight } from 'lucide-react';
 import {
     getAlbums,
     getPortfolioPage,
-    sanityImage,
     buildSeoMetadata,
 } from '@/lib/sanity-data';
 import HeroSection from '@/components/ui/HeroSection';
@@ -32,9 +31,9 @@ export default async function PortfolioPage() {
             {/* Hero Section */}
             <HeroSection
                 eyebrow={c.heroEyebrow}
-                headingLine1={c.heroHeadingLine1}
-                headingLine2={c.heroHeadingLine2}
+                headingScriptFirst
                 headingScript={c.heroHeadingScript}
+                headingLine1={c.heroHeadingRest}
                 image={c.heroImage}
                 imageAlt={c.heroImageAlt}
             />

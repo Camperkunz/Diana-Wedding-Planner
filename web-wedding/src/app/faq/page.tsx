@@ -6,7 +6,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from '@/components/ui/accordion';
-import { getFaqPage, sanityImage, buildSeoMetadata } from '@/lib/sanity-data';
+import { getFaqPage, buildSeoMetadata } from '@/lib/sanity-data';
 import { getFaqItems } from '@/lib/data';
 import HeroSection from '@/components/ui/HeroSection';
 

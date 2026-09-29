@@ -10,6 +10,9 @@ import {
 import { TestimonialsSection } from '@/components/testimonials-section';
 import { StatsSection } from '@/components/stats-section';
 import { FadeIn } from '@/components/fade-in';
+import HeroSection, { HeroBackground } from '@/components/ui/HeroSection';
+import SafeLink from '@/components/ui/SafeLink';
+import { safeMailtoHref } from '@/lib/safe-url';
 
 const fallback = {};
 
@@ -79,60 +82,45 @@ export default async function Home() {
     : [];
 
   const stats = content.stats?.length ? content.stats : [];
+  const emailHref = safeMailtoHref(settings?.email);
 
   return (
     <>
       {/* HERO */}
-      <section className="relative h-screen min-h-[600px] w-full overflow-hidden">
-        <div className="absolute inset-0">
-          <img
-            src={content.heroImage}
-            alt={content.heroImageAlt}
-            className="w-full h-full object-cover blur-[2px] scale-105"
-          />
-
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-accent/30" />
-        </div>
-
-        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
-          <p className="text-white/80 text-xs md:text-sm uppercase tracking-wide-lg mb-6">
-            {content.heroEyebrow}
-          </p>
-
-          <h1 className="font-serif text-white text-5xl md:text-7xl lg:text-8xl font-normal leading-[1.1] max-w-4xl text-balance">
-            {content.heroHeadingLine1}
-            <br />
-            <span className="font-script font-normal">
-              {content.heroHeadingScript}
-            </span>{' '}
-            {content.heroHeadingLine2}
-          </h1>
-
-          <p className="text-white text-base md:text-lg font-light mt-8 max-w-2xl leading-relaxed">
-            {content.heroDescription}
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 mt-12">
-            <Link
-              href={content.heroPrimaryButtonLink || '/contact'}
-              className="bg-accent text-accent-foreground px-12 py-3.5 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-lg hover:shadow-xl"
+      <HeroSection
+        size="fullscreen"
+        headingBreak
+        eyebrow={content.heroEyebrow}
+        headingLine1={content.heroHeadingLine1}
+        headingScript={content.heroHeadingScript}
+        headingLine2={content.heroHeadingLine2}
+        description={content.heroDescription}
+        image={content.heroImage}
+        imageAlt={content.heroImageAlt}
+        actions={
+          <>
+            <SafeLink
+              href={content.heroPrimaryButtonLink}
+              fallbackHref="/contact"
+              className="inline-flex items-center justify-center text-center bg-accent text-accent-foreground px-12 py-3.5 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
               {content.heroPrimaryButtonLabel || 'Get in Touch'}
-            </Link>
+            </SafeLink>
 
-            <Link
-              href={content.heroSecondaryButtonLink || '/services'}
-              className="border border-white/50 text-white px-12 py-3.5 text-sm uppercase tracking-wide hover:bg-white/10 transition-all duration-300"
+            <SafeLink
+              href={content.heroSecondaryButtonLink}
+              fallbackHref="/services"
+              className="inline-flex items-center justify-center text-center border border-white/50 text-white px-12 py-3.5 text-sm uppercase tracking-wide hover:bg-white/10 transition-all duration-300"
             >
               {content.heroSecondaryButtonLabel || 'View Services'}
-            </Link>
-          </div>
-        </div>
-
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 hidden md:block">
+            </SafeLink>
+          </>
+        }
+      >
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden md:block">
           <div className="w-px h-12 bg-white/40 mx-auto" />
         </div>
-      </section>
+      </HeroSection>
 
       {/* ABOUT */}
       <section className="py-28 md:py-40 bg-background">
@@ -447,17 +435,8 @@ export default async function Home() {
       </FadeIn>
 
       {/* CTA */}
-      <section className="relative py-36 md:py-44 overflow-hidden">
-        <div className="absolute inset-0">
-          <img
-            src={content.ctaImage}
-            alt={content.ctaImageAlt}
-            className="w-full h-full object-cover blur-[2px] scale-105"
-            loading="lazy"
-          />
-
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-accent/20" />
-        </div>
+      <section className="relative py-36 md:py-44 overflow-hidden bg-foreground">
+        <HeroBackground image={content.ctaImage} imageAlt={content.ctaImageAlt} priority={false} />
 
         <div className="relative z-10 container-narrow text-center">
           <FadeIn>
@@ -489,12 +468,12 @@ export default async function Home() {
 
             <p className="text-white/50 text-sm mt-8 font-light">
               {content.ctaDirectContactText}{' '}
-              {settings?.email && (
+              {emailHref && (
                 <a
-                  href={`mailto:${settings.email}`}
+                  href={emailHref}
                   className="text-white/80 hover:text-accent transition-colors"
                 >
-                  {settings.email}
+                  {settings?.email}
                 </a>
               )}
             </p>
