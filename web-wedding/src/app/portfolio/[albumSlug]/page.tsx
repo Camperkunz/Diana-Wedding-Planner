@@ -40,7 +40,7 @@ export default async function AlbumPage({
       {/* Hero */}
       <HeroSection
         eyebrow={album.category}
-        headingLine1={album.title}
+        heading={album.title}
         image={album.coverImage}
         imageAlt={album.coverImageAlt || album.title}
       >

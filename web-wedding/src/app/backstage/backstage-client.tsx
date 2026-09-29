@@ -19,8 +19,7 @@ export type Content = {
     title?: string;
     intro?: string;
     heroEyebrow?: string;
-    heroHeadingLine1?: string;
-    heroHeadingScript?: string;
+    heroHeading?: string;
     heroImage?: string;
     heroImageAlt?: string;
     introText?: string;
@@ -43,8 +42,7 @@ export default function BackstageClient({
             {/* Hero Section */}
             <HeroSection
                 eyebrow={content.heroEyebrow}
-                headingLine1={content.heroHeadingLine1 || content.title}
-                headingScript={content.heroHeadingScript}
+                heading={content.heroHeading}
                 image={content.heroImage}
                 imageAlt={content.heroImageAlt}
             />

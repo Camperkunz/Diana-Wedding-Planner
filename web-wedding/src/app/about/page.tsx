@@ -37,8 +37,7 @@ export default async function AboutPage() {
       {/* Hero */}
       <HeroSection
         eyebrow={c.heroEyebrow}
-        headingLine1={c.heroHeadingLine1}
-        headingScript={c.heroHeadingScript}
+        heading={c.heroHeading}
         image={c.heroImage}
         imageAlt={c.heroImageAlt}
       />

@@ -76,9 +76,8 @@ export type ComparisonRow = {
 export type HomePageContent = {
   seo?: any;
   heroEyebrow?: string;
-  heroHeadingLine1?: string;
-  heroHeadingScript?: string;
-  heroHeadingLine2?: string;
+  /** Single line of text; `*word*` marks the word that uses the handwritten script font. */
+  heroHeading?: string;
   heroDescription?: string;
   /** Raw Sanity image object: the hero builds sanitised, responsive URLs from it. */
   heroImage?: SanityImageSource;
@@ -123,9 +122,8 @@ export type HomePageContent = {
   testimonialsSubtext?: string;
   testimonials: { quote: string; author: string; weddingType?: string }[];
   ctaEyebrow?: string;
-  ctaHeadingLine1?: string;
-  ctaHeadingLine2?: string;
-  ctaHeadingScript?: string;
+  /** Same `*word*` syntax as `heroHeading`. */
+  ctaHeading?: string;
   ctaDescription?: string;
   ctaButtonLabel?: string;
   ctaButtonLink?: string;
@@ -270,7 +268,7 @@ export async function getServices(): Promise<Service[]> {
 export async function getHomePage(): Promise<HomePageContent | null> {
   const data = await client.fetch(`*[_type == "homePage" && _id == "homePage"][0]{
     seo{ metaTitle, metaDescription, ogImage, canonicalUrl, noIndex, noFollow },
-    heroEyebrow, heroHeadingLine1, heroHeadingScript, heroHeadingLine2, heroDescription, heroImage, heroImageAlt,
+    heroEyebrow, heroHeading, heroDescription, heroImage, heroImageAlt,
     heroPrimaryButtonLabel, heroPrimaryButtonLink, heroSecondaryButtonLabel, heroSecondaryButtonLink,
     aboutEyebrow, aboutHeading, aboutParagraph1, aboutParagraph2, aboutLinkLabel, aboutLink,
     aboutImage1, aboutImage2, aboutImage1Alt, aboutImage2Alt,
@@ -282,7 +280,7 @@ export async function getHomePage(): Promise<HomePageContent | null> {
     featuredAlbums[]->{${albumProjection}},
     approachEyebrow, approachHeading, approachImage, approachImageAlt, approachSteps[]{ number, title, description },
     testimonialsEyebrow, testimonialsHeading, testimonialsSubtext, testimonials[]{ quote, author, weddingType },
-    ctaEyebrow, ctaHeadingLine1, ctaHeadingLine2, ctaHeadingScript, ctaDescription, ctaButtonLabel, ctaButtonLink, ctaDirectContactText, ctaImage, ctaImageAlt
+    ctaEyebrow, ctaHeading, ctaDescription, ctaButtonLabel, ctaButtonLink, ctaDirectContactText, ctaImage, ctaImageAlt
   }`);
   if (!data) return null;
 

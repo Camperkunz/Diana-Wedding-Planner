@@ -49,64 +49,32 @@ const HERO_STYLES: Record<HeroSize, HeroStyles> = {
     },
 };
 
-type HeadingProps = {
-    headingLine1?: string | null;
-    headingScript?: string | null;
-    headingLine2?: string | null;
-    /** Puts the script word on its own line, as on the homepage. */
-    headingBreak?: boolean;
-    /** Some pages store the script word first (`Weddings I've planned`). */
-    headingScriptFirst?: boolean;
-};
+/**
+ * Turns the authored heading into inline nodes, switching every `*word*` to the script font.
+ *
+ * The heading stays one plain-text `<h1>`: the asterisks live only in the CMS, are stripped
+ * before render, and an unmatched asterisk stays literal text so a typo can never swallow the
+ * sentence. Nothing here positions or splits the words — the `<h1>` wraps them naturally, so any
+ * sentence and any number of highlighted words lays itself out.
+ */
+export function buildHeading(heading?: string | null): ReactNode {
+    const sentence = heading?.replace(/\s+/g, ' ').trim();
+    if (!sentence) return null;
 
-/** Joins the heading words without ever leaving a stray space behind a missing one. */
-function buildHeading({
-    headingLine1,
-    headingScript,
-    headingLine2,
-    headingBreak = false,
-    headingScriptFirst = false,
-}: HeadingProps): ReactNode[] {
-    const script = headingScript ? (
-        <span key="hero-script" className="font-script font-normal">
-            {headingScript}
-        </span>
-    ) : null;
-    const line1 = headingLine1 || null;
-    const line2 = headingLine2 || null;
-    const lineBreak = headingBreak && line1 && (script || line2) ? <br key="hero-break" /> : null;
-
-    const segments: { key: string; node: ReactNode }[] = (
-        headingScriptFirst
-            ? [
-                { key: 'script', node: script },
-                { key: 'line1', node: line1 },
-                { key: 'line2', node: line2 },
-            ]
-            : [
-                { key: 'line1', node: line1 },
-                { key: 'break', node: lineBreak },
-                { key: 'script', node: script },
-                { key: 'line2', node: line2 },
-            ]
-    ).filter((segment) => Boolean(segment.node));
-
-    const heading: ReactNode[] = [];
-    segments.forEach((segment, index) => {
-        if (index > 0 && segments[index - 1].key !== 'break') heading.push(' ');
-        heading.push(segment.node);
-    });
-
-    return heading;
+    return sentence.split(/(\*[^*]+\*)/g).map((part, index) =>
+        part.length > 2 && part.startsWith('*') && part.endsWith('*') ? (
+            <span key={`hero-script-${index}`} className="font-script font-normal">
+                {part.slice(1, -1)}
+            </span>
+        ) : (
+            part
+        )
+    );
 }
 
 type HeroSectionProps = {
     eyebrow?: string | null;
-    headingLine1?: string | null;
-    headingScript?: string | null;
-    headingLine2?: string | null;
-    headingBreak?: boolean;
-    headingScriptFirst?: boolean;
+    heading?: string | null;
     description?: string | null;
     /** Raw Sanity image object or an already-built image URL. */
     image?: ImageSource;
@@ -121,11 +89,7 @@ type HeroSectionProps = {
 
 export default function HeroSection({
     eyebrow,
-    headingLine1,
-    headingScript,
-    headingLine2,
-    headingBreak,
-    headingScriptFirst,
+    heading,
     description,
     image,
     imageAlt,
@@ -136,13 +100,7 @@ export default function HeroSection({
     className,
 }: HeroSectionProps) {
     const styles = HERO_STYLES[size];
-    const heading = buildHeading({
-        headingLine1,
-        headingScript,
-        headingLine2,
-        headingBreak,
-        headingScriptFirst,
-    });
+    const headingContent = buildHeading(heading);
 
     return (
         <section className={cn('relative w-full overflow-hidden bg-foreground', styles.section, className)}>
@@ -155,9 +113,9 @@ export default function HeroSection({
                     </p>
                 ) : null}
 
-                {heading.length > 0 ? (
+                {headingContent ? (
                     <h1 className={cn('font-serif text-white font-normal text-balance', styles.heading)}>
-                        {heading}
+                        {headingContent}
                     </h1>
                 ) : null}
 

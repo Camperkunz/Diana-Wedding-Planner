@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity'
+import { heroHeading } from '../objects/shared/heroHeading'
 
 const image = (name: string, title: string, fieldset: string, description?: string) =>
   defineField({ name, title, type: 'image', options: { hotspot: true }, fieldset, description, validation: (rule) => rule.required() })
@@ -22,8 +23,7 @@ export const aboutPage = defineType({
   ],
   fields: [
     text('heroEyebrow', 'Eyebrow', 'hero', 2),
-    defineField({ name: 'heroHeadingLine1', title: 'Heading — First Line', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
-    defineField({ name: 'heroHeadingScript', title: 'Heading — Script Word', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
+    heroHeading('heroHeading', 'Heading', 'hero'),
     image('heroImage', 'Background Photo', 'hero', 'Recommended: 1920px wide or larger.'),
     defineField({ name: 'heroImageAlt', title: 'Photo Alt Text', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
     defineField({ name: 'storyEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'story' }),

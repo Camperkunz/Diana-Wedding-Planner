@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity'
+import { heroHeading } from '../objects/shared/heroHeading'
 
 export const portfolioPage = defineType({
   name: 'portfolioPage',
@@ -13,8 +14,7 @@ export const portfolioPage = defineType({
   ],
   fields: [
     defineField({ name: 'heroEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'hero' }),
-    defineField({ name: 'heroHeadingScript', title: 'Heading — Script Word', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
-    defineField({ name: 'heroHeadingRest', title: 'Heading — Remaining Text', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
+    heroHeading('heroHeading', 'Heading', 'hero'),
     defineField({ name: 'heroImage', title: 'Background Photo', type: 'image', options: { hotspot: true }, fieldset: 'hero', validation: (rule) => rule.required() }),
     defineField({ name: 'heroImageAlt', title: 'Photo Alt Text', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
     defineField({ name: 'introText', title: 'Introduction', type: 'text', rows: 5, fieldset: 'intro', validation: (rule) => rule.required() }),

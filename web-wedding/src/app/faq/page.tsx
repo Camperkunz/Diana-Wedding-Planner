@@ -33,8 +33,7 @@ export default async function FaqPage() {
             {/* Hero Section */}
             <HeroSection
                 eyebrow={c.heroEyebrow}
-                headingLine1={c.heroHeadingLine1 || c.title}
-                headingScript={c.heroHeadingScript}
+                heading={c.heroHeading}
                 image={c.heroImage}
                 imageAlt={c.heroImageAlt}
             />

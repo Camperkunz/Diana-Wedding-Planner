@@ -31,9 +31,7 @@ export default async function PortfolioPage() {
             {/* Hero Section */}
             <HeroSection
                 eyebrow={c.heroEyebrow}
-                headingScriptFirst
-                headingScript={c.heroHeadingScript}
-                headingLine1={c.heroHeadingRest}
+                heading={c.heroHeading}
                 image={c.heroImage}
                 imageAlt={c.heroImageAlt}
             />

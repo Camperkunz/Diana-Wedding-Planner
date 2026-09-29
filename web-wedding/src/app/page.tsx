@@ -10,7 +10,7 @@ import {
 import { TestimonialsSection } from '@/components/testimonials-section';
 import { StatsSection } from '@/components/stats-section';
 import { FadeIn } from '@/components/fade-in';
-import HeroSection, { HeroBackground } from '@/components/ui/HeroSection';
+import HeroSection, { HeroBackground, buildHeading } from '@/components/ui/HeroSection';
 import SafeLink from '@/components/ui/SafeLink';
 import { safeMailtoHref } from '@/lib/safe-url';
 
@@ -89,11 +89,8 @@ export default async function Home() {
       {/* HERO */}
       <HeroSection
         size="fullscreen"
-        headingBreak
         eyebrow={content.heroEyebrow}
-        headingLine1={content.heroHeadingLine1}
-        headingScript={content.heroHeadingScript}
-        headingLine2={content.heroHeadingLine2}
+        heading={content.heroHeading}
         description={content.heroDescription}
         image={content.heroImage}
         imageAlt={content.heroImageAlt}
@@ -445,13 +442,7 @@ export default async function Home() {
             </p>
 
             <h2 className="font-serif text-white text-3xl md:text-5xl lg:text-6xl font-normal leading-tight mb-8 text-balance">
-              {content.ctaHeadingLine1}
-              <br />
-              {content.ctaHeadingLine2}{' '}
-              <span className="font-script font-normal">
-                {content.ctaHeadingScript}
-              </span>
-              .
+              {buildHeading(content.ctaHeading)}
             </h2>
 
             <p className="text-white/80 text-base md:text-lg font-light max-w-2xl mx-auto mb-12 leading-relaxed">

@@ -26,9 +26,7 @@ export default async function ServicesPage() {
       {/* Hero */}
       <HeroSection
         eyebrow={c.heroEyebrow}
-        headingLine1={c.heroHeadingLine1}
-        headingLine2={c.heroHeadingLine2}
-        headingScript={c.heroHeadingScript}
+        heading={c.heroHeading}
         image={c.heroImage}
         imageAlt={c.heroImageAlt}
       />

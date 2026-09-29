@@ -34,7 +34,7 @@ export function CmsSections({ sections }: { sections: any[] }) {
           size="fullscreen"
           image={section.backgroundImage}
           imageAlt={section.backgroundImage?.alt || section.heading}
-          headingLine1={section.heading}
+          heading={section.heading}
           description={section.subheading}
           actions={<><Button button={section.primaryButton} /><Button button={section.secondaryButton} /></>}
         />;

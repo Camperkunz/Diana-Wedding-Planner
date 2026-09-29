@@ -32,8 +32,7 @@ interface ContactClientProps {
   };
   c: {
     heroEyebrow?: string;
-    heroHeadingLine1?: string;
-    heroHeadingScript?: string;
+    heroHeading?: string;
     heroImage?: string;
     heroImageAlt?: string;
     formHeading?: string;
@@ -87,8 +86,7 @@ export default function ContactClient({ recipientEmail, services, settings, c }:
       {/* Hero */}
       <HeroSection
         eyebrow={c.heroEyebrow}
-        headingLine1={c.heroHeadingLine1}
-        headingScript={c.heroHeadingScript}
+        heading={c.heroHeading}
         image={c.heroImage}
         imageAlt={c.heroImageAlt}
       />

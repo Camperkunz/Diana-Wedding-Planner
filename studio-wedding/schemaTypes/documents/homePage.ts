@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity';
+import { heroHeading } from '../objects/shared/heroHeading';
 
 const imageField = (name: string, title: string, description?: string, fieldset?: string) =>
   defineField({
@@ -32,9 +33,7 @@ export const homePage = defineType({
   ],
   fields: [
     defineField({ name: 'heroEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'hero' }),
-    defineField({ name: 'heroHeadingLine1', title: 'Heading — First Line', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
-    defineField({ name: 'heroHeadingScript', title: 'Heading — Script Word', type: 'string', fieldset: 'hero', description: 'This word keeps the existing handwritten/script styling.', validation: (rule) => rule.required() }),
-    defineField({ name: 'heroHeadingLine2', title: 'Heading — Second Line', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
+    heroHeading('heroHeading', 'Heading', 'hero'),
     defineField({ name: 'heroDescription', title: 'Description', type: 'text', rows: 4, fieldset: 'hero', validation: (rule) => rule.required() }),
     defineField({ name: 'heroImage', title: 'Background Image', type: 'image', options: { hotspot: true }, fieldset: 'hero', description: 'The large hero photo. Recommended: 1920px wide or larger.', validation: (rule) => rule.required() }),
     defineField({ name: 'heroImageAlt', title: 'Image Alt Text', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
@@ -110,9 +109,7 @@ export const homePage = defineType({
     }),
 
     defineField({ name: 'ctaEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'cta' }),
-    defineField({ name: 'ctaHeadingLine1', title: 'Heading — First Line', type: 'string', fieldset: 'cta', validation: (rule) => rule.required() }),
-    defineField({ name: 'ctaHeadingLine2', title: 'Heading — Second Line', type: 'string', fieldset: 'cta', validation: (rule) => rule.required() }),
-    defineField({ name: 'ctaHeadingScript', title: 'Heading — Script Word', type: 'string', fieldset: 'cta', validation: (rule) => rule.required() }),
+    defineField({ name: 'ctaHeading', title: 'Heading', type: 'string', fieldset: 'cta', description: 'Wrap a word in *asterisks* to give it the handwritten style — e.g. Let us *plan* your day.', validation: (rule) => rule.required() }),
     defineField({ name: 'ctaDescription', title: 'Description', type: 'text', rows: 5, fieldset: 'cta', validation: (rule) => rule.required() }),
     defineField({ name: 'ctaButtonLabel', title: 'Button Label', type: 'string', fieldset: 'cta' }),
     defineField({ name: 'ctaButtonLink', title: 'Button Link', type: 'string', fieldset: 'cta', initialValue: '/contact' }),

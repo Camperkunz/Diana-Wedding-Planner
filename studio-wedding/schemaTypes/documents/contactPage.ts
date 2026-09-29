@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity'
+import { heroHeading } from '../objects/shared/heroHeading'
 
 export const contactPage = defineType({
   name: 'contactPage',
@@ -7,8 +8,7 @@ export const contactPage = defineType({
   description: 'Edit the contact page copy, form fields and success message. Contact details come from Site Settings.',
   initialValue: {
     heroEyebrow: 'Contact',
-    heroHeadingLine1: "Let's",
-    heroHeadingScript: 'talk',
+    heroHeading: "Let's *talk*",
     formHeading: 'Tell me about your wedding',
     formDescription: 'I would love to hear about your plans. Fill out the form below and I will get back to you as soon as possible.',
     customFields: [
@@ -93,20 +93,7 @@ export const contactPage = defineType({
       type: 'string',
       fieldset: 'hero',
     }),
-    defineField({
-      name: 'heroHeadingLine1',
-      title: 'Heading — First Part',
-      type: 'string',
-      fieldset: 'hero',
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      name: 'heroHeadingScript',
-      title: 'Heading — Script Word',
-      type: 'string',
-      fieldset: 'hero',
-      validation: (rule) => rule.required(),
-    }),
+    heroHeading('heroHeading', 'Heading', 'hero'),
     defineField({
       name: 'heroImage',
       title: 'Background Photo',
