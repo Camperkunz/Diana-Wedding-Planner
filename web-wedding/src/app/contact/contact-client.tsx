@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { Mail, Phone, MapPin, Instagram, Send, Check } from 'lucide-react';
+import { LuMail as Mail, LuPhone as Phone, LuMapPin as MapPin, LuInstagram as Instagram, LuSend as Send, LuCheck as Check } from 'react-icons/lu';
 import { sendEmailAction } from '@/app/actions/sendEmail';
 import HeroSection from '@/components/ui/HeroSection';
 

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { LuArrowRight as ArrowRight } from 'react-icons/lu';
 import { urlFor } from '@/app/sanity/image';
 import HeroSection from '@/components/ui/HeroSection';
 import SafeLink from '@/components/ui/SafeLink';

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, Heart } from 'lucide-react';
+import { LuArrowRight as ArrowRight, LuHeart as Heart } from 'react-icons/lu';
 
 export default function NotFound() {
   return (

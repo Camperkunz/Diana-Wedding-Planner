@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { withAutoplay } from '@/lib/video-embed';
-import { ArrowRight, Play, X } from 'lucide-react';
+import { LuArrowRight as ArrowRight, LuPlay as Play, LuX as X } from 'react-icons/lu';
 import HeroSection from '@/components/ui/HeroSection';
 
 export type Video = {

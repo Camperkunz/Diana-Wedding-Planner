@@ -322,7 +322,6 @@ export async function getPage(slug: string) {
 
 export type SiteDesign = {
   colors: Record<string, string | undefined>;
-  fontPreset?: 'elegant' | 'editorial' | 'romantic';
 };
 
 function mapColor(value: any) {
@@ -332,7 +331,7 @@ function mapColor(value: any) {
 export async function getSiteDesign(): Promise<SiteDesign | null> {
   const data = await client.fetch(`*[_type == "siteDesign" && _id == "siteDesign"][0]{
     background, foreground, secondary, mutedForeground, accent, accentOverlay, accentForeground, border,
-    sage, blush, sand, terracotta, fontPreset
+    sage, blush, sand, terracotta
   }`);
   if (!data) return null;
   return {
@@ -342,7 +341,6 @@ export async function getSiteDesign(): Promise<SiteDesign | null> {
       accentForeground: mapColor(data.accentForeground), border: mapColor(data.border), sage: mapColor(data.sage),
       blush: mapColor(data.blush), sand: mapColor(data.sand), terracotta: mapColor(data.terracotta),
     },
-    fontPreset: data.fontPreset,
   };
 }
 

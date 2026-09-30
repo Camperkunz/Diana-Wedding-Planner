@@ -1,4 +1,4 @@
-import { Quote } from 'lucide-react';
+import { LuQuote as Quote } from 'react-icons/lu';
 
 export type TestimonialItem = {
   quote: string;

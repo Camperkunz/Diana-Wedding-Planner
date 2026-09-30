@@ -53,7 +53,7 @@ export const deskStructure = (S: any) =>
             .title('Brand & Settings')
             .items([
               singleton(S, SINGLETON_IDS.siteSettings, 'siteSettings', 'Business & Contact Info'),
-              singleton(S, SINGLETON_IDS.siteDesign, 'siteDesign', 'Colors & Fonts'),
+              singleton(S, SINGLETON_IDS.siteDesign, 'siteDesign', 'Colors'),
               singleton(S, SINGLETON_IDS.siteLayout, 'siteLayout', 'Header & Footer Menu'),
             ])
         ),

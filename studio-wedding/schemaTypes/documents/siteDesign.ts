@@ -20,7 +20,6 @@ export const siteDesign = defineType({
   description: 'Control the visual identity of the website. The page layout itself stays fixed.',
   fieldsets: [
     { name: 'colors', title: 'Brand Colors', options: { collapsible: true, collapsed: false } },
-    { name: 'typography', title: 'Fonts', options: { collapsible: true, collapsed: false } },
   ],
   fields: [
     color('accent', 'Accent', 'Main brand color used for buttons, links and highlights.', '#941d3f'),
@@ -31,23 +30,6 @@ export const siteDesign = defineType({
     color('accentOverlay', 'Accent Overlay', 'Accent tint used over photographs and decorative overlays.', '#b83d5f'),
     color('accentForeground', 'Text on Accent', 'Text color used on accent-colored buttons.', '#fffaf5'),
     color('border', 'Borders', 'Lines around cards, inputs and separators.', '#dedee2'),
-    defineField({
-      name: 'fontPreset',
-      title: 'Font Style',
-      type: 'string',
-      fieldset: 'typography',
-      description: 'Choose a complete font pairing. This changes headings, body text and script accents without changing the layout.',
-      options: {
-        list: [
-          { title: 'Elegant — Jost + Cormorant + Dancing Script', value: 'elegant' },
-          { title: 'Editorial — Manrope + Playfair Display + Allura', value: 'editorial' },
-          { title: 'Romantic — Lato + DM Serif Display + Great Vibes', value: 'romantic' },
-        ],
-        layout: 'radio',
-      },
-      initialValue: 'elegant',
-      validation: (rule) => rule.required(),
-    }),
   ],
-  preview: { prepare: () => ({ title: 'Brand & Design', subtitle: 'Colors and typography' }) },
+  preview: { prepare: () => ({ title: 'Brand & Design', subtitle: 'Brand colors' }) },
 })

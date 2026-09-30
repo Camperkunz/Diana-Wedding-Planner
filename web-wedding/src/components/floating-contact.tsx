@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { MessageCircle } from 'lucide-react';
+import { LuMessageCircle as MessageCircle } from 'react-icons/lu';
 import { cn } from '../lib/utils';
 
 export function FloatingContact() {

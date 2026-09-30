@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowRight, ArrowLeft, MapPin, Calendar } from 'lucide-react';
+import { LuArrowRight as ArrowRight, LuArrowLeft as ArrowLeft, LuMapPin as MapPin, LuCalendar as Calendar } from 'react-icons/lu';
 import { getAlbum, getAlbums } from '@/lib/sanity-data';
 import { sanityImage } from '@/lib/sanity-image';
 import HeroSection from '@/components/ui/HeroSection';

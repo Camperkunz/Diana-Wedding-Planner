@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
-import { Menu, X, Globe } from 'lucide-react';
+import { LuMenu as Menu, LuX as X, LuGlobe as Globe } from 'react-icons/lu';
 import {
   SiInstagram,
   SiPinterest,

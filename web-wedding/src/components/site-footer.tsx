@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Instagram, Mail, MapPin, Phone } from 'lucide-react';
+import { LuInstagram as Instagram, LuMail as Mail, LuMapPin as MapPin, LuPhone as Phone } from 'react-icons/lu';
 import type { SiteLayout, SiteSettings } from '../lib/sanity-data';
 
 type Props = { settings: SiteSettings | null; layout: SiteLayout | null };

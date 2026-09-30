@@ -4,6 +4,7 @@ import {
     imageObjectPosition,
     sanityImage,
     sanityImageSrcSet,
+    HERO_BLUR,
     type ImageSource,
 } from '@/lib/sanity-image';
 
@@ -17,9 +18,10 @@ import {
  *  - `size="banner"`     — compact banner used on every inner page.
  *
  * Photos are sanitised (`sanityImage` → `safeImageSrc`), served responsively through
- * `srcSet`, blurred the same way everywhere and requested without a referrer so the
- * page URL is not leaked to the image CDN. When a photo is missing or unusable, the
- * gradient overlay still keeps the heading readable on the dark base colour.
+ * `srcSet`, pre-blurred by the CDN (HERO_BLUR) so the browser paints no CSS filter,
+ * and requested without a referrer so the page URL is not leaked to the image CDN.
+ * When a photo is missing or unusable, the gradient overlay still keeps the heading
+ * readable on the dark base colour.
  */
 
 type HeroSize = 'fullscreen' | 'banner';
@@ -157,8 +159,8 @@ export function HeroBackground({
     priority = true,
     overlayClassName,
 }: HeroBackgroundProps) {
-    const src = sanityImage(image, 1920);
-    const srcSet = sanityImageSrcSet(image);
+    const src = sanityImage(image, 1920, HERO_BLUR);
+    const srcSet = sanityImageSrcSet(image, undefined, HERO_BLUR);
     const objectPosition = imageObjectPosition(image);
 
     return (
@@ -171,7 +173,9 @@ export function HeroBackground({
                     sizes="100vw"
                     alt={imageAlt || ''}
                     style={objectPosition ? { objectPosition } : undefined}
-                    className="w-full h-full object-cover blur-[2px] scale-105"
+                    /* Blur is baked into the CDN URL (HERO_BLUR) — no CSS filter on the
+                       LCP element. scale-105 keeps the original framing/edge coverage. */
+                    className="w-full h-full object-cover scale-105"
                     loading={priority ? 'eager' : 'lazy'}
                     fetchPriority={priority ? 'high' : 'auto'}
                     decoding="async"

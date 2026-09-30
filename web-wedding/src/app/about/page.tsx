@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, Heart, Award, MapPin } from 'lucide-react';
+import { LuArrowRight as ArrowRight, LuHeart as Heart, LuAward as Award, LuMapPin as MapPin } from 'react-icons/lu';
 import {
   getAboutPage,
   getSiteSettings,

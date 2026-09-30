@@ -14,21 +14,44 @@ export type ImageSource = SanityImageSource | null | undefined;
 export const HERO_IMAGE_WIDTHS = [640, 960, 1280, 1600, 1920, 2400] as const;
 
 /**
+ * Hero photo blur, baked into the CDN URL so the browser never runs a CSS
+ * filter over a full-viewport image (that filter used to cost paint time on
+ * every hero). Sanity accepts 0–100 but ignores values below 5 (verified:
+ * blur=2..4 returns byte-identical image), so 5 is the subtlest possible
+ * pre-blur — closest match to the old CSS `blur-[2px]` behind the dark
+ * gradient. Raise it (5–10) for a stronger effect.
+ */
+export const HERO_BLUR = 15;
+
+/**
+ * Appends the blur parameter to an already-built CDN URL (some data getters
+ * resolve URLs to strings before they reach a component).
+ */
+function appendBlur(url: string, blur?: number): string {
+  if (!blur) return url;
+  return `${url}${url.includes('?') ? '&' : '?'}blur=${blur}`;
+}
+
+/**
  * Builds one image URL.
  *
  * @returns a sanitised URL, or `undefined` when the value is missing, malformed or
  * uses a scheme we do not render. A bad image must never break a page: a malformed
  * object in the CMS used to throw inside the url builder and take the route down.
  */
-export function sanityImage(source: ImageSource, width = 1920): string | undefined {
+export function sanityImage(source: ImageSource, width = 1920, blur?: number): string | undefined {
   if (!source) return undefined;
 
   // Strings are already-built URLs and go through the same allow-list as everything
   // else. Bare Sanity asset refs (`image-abc-1920x1080-jpg`) are not supported here.
-  if (typeof source === 'string') return safeImageSrc(source);
+  if (typeof source === 'string') {
+    const safe = safeImageSrc(source);
+    return safe ? appendBlur(safe, blur) : undefined;
+  }
 
   try {
-    return safeImageSrc(urlFor(source).width(width).auto('format').url());
+    const builder = urlFor(source).width(width);
+    return safeImageSrc((blur ? builder.blur(blur) : builder).auto('format').url());
   } catch {
     return undefined;
   }
@@ -40,14 +63,15 @@ export function sanityImage(source: ImageSource, width = 1920): string | undefin
  */
 export function sanityImageSrcSet(
   source: ImageSource,
-  widths: readonly number[] = HERO_IMAGE_WIDTHS
+  widths: readonly number[] = HERO_IMAGE_WIDTHS,
+  blur?: number
 ): string | undefined {
   if (!source || typeof source === 'string') return undefined;
 
   try {
     const entries = widths
       .map((width) => {
-        const url = sanityImage(source, width);
+        const url = sanityImage(source, width, blur);
         return url ? `${url} ${width}w` : null;
       })
       .filter((entry): entry is string => Boolean(entry));

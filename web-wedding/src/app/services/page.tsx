@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, Check } from 'lucide-react';
+import { LuArrowRight as ArrowRight, LuCheck as Check } from 'react-icons/lu';
 import {
   getServices,
   getServicesPage,
