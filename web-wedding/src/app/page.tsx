@@ -120,7 +120,7 @@ export default async function Home() {
       </HeroSection>
 
       {/* ABOUT */}
-      <section className="py-28 md:py-40 bg-background">
+      <section className="py-16 md:py-20 bg-background">
         <div className="container-wide grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           <FadeIn className="order-2 lg:order-1">
             <div>
@@ -303,10 +303,10 @@ export default async function Home() {
               </div>
 
               <Link
-                href={content.portfolioButtonLink || '/portfolio'}
+                href={content.portfolioButtonLink}
                 className="inline-flex items-center gap-2 text-sm uppercase tracking-wide text-accent hover:gap-4 transition-all duration-300"
               >
-                {content.portfolioButtonLabel || 'See All Weddings'}
+                {content.portfolioButtonLabel}
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>

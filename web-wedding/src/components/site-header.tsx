@@ -60,7 +60,7 @@ export function SiteHeader({ settings, layout }: Props) {
   useEffect(() => {
     const updateHeader = () => {
       const path = window.location.pathname;
-      setOpaque(window.scrollY > 20 || !hasHero(path));
+      setOpaque(window.scrollY > 100 || !hasHero(path));
     };
 
     updateHeader();
@@ -113,8 +113,8 @@ export function SiteHeader({ settings, layout }: Props) {
             </span>
             <span
               className={cn(
-                'text-[11px] uppercase tracking-wide-lg transition-colors duration-300',
-                opaque ? 'text-muted-foreground' : 'text-white/70'
+                'text-[12px] uppercase tracking-wide-lg transition-colors duration-300',
+                opaque ? 'text-foreground' : 'text-white/80'
               )}
             >
               {settings?.tagline || ''}
