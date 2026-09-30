@@ -1,6 +1,11 @@
+import { cache } from 'react';
 import { client } from '@/app/sanity/client';
 import { urlFor } from '@/app/sanity/image';
 import type { SanityImageSource } from '@sanity/image-url';
+
+// Все геттеры ниже — НЕ СРОЧНЫЕ чтения: CDN-клиент (useCdn: true, квота 1M/мес)
+// + дедупликация cache() в рамках одного рендера. Срочные запросы (draft/preview,
+// мгновенная свежесть) — через liveClient из '@/app/sanity/client' (квота 250k/мес).
 
 export type SiteSettings = {
   name: string;
@@ -203,11 +208,30 @@ function mapService(service: any): Service {
   };
 }
 
-export async function getSiteSettings(): Promise<SiteSettings | null> {
-  const data = await client.fetch(`*[_type == "siteSettings" && _id == "siteSettings"][0]{
+// ── «Шапка» сайта: settings + layout + design одним запросом ───────────────
+// Раньше три документа запрашивались отдельно, а геттеры вызывались по 2–3 раза
+// за рендер (generateMetadata + layout + страница) — до 6 HTTP-запросов. Один
+// GROQ-запрос + cache() в рамках рендера сводит всё к одному запросу.
+const siteChromeQuery = `{
+  "settings": *[_type == "siteSettings" && _id == "siteSettings"][0]{
     siteTitle, tagline, location, serviceArea, email, phone, address, logo, logoAlt, favicon,
-    socialLinks[]{ platform, url }, seo{ metaTitle, metaDescription, ogImage, canonicalUrl, noIndex, noFollow }
-  }`);
+    socialLinks[]{ platform, url }, seo{ metaTitle, metaDescription, ogImage, canonicalUrl,
+    noIndex, noFollow }
+  },
+  "layout": *[_type == "siteLayout" && _id == "siteLayout"][0]{
+    headerLogo, navLinks[]{ label, link, order }, copyrightText, footerDescription,
+    footerExploreLabel, footerContactLabel, footerNavLinks[]{ label, link },
+    footerEmail, footerPhone, footerAddress, footerSocialLinks[]{ platform, url }
+  },
+  "design": *[_type == "siteDesign" && _id == "siteDesign"][0]{
+    background, foreground, secondary, mutedForeground, accent, accentOverlay,
+    accentForeground, border, sage, blush, sand, terracotta
+  }
+}`;
+
+const fetchSiteChrome = cache(async () => client.fetch(siteChromeQuery));
+
+function mapSiteSettings(data: any): SiteSettings | null {
   if (!data) return null;
   return {
     name: data.siteTitle,
@@ -225,12 +249,7 @@ export async function getSiteSettings(): Promise<SiteSettings | null> {
   };
 }
 
-export async function getSiteLayout(): Promise<SiteLayout | null> {
-  const data = await client.fetch(`*[_type == "siteLayout" && _id == "siteLayout"][0]{
-    headerLogo, navLinks[]{ label, link, order }, copyrightText, footerDescription,
-    footerExploreLabel, footerContactLabel, footerNavLinks[]{ label, link },
-    footerEmail, footerPhone, footerAddress, footerSocialLinks[]{ platform, url }
-  }`);
+function mapSiteLayout(data: any): SiteLayout | null {
   if (!data) return null;
   return {
     headerLogo: data.headerLogo ? urlFor(data.headerLogo).width(600).auto('format').url() : undefined,
@@ -248,24 +267,34 @@ export async function getSiteLayout(): Promise<SiteLayout | null> {
   };
 }
 
-export async function getAlbums(): Promise<Album[]> {
+export const getSiteSettings = cache(async (): Promise<SiteSettings | null> => {
+  const chrome = await fetchSiteChrome();
+  return chrome?.settings ? mapSiteSettings(chrome.settings) : null;
+});
+
+export const getSiteLayout = cache(async (): Promise<SiteLayout | null> => {
+  const chrome = await fetchSiteChrome();
+  return chrome?.layout ? mapSiteLayout(chrome.layout) : null;
+});
+
+export const getAlbums = cache(async (): Promise<Album[]> => {
   const data = await client.fetch(`*[_type == "album"] | order(coalesce(order, 9999) asc, _createdAt desc){${albumProjection}}`);
   return (data || []).map(mapAlbum);
-}
+});
 
-export async function getAlbum(slug: string): Promise<Album | null> {
+export const getAlbum = cache(async (slug: string): Promise<Album | null> => {
   const data = await client.fetch(`*[_type == "album" && slug.current == $slug][0]{${albumProjection}}`, { slug });
   return data ? mapAlbum(data) : null;
-}
+});
 
-export async function getServices(): Promise<Service[]> {
+export const getServices = cache(async (): Promise<Service[]> => {
   const data = await client.fetch(`*[_type == "service"] | order(coalesce(order, 9999) asc, _createdAt asc){
     _id, name, slug, shortDescription, fullDescription, includes, image, imageAlt, startingPrice, featured, order
   }`);
   return (data || []).map(mapService);
-}
+});
 
-export async function getHomePage(): Promise<HomePageContent | null> {
+export const getHomePage = cache(async (): Promise<HomePageContent | null> => {
   const data = await client.fetch(`*[_type == "homePage" && _id == "homePage"][0]{
     seo{ metaTitle, metaDescription, ogImage, canonicalUrl, noIndex, noFollow },
     heroEyebrow, heroHeading, heroDescription, heroImage, heroImageAlt,
@@ -299,9 +328,9 @@ export async function getHomePage(): Promise<HomePageContent | null> {
     approachSteps: data.approachSteps || [],
     testimonials: data.testimonials || [],
   };
-}
+});
 
-export async function getBackstageVideos() {
+export const getBackstageVideos = cache(async () => {
   return client.fetch(`
     *[
       _type == "backstageVideo" &&
@@ -309,16 +338,16 @@ export async function getBackstageVideos() {
     ]
     | order(order asc)
   `)
-}
+});
 
-export async function getPage(slug: string) {
+export const getPage = cache(async (slug: string) => {
   return client.fetch(`*[_type == "page" && slug.current == $slug][0]{
     _id, title, slug, seo{ metaTitle, metaDescription, ogImage, canonicalUrl, noIndex, noFollow }, sections[]{
       ...,
       _type == "galleryPreviewSection" => { featuredAlbums[]->{${albumProjection}} }
     }
   }`, { slug });
-}
+});
 
 export type SiteDesign = {
   colors: Record<string, string | undefined>;
@@ -328,11 +357,8 @@ function mapColor(value: any) {
   return value?.hex || undefined;
 }
 
-export async function getSiteDesign(): Promise<SiteDesign | null> {
-  const data = await client.fetch(`*[_type == "siteDesign" && _id == "siteDesign"][0]{
-    background, foreground, secondary, mutedForeground, accent, accentOverlay, accentForeground, border,
-    sage, blush, sand, terracotta
-  }`);
+export const getSiteDesign = cache(async (): Promise<SiteDesign | null> => {
+  const data = (await fetchSiteChrome())?.design;
   if (!data) return null;
   return {
     colors: {
@@ -342,21 +368,21 @@ export async function getSiteDesign(): Promise<SiteDesign | null> {
       blush: mapColor(data.blush), sand: mapColor(data.sand), terracotta: mapColor(data.terracotta),
     },
   };
-}
+});
 
 function pageProjection(type: string, slug: string) {
   return client.fetch(`*[_type == $type && _id == $id][0]{...}`, { type, id: slug });
 }
 
-export async function getFixedPage(type: string) {
+export const getFixedPage = cache(async (type: string) => {
   return pageProjection(type, type);
-}
+});
 
 export async function getAboutPage() { return getFixedPage('aboutPage'); }
 
 // servicesPage has its own query (rather than the generic getFixedPage) because
 // comparisonRows needs its service references dereferenced into plain serviceId/value pairs.
-export async function getServicesPage() {
+export const getServicesPage = cache(async () => {
   return client.fetch(`*[_type == "servicesPage" && _id == "servicesPage"][0]{
     ...,
     comparisonRows[]{
@@ -367,7 +393,7 @@ export async function getServicesPage() {
       }
     }
   }`);
-}
+});
 
 export async function getPortfolioPage() { return getFixedPage('portfolioPage'); }
 export async function getFaqPage() { return getFixedPage('faqPage'); }
