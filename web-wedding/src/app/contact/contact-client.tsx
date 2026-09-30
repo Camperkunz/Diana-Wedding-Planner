@@ -21,7 +21,6 @@ interface CustomField {
 }
 
 interface ContactClientProps {
-  recipientEmail?: string;
   services?: ServiceItem[];
   settings: {
     email?: string;
@@ -52,7 +51,7 @@ interface ContactClientProps {
   };
 }
 
-export default function ContactClient({ recipientEmail, services, settings, c }: ContactClientProps) {
+export default function ContactClient({ services, settings, c }: ContactClientProps) {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -67,10 +66,9 @@ export default function ContactClient({ recipientEmail, services, settings, c }:
     setIsSubmitting(true);
     setErrorMessage(null);
 
-    const result = await sendEmailAction({
-      recipientEmail: recipientEmail || '',
-      formData,
-    });
+    // The recipient is resolved server-side from Sanity inside the action —
+    // never sent from the client (prevents abuse as an open email relay).
+    const result = await sendEmailAction({ formData });
 
     setIsSubmitting(false);
 

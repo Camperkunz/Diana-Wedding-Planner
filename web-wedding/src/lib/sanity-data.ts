@@ -18,6 +18,7 @@ export type SiteSettings = {
   address?: string;
   location?: string;
   serviceArea?: string;
+  googleAnalyticsId?: string;
   socialLinks: { platform: string; url: string }[];
   seo?: { metaTitle?: string; metaDescription?: string; ogImage?: string; canonicalUrl?: string; noIndex?: boolean; noFollow?: boolean };
 };
@@ -215,6 +216,7 @@ function mapService(service: any): Service {
 const siteChromeQuery = `{
   "settings": *[_type == "siteSettings" && _id == "siteSettings"][0]{
     siteTitle, tagline, location, serviceArea, email, phone, address, logo, logoAlt, favicon,
+    googleAnalyticsId,
     socialLinks[]{ platform, url }, seo{ metaTitle, metaDescription, ogImage, canonicalUrl,
     noIndex, noFollow }
   },
@@ -244,6 +246,13 @@ function mapSiteSettings(data: any): SiteSettings | null {
     email: data.email,
     phone: data.phone,
     address: data.address,
+    // Security: the value is interpolated into an inline gtag snippet on the
+    // client, so it is re-validated here (defense in depth on top of the Studio
+    // validation). Anything that is not a plain GA4 Measurement ID becomes
+    // `undefined` and no analytics script is rendered at all.
+    googleAnalyticsId: /^G-[A-Z0-9]{4,}$/i.test((data.googleAnalyticsId || '').trim())
+      ? data.googleAnalyticsId.trim()
+      : undefined,
     socialLinks: data.socialLinks || [],
     seo: data.seo ? { metaTitle: data.seo.metaTitle, metaDescription: data.seo.metaDescription, ogImage: data.seo.ogImage ? urlFor(data.seo.ogImage).width(1200).auto('format').url() : undefined, canonicalUrl: data.seo.canonicalUrl, noIndex: data.seo.noIndex, noFollow: data.seo.noFollow } : undefined,
   };

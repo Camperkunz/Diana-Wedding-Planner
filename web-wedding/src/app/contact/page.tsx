@@ -21,11 +21,8 @@ export default async function ContactPage() {
         getServices(),
     ]);
 
-    const targetEmail = page?.recipientEmail || settings?.email || layout?.footerEmail;
-
     return (
         <ContactClient
-            recipientEmail={targetEmail}
             services={services}
             settings={{
                 email: settings?.email || layout?.footerEmail,

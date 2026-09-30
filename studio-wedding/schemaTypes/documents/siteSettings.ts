@@ -11,6 +11,7 @@ export const siteSettings = defineType({
     { name: 'contact', title: 'Contact Details', options: { collapsible: true, collapsed: true } },
     { name: 'social', title: 'Social Media', options: { collapsible: true, collapsed: true } },
     { name: 'seo', title: 'Default SEO', options: { collapsible: true, collapsed: true } },
+    { name: 'analytics', title: 'Analytics', options: { collapsible: true, collapsed: true } },
   ],
   fields: [
     defineField({ name: 'siteTitle', title: 'Business / Website Name', type: 'string', fieldset: 'business', description: 'In header and footer, main title-name.', validation: (rule) => rule.required() }),
@@ -25,6 +26,18 @@ export const siteSettings = defineType({
     defineField({ name: 'address', title: 'Address', type: 'string', fieldset: 'contact' }),
     defineField({ name: 'socialLinks', title: 'Social Media Accounts', type: 'array', fieldset: 'social', description: 'Add only the accounts you actually use. Drag to reorder.', of: [{ type: 'socialLink' }] }),
     defineField({ name: 'seo', title: 'Default Search & Social Settings', type: 'seo', fieldset: 'seo', description: 'These are fallback SEO settings used when a page does not have its own SEO values.' }),
+    defineField({
+      name: 'googleAnalyticsId',
+      title: 'Google Analytics Measurement ID',
+      type: 'string',
+      fieldset: 'analytics',
+      description: 'Optional. Format: G-XXXXXXXXXX (Google Analytics 4). Find it in Google Analytics → Admin → Data Streams → Measurement ID. Leave empty to disable analytics.',
+      validation: (rule) =>
+        rule.custom((value) => {
+          if (!value) return true;
+          return /^G-[A-Z0-9]{4,}$/i.test(value.trim()) || 'Enter a valid GA4 Measurement ID, e.g. G-ABC123DEF4';
+        }),
+    }),
   ],
   preview: { select: { title: 'siteTitle', subtitle: 'tagline', media: 'logo' }, prepare({ title, subtitle, media }: { title?: string; subtitle?: string; media?: any }) { return { title: title || 'Site Settings', subtitle: subtitle || 'Business information and defaults', media } } },
 })

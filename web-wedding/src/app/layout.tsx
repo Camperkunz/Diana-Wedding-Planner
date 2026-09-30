@@ -10,6 +10,7 @@ import { SiteHeader } from '../components/site-header';
 import { SiteFooter } from '../components/site-footer';
 import { FloatingContact } from '../components/floating-contact';
 import { getSiteDesign, getSiteLayout, getSiteSettings, hexToHsl } from '../lib/sanity-data';
+import { GoogleAnalytics } from '../components/google-analytics';
 
 const jost = Jost({ subsets: ['latin'], weight: ['300', '400', '500'], variable: '--font-jost' });
 const cormorant = Cormorant_Garamond({
@@ -102,6 +103,9 @@ export default async function RootLayout({
         <main id="main-content">{children}</main>
         <SiteFooter settings={settings} layout={siteLayout} />
         <FloatingContact />
+        {/* Renders nothing unless a valid GA4 Measurement ID (G-*) is set in
+            Business & Contact Info. Scripts load after hydration. */}
+        <GoogleAnalytics id={settings?.googleAnalyticsId} />
       </body>
     </html>
   );

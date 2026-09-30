@@ -1,48 +1,143 @@
 'use server';
 
 import { Resend } from 'resend';
+import { headers } from 'next/headers';
+import { getContactPage, getSiteLayout, getSiteSettings } from '@/lib/sanity-data';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface SendEmailParams {
-    recipientEmail?: string;
     formData: Record<string, string>;
 }
 
-export async function sendEmailAction({ recipientEmail, formData }: SendEmailParams) {
-    try {
-        // Фолбэк на случай, если поле recipientEmail в Sanity пустое —
-        // на прод это трогать не придётся, но подстрахует от "no recipient" в проде
-        const FALLBACK_EMAIL = process.env.RESEND_FALLBACK_EMAIL;
-        const targetEmail = recipientEmail?.trim() || FALLBACK_EMAIL;
+// ── Security hardening ─────────────────────────────────────────────────────
+// 1. The recipient is resolved SERVER-SIDE from Sanity. It is never taken from
+//    the request, so nobody can turn this action into an open email relay.
+// 2. Every value interpolated into the HTML email is escaped (no HTML/script
+//    injection into the message body).
+// 3. replyTo must be a syntactically valid email or it is dropped.
+// 4. Best-effort in-memory rate limiting per IP. NOTE: this resets on cold
+//    starts and is per-instance — it raises the bar against spam but does not
+//    replace a CAPTCHA/WAF if abuse ever becomes a problem.
 
-        if (!targetEmail) {
-            return { success: false, error: 'No recipient email configured' };
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const RATE_LIMIT_MAX_ATTEMPTS = 3;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+const MAX_FIELDS = 30;
+const MAX_LABEL_LENGTH = 200;
+const MAX_VALUE_LENGTH = 2000;
+const MAX_TOTAL_LENGTH = 10000;
+
+const attemptLog = new Map<string, number[]>();
+
+function isRateLimited(key: string): boolean {
+    const now = Date.now();
+    const recent = (attemptLog.get(key) || []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+    if (recent.length >= RATE_LIMIT_MAX_ATTEMPTS) {
+        attemptLog.set(key, recent);
+        return true;
+    }
+    recent.push(now);
+    attemptLog.set(key, recent);
+    // Keep the log bounded so it cannot grow forever.
+    if (attemptLog.size > 10000) attemptLog.clear();
+    return false;
+}
+
+/** Escapes a value for safe interpolation into the HTML email body. */
+function escapeHtml(value: string): string {
+    return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+/** Strips control characters and caps the length of untrusted text. */
+function sanitizeText(value: unknown, maxLength: number): string {
+    if (typeof value !== 'string') return '';
+    // eslint-disable-next-line no-control-regex
+    return value.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').slice(0, maxLength).trim();
+}
+
+/** Generic error shown to visitors — details are only logged on the server. */
+const GENERIC_ERROR = 'Failed to send message. Please try again later.';
+
+export async function sendEmailAction({ formData }: SendEmailParams) {
+    try {
+        const headerStore = await headers();
+        const clientIp =
+            headerStore.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+            headerStore.get('x-real-ip') ||
+            'unknown';
+
+        if (isRateLimited(clientIp)) {
+            return { success: false, error: 'Too many messages sent. Please try again later.' };
         }
 
-        // from теперь берётся из env, а не хардкодится
+        // Recipient comes from the CMS, never from the client payload.
+        const [page, settings, layout] = await Promise.all([
+            getContactPage(),
+            getSiteSettings(),
+            getSiteLayout(),
+        ]);
+        const targetEmail =
+            sanitizeText(page?.recipientEmail, 320) ||
+            sanitizeText(settings?.email, 320) ||
+            sanitizeText(layout?.footerEmail, 320) ||
+            // Env is server-side and trusted, so it is a safe last-resort fallback
+            // (it replaces the old client-supplied fallback).
+            sanitizeText(process.env.RESEND_FALLBACK_EMAIL, 320);
+
+        if (!EMAIL_RE.test(targetEmail)) {
+            console.error('Contact form: no valid recipient email configured in Sanity or env.');
+            return { success: false, error: GENERIC_ERROR };
+        }
+
+        // from берётся из env, а не хардкодится
         const FROM_ADDRESS = process.env.RESEND_FROM_ADDRESS || 'Contact Form <onboarding@resend.dev>';
 
-        const emailKey = Object.keys(formData).find((key) => {
-            const lowerKey = key.toLowerCase();
+        // Sanitised, bounded copy of the submitted fields.
+        const entries: [string, string][] = [];
+        let totalLength = 0;
+        for (const [rawLabel, rawValue] of Object.entries(formData || {}).slice(0, MAX_FIELDS)) {
+            const label = sanitizeText(rawLabel, MAX_LABEL_LENGTH);
+            const value = sanitizeText(rawValue, MAX_VALUE_LENGTH);
+            if (!label) continue;
+            totalLength += label.length + value.length;
+            if (totalLength > MAX_TOTAL_LENGTH) break;
+            entries.push([label, value]);
+        }
+
+        // replyTo only if it really looks like an email address.
+        const emailEntry = entries.find(([label]) => {
+            const lowerKey = label.toLowerCase();
             return lowerKey.includes('email') || lowerKey.includes('mail') || lowerKey.includes('почта');
         });
+        const replyTo = emailEntry && EMAIL_RE.test(emailEntry[1]) ? emailEntry[1] : undefined;
 
-        const userEmail = emailKey ? formData[emailKey]?.trim() : undefined;
+        const nameEntry = entries.find(
+            ([label]) => label.toLowerCase() === 'name' || label.toLowerCase() === 'your name'
+        );
+        const subjectName = (nameEntry?.[1] || 'Website').replace(/[\r\n]+/g, ' ').slice(0, 200);
 
-        const formattedFields = Object.entries(formData)
-            .map(([label, value]) => `<p style="margin: 6px 0;"><strong>${label}:</strong> ${value || 'N/A'}</p>`)
+        const formattedFields = entries
+            .map(
+                ([label, value]) =>
+                    `<p style="margin: 6px 0;"><strong>${escapeHtml(label)}:</strong> ${escapeHtml(value) || 'N/A'}</p>`
+            )
             .join('');
 
-        const { data, error } = await resend.emails.send({
+        const { error } = await resend.emails.send({
             from: FROM_ADDRESS,
-            to: [targetEmail], // теперь реально динамический получатель
-            replyTo: userEmail,
-            subject: `New Inquiry from ${formData['Name'] || formData['Your Name'] || 'Website'}`,
+            to: [targetEmail],
+            ...(replyTo ? { replyTo } : {}),
+            subject: `New Inquiry from ${subjectName}`,
             html: `
                 <div style="font-family: sans-serif; padding: 20px; line-height: 1.5;">
                     <h2>New Contact Inquiry</h2>
-                    <p style="color: #666; font-size: 13px;">Target recipient: ${targetEmail}</p>
+                    <p style="color: #666; font-size: 13px;">Target recipient: ${escapeHtml(targetEmail)}</p>
                     <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;" />
                     <div>${formattedFields}</div>
                 </div>
@@ -51,12 +146,13 @@ export async function sendEmailAction({ recipientEmail, formData }: SendEmailPar
 
         if (error) {
             console.error('Resend API Error:', error);
-            return { success: false, error: error.message };
+            return { success: false, error: GENERIC_ERROR };
         }
 
-        return { success: true, data };
-    } catch (err: any) {
+        return { success: true };
+    } catch (err) {
         console.error('Server Action Error:', err);
-        return { success: false, error: err?.message || 'Failed to send message' };
+        return { success: false, error: GENERIC_ERROR };
     }
 }
+
