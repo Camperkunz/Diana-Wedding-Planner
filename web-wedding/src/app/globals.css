@@ -26,7 +26,8 @@
 
     /* Muted */
     --muted: 220 10% 91%;
-    --muted-foreground: 220 8% 45%;
+    /* 45% failed 4.5:1 on secondary/40-50 bands; 42% keeps muted text AA everywhere */
+    --muted-foreground: 220 8% 42%;
 
     /* Accent */
     --accent: 345 55% 35%;
@@ -85,6 +86,13 @@
 
   ::selection {
     background-color: hsl(var(--accent) / 0.2);
+  }
+
+  /* WCAG 2.4.7 — visible keyboard focus indicator on every interactive element.
+     Contact form fields opt out with focus:outline-none + focus:ring-2. */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 }
 
@@ -192,4 +200,21 @@ html {
 
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground) / 0.6);
+}
+
+/* WCAG 2.3.3 — honour the OS "reduce motion" preference:
+   no smooth scrolling, no reveal animations, no transitions. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
 }

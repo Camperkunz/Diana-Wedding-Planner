@@ -45,7 +45,7 @@ export default async function AlbumPage({
         imageAlt={album.coverImageAlt || album.title}
       >
         {album.date || album.venue || album.location ? (
-          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 mt-6 text-white/70 text-sm font-light">
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 mt-6 text-white/90 text-sm">
             {album.date ? (
               <span className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" aria-hidden="true" />
@@ -94,7 +94,7 @@ export default async function AlbumPage({
                   loading="lazy"
                 />
                 {photo.caption && (
-                  <figcaption className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent text-white text-sm font-light opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <figcaption className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent text-white text-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
                     {photo.caption}
                   </figcaption>
                 )}

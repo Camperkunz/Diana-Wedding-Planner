@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Menu, X, Globe } from 'lucide-react';
 import {
   SiInstagram,
@@ -51,6 +51,7 @@ export function SiteHeader({ settings, layout }: Props) {
   const pathname = usePathname();
   const [opaque, setOpaque] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
   const allNavLinks = layout?.navLinks?.length ? layout.navLinks.map((item) => ({ href: item.link, label: item.label })) : fallbackLinks;
   const contactLink = allNavLinks.find((item) => item.href === '/contact' || item.label.toLowerCase() === 'contact') || { href: '/contact', label: 'Contact' };
   const navLinks = allNavLinks.filter((item) => item !== contactLink);
@@ -78,6 +79,19 @@ export function SiteHeader({ settings, layout }: Props) {
     return () => {
       document.body.style.overflow = '';
     };
+  }, [mobileOpen]);
+
+  // WCAG 2.1.2 — Escape closes the menu and returns focus to the trigger button.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, [mobileOpen]);
 
   return (
@@ -127,6 +141,7 @@ export function SiteHeader({ settings, layout }: Props) {
             <Link
               key={link.href}
               href={link.href}
+              aria-current={pathname === link.href ? 'page' : undefined}
               className={cn(
                 'text-sm font-medium tracking-wide uppercase transition-colors duration-300 relative py-1',
                 opaque
@@ -151,7 +166,7 @@ export function SiteHeader({ settings, layout }: Props) {
             {contactLink.label}
           </Link>
           {Boolean(settings?.socialLinks?.length) && (
-            <div className={cn('flex items-center gap-4 pl-2 border-l', opaque ? 'border-border' : 'border-white/20')}>
+            <div className={cn('flex items-center border-l', opaque ? 'border-border' : 'border-white/20')}>
               {settings?.socialLinks?.map((item, index) => {
                 if (!item.url) return null;
                 return (
@@ -162,10 +177,10 @@ export function SiteHeader({ settings, layout }: Props) {
                     rel="noopener noreferrer"
                     aria-label={item.platform || 'Social Link'}
                     className={cn(
-                      'transition-colors duration-300',
+                      'inline-flex items-center justify-center p-2 transition-colors duration-300',
                       opaque
-                        ? 'text-foreground/60 hover:text-accent'
-                        : 'text-white/60 hover:text-white'
+                        ? 'text-foreground/75 hover:text-accent'
+                        : 'text-white/75 hover:text-white'
                     )}
                   >
                     {getSocialIcon(item.platform)}
@@ -177,22 +192,27 @@ export function SiteHeader({ settings, layout }: Props) {
         </div>
 
         <button
+          ref={menuButtonRef}
           className={cn(
-            'lg:hidden p-2 -mr-2 transition-colors duration-300',
+            'lg:hidden p-3 -mr-3 transition-colors duration-300',
             opaque ? 'text-foreground' : 'text-white'
           )}
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileOpen}
+          aria-controls="mobile-menu"
         >
-          {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {mobileOpen ? <X className="w-8 h-8" /> : <Menu className="w-8 h-8" />}
         </button>
       </nav>
 
       <div
+        id="mobile-menu"
         className={cn(
-          'lg:hidden overflow-hidden transition-all duration-400 bg-background border-b border-border',
-          mobileOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+          'lg:hidden transition-all duration-300 bg-background border-b border-border',
+          mobileOpen
+            ? 'max-h-[calc(100dvh-5rem)] overflow-y-auto opacity-100 visible'
+            : 'max-h-0 overflow-hidden opacity-0 invisible pointer-events-none'
         )}
       >
         <div className="container-wide py-6 flex flex-col gap-1">
@@ -200,12 +220,16 @@ export function SiteHeader({ settings, layout }: Props) {
             <Link
               key={link.href}
               href={link.href}
+              aria-current={pathname === link.href ? 'page' : undefined}
               className={cn(
-                'py-3 text-base tracking-wide transition-colors duration-200 border-b border-border/50',
+                'relative py-3 text-base tracking-wide transition-colors duration-200 border-b border-border/50',
                 pathname === link.href ? 'text-accent' : 'text-foreground/80'
               )}
             >
               {link.label}
+              {pathname === link.href && (
+                <span aria-hidden="true" className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent" />
+              )}
             </Link>
           ))}
           <Link
@@ -215,7 +239,7 @@ export function SiteHeader({ settings, layout }: Props) {
             {contactLink.label}
           </Link>
           {Boolean(settings?.socialLinks?.length) && (
-            <div className="flex items-center gap-5 pt-4 mt-2 border-t border-border/50">
+            <div className="flex items-center -mx-3 pt-4 mt-2 border-t border-border/50">
               {settings?.socialLinks?.map((item, index) => {
                 if (!item.url) return null;
                 return (
@@ -225,7 +249,7 @@ export function SiteHeader({ settings, layout }: Props) {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={item.platform || 'Social Link'}
-                    className="text-foreground/60 hover:text-accent transition-colors duration-300"
+                    className="inline-flex items-center justify-center p-3 text-foreground/75 hover:text-accent transition-colors duration-300"
                   >
                     {getSocialIcon(item.platform)}
                   </a>

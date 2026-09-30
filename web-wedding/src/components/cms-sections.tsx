@@ -62,8 +62,8 @@ export function CmsSections({ sections }: { sections: any[] }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
               {(section.featuredAlbums || []).map((album: any) => album.coverImage && <Link key={album._id} href={`/portfolio/${album.slug?.current || ''}`} className="group relative aspect-[4/5] overflow-hidden rounded-sm">
                 <img src={urlFor(album.coverImage).width(1200).auto('format').url()} alt={album.coverImageAlt || album.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-7"><p className="text-white/70 text-xs uppercase tracking-wide mb-2">{album.category}</p><h3 className="font-serif text-white text-2xl">{album.title}</h3></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-7"><p className="text-white/90 text-sm uppercase tracking-wide mb-2">{album.category}</p><h3 className="font-serif text-white text-2xl">{album.title}</h3></div>
               </Link>)}
             </div>
             <div className="flex justify-center mt-12"><Button button={section.viewAllButton} /></div>

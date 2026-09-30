@@ -49,7 +49,7 @@ export function SiteFooter({ settings, layout }: Props) {
 
           {/* Links */}
           <div>
-            <p className="text-xs uppercase tracking-wide-lg text-primary-foreground/50 mb-4">
+            <p className="text-xs uppercase tracking-wide-lg text-primary-foreground/70 mb-4">
               {layout?.footerExploreLabel || 'Explore'}
             </p>
             <ul className="grid grid-cols-2 gap-2">
@@ -57,7 +57,7 @@ export function SiteFooter({ settings, layout }: Props) {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-primary-foreground/80 hover:text-accent transition-colors duration-200"
+                    className="text-sm text-primary-foreground/80 hover:text-white transition-colors duration-200"
                   >
                     {link.label}
                   </Link>
@@ -68,49 +68,51 @@ export function SiteFooter({ settings, layout }: Props) {
 
           {/* Contact */}
           <div>
-            <p className="text-xs uppercase tracking-wide-lg text-primary-foreground/50 mb-4">
+            <p className="text-xs uppercase tracking-wide-lg text-primary-foreground/70 mb-4">
               {layout?.footerContactLabel || 'Get in Touch'}
             </p>
             <ul className="space-y-3 text-sm text-primary-foreground/80">
               <li className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-accent shrink-0" />
-                <a href={`mailto:${layout?.footerEmail || settings?.email || ''}`} className="hover:text-accent transition-colors">
+                <Mail className="w-4 h-4 text-accent-overlay shrink-0" aria-hidden="true" />
+                <a href={`mailto:${layout?.footerEmail || settings?.email || ''}`} className="hover:text-white transition-colors">
                   {layout?.footerEmail || settings?.email || ''}
                 </a>
               </li>
               <li className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-accent shrink-0" />
+                <Phone className="w-4 h-4 text-accent-overlay shrink-0" aria-hidden="true" />
                 <span>{layout?.footerPhone || settings?.phone || ''}</span>
               </li>
               <li className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-accent shrink-0" />
+                <MapPin className="w-4 h-4 text-accent-overlay shrink-0" aria-hidden="true" />
                 <span>{layout?.footerAddress || settings?.address || settings?.location || ''}</span>
               </li>
             </ul>
-            <div className="flex items-center gap-4 mt-4">
-              <a
-                href={socials.find((item) => item.platform === 'instagram')?.url || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="text-primary-foreground/70 hover:text-accent transition-colors duration-200"
-              >
-                <Instagram className="w-5 h-5" />
-              </a>
-            </div>
+            {socials.find((item) => item.platform === 'instagram')?.url ? (
+              <div className="flex items-center gap-4 mt-4">
+                <a
+                  href={socials.find((item) => item.platform === 'instagram')?.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                  className="inline-flex items-center justify-center p-2 -m-1 text-primary-foreground/75 hover:text-white transition-colors duration-200"
+                >
+                  <Instagram className="w-5 h-5" aria-hidden="true" />
+                </a>
+              </div>
+            ) : null}
           </div>
         </div>
 
-        <div className="mt-12 pt-6 border-t border-primary-foreground/15 flex flex-col sm:flex-row items-center justify-between gap-8 sm:gap-3">
-          <div className="text-xs text-primary-foreground/50 items-center sm:items-start flex flex-col">
+        <div className="mt-12 pt-6 border-t border-primary-foreground/20 flex flex-col sm:flex-row items-center justify-between gap-8 sm:gap-3">
+          <div className="text-xs text-primary-foreground/70 items-center sm:items-start flex flex-col">
             <p className="text-sm">
               {layout?.copyrightText || `© ${new Date().getFullYear()} ${settings?.name || 'Site Title'} Wedding Planning. All rights reserved.`}
             </p>
             <p>
-              Made with ❤️ by <a href="https://annanikiforova.vercel.app/?utm_source=wedding" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors duration-200">Anna Nikiforova</a>
+              Made with ❤️ by <a href="https://annanikiforova.vercel.app/?utm_source=wedding" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors duration-200">Anna Nikiforova</a>
             </p>
           </div>
-          <p className="text-xs text-primary-foreground/40 ">
+          <p className="text-xs text-primary-foreground/70 ">
             {layout?.footerAddress || settings?.location || ''}
           </p>
         </div>

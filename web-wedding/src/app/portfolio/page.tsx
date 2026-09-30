@@ -57,19 +57,15 @@ export default async function PortfolioPage() {
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent group-hover:from-black/85 transition-all duration-500" />
                                 <div className="absolute bottom-0 left-0 right-0 p-7">
-                                    <p className="text-white/70 text-xs uppercase tracking-wide mb-2">
+                                    <p className="text-white/70 text-sm uppercase tracking-wide mb-2">
                                         {album.category}
                                     </p>
-                                    <h2 className="font-serif text-white text-2xl mb-1">
+                                    <h2 className="font-serif text-white text-3xl mb-1">
                                         {album.title}
                                     </h2>
                                     <p className="text-white/60 text-xs font-light">
                                         {album.venue} · {album.location}
                                     </p>
-                                    <span className="inline-flex items-center gap-2 mt-4 text-xs uppercase tracking-wide text-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                        View Gallery
-                                        <ArrowRight className="w-3 h-3" />
-                                    </span>
                                 </div>
                             </Link>
                         ))}

@@ -117,8 +117,14 @@ export default async function RootLayout({
       className={`${jost.variable} ${cormorant.variable} ${dancing.variable} ${manrope.variable} ${playfair.variable} ${allura.variable} ${lato.variable} ${dmSerif.variable} ${greatVibes.variable}`}
     >
       <body className="font-sans bg-background text-foreground" style={style}>
+        <a
+          href="#main-content"
+          className="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-4 focus-visible:left-4 focus-visible:z-[60] focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:px-5 focus-visible:py-3 focus-visible:text-sm focus-visible:uppercase focus-visible:tracking-wide focus-visible:shadow-lg"
+        >
+          Skip to main content
+        </a>
         <SiteHeader settings={settings} layout={siteLayout} />
-        <main>{children}</main>
+        <main id="main-content">{children}</main>
         <SiteFooter settings={settings} layout={siteLayout} />
         <FloatingContact />
       </body>

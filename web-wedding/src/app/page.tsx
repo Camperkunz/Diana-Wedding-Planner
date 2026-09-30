@@ -175,8 +175,6 @@ export default async function Home() {
       <FadeIn>
         <StatsSection
           stats={stats}
-          className="bg-secondary/50 py-20 md:py-16"
-          valueClassName="font-serif text-4xl md:text-6xl text-accent mb-4"
         />
       </FadeIn>
 
@@ -194,16 +192,16 @@ export default async function Home() {
                   {content.servicesHeading}
                 </h2>
 
-                <p className="text-muted-foreground text-base md:text-lg font-light leading-relaxed max-w-xl">
+                <p className="text-muted-foreground text-base md:text-base font-light leading-relaxed max-w-xl">
                   {content.servicesDescription}
                 </p>
               </div>
 
               <Link
-                href={content.servicesButtonLink || '/services'}
-                className="inline-flex items-center gap-2 border border-accent text-accent px-8 py-3 text-sm uppercase tracking-wide hover:bg-accent hover:text-accent-foreground transition-all duration-300 shrink-0"
+                href={content.servicesButtonLink}
+                className="inline-flex items-center gap-2 border border-accent text-accent px-8 py-3 text-sm uppercase tracking-wide hover:bg-accent hover:text-accent-foreground transition-all duration-300 shrink-0 w-fit self-start md:self-center"
               >
-                {content.servicesButtonLabel || 'View All Services'}
+                {content.servicesButtonLabel}
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -225,7 +223,7 @@ export default async function Home() {
                     />
                   </div>
 
-                  <span className="font-serif text-2xl md:text-3xl text-accent/30 leading-none shrink-0">
+                  <span className="font-serif text-2xl md:text-3xl text-accent/70 leading-none shrink-0">
                     0{i + 1}
                   </span>
 
@@ -233,7 +231,7 @@ export default async function Home() {
                     {service.name}
                   </h3>
 
-                  <p className="text-muted-foreground text-md font-light leading-relaxed mb-5">
+                  <p className="text-muted-foreground text-lg md:text-base font-light leading-relaxed mb-5">
                     {service.shortDescription}
                   </p>
 
@@ -245,7 +243,7 @@ export default async function Home() {
                       .map((item: string, j: number) => (
                         <li
                           key={j}
-                          className="flex items-start gap-3 text-sm text-foreground/80 font-light"
+                          className="flex items-start gap-3 text-base md:text-sm text-foreground/80 font-light"
                         >
                           <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
                           {item}
@@ -274,7 +272,7 @@ export default async function Home() {
 
         <div className="relative z-10 max-w-2xl mx-auto px-6 text-center">
           <FadeIn>
-            <Heart className="w-8 h-8 text-white/50 mx-auto mb-8" />
+            <Heart className="w-8 h-8 text-white/50 mx-auto mb-8" aria-hidden="true" />
 
             <blockquote className="font-serif text-2xl md:text-3xl leading-relaxed text-balance italic text-white/95 font-normal">
               &ldquo;{content.quoteText}&rdquo;
@@ -343,14 +341,14 @@ export default async function Home() {
                     loading="lazy"
                   />
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent" />
 
                   <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-7">
-                    <p className="text-white/70 text-xs uppercase tracking-wide mb-1.5">
+                    <p className="text-white/90 text-sm uppercase tracking-wide mb-1.5">
                       {album.category}
                     </p>
 
-                    <h3 className="font-serif text-white text-xl lg:text-2xl">
+                    <h3 className="font-serif text-white text-2xl lg:text-3xl">
                       {album.title}
                     </h3>
                   </div>
@@ -386,7 +384,7 @@ export default async function Home() {
                     )}
 
                     <div className="flex flex-col md:flex-row gap-6 md:gap-12 items-start group">
-                      <div className="font-serif text-5xl md:text-6xl text-accent/25 leading-none shrink-0 w-16 md:w-24">
+                      <div className="font-serif text-5xl md:text-6xl text-accent/60 leading-none shrink-0 w-16 md:w-24">
                         {step.number}
                       </div>
 
@@ -457,7 +455,7 @@ export default async function Home() {
               <ArrowRight className="w-4 h-4" />
             </Link>
 
-            <p className="text-white/50 text-sm mt-8 font-light">
+            <p className="text-white/70 text-sm mt-8 font-light">
               {content.ctaDirectContactText}{' '}
               {emailHref && (
                 <a

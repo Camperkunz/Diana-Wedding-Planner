@@ -106,7 +106,7 @@ export default function ContactClient({ recipientEmail, services, settings, c }:
 
               {submitted ? (
                 <div className="bg-card rounded-sm p-12 border border-border shadow-sm text-center">
-                  <div className="w-16 h-16 bg-accent/15 flex items-center justify-center mx-auto mb-8">
+                  <div className="w-16 h-16 bg-accent/20 flex items-center justify-center mx-auto mb-8">
                     <Check className="w-8 h-8 text-accent" />
                   </div>
                   <h3 className="font-serif text-2xl mb-4">{c.successHeading}</h3>

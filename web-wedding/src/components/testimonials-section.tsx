@@ -48,7 +48,7 @@ export function TestimonialsSection({
         <div className={cardsClassName}>
           {testimonials.map((t, i) => (
             <article key={i} className="flex flex-col">
-              {showIcon && <Quote className="w-8 h-8 text-accent/25 mb-6" />}
+              {showIcon && <Quote className="w-8 h-8 text-accent/25 mb-6" aria-hidden="true" />}
 
               <p className="text-foreground/80 leading-relaxed flex-1 italic font-light text-lg">
                 &ldquo;{t.quote}&rdquo;
@@ -57,7 +57,7 @@ export function TestimonialsSection({
               <div className="mt-8 pt-5 border-t border-border/50">
                 <p className="font-serif text-lg">{t.author}</p>
                 {t.weddingType && (
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground mt-1 font-light">
+                  <p className="text-sm uppercase tracking-wide text-muted-foreground mt-1 font-light">
                     {t.weddingType}
                   </p>
                 )}

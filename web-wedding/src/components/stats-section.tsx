@@ -13,8 +13,8 @@ type StatsSectionProps = {
 // no stats entered in Sanity — same hide-if-empty pattern as TestimonialsSection.
 export function StatsSection({
   stats,
-  className = 'bg-secondary/50 py-20 md:py-24',
-  valueClassName = 'font-serif text-4xl md:text-5xl text-accent mb-3',
+  className = 'bg-secondary/50 py-12 md:py-16',
+  valueClassName = 'font-serif text-5xl md:text-6xl text-accent mb-4',
 }: StatsSectionProps) {
   if (!stats?.length) return null;
 
@@ -25,7 +25,7 @@ export function StatsSection({
           {stats.map((stat, i) => (
             <div key={i} className="text-center">
               <p className={valueClassName}>{stat.value}</p>
-              <p className="text-xs md:text-sm uppercase tracking-wide text-muted-foreground font-light">
+              <p className="text-sm uppercase tracking-wide text-muted-foreground font-light">
                 {stat.label}
               </p>
             </div>

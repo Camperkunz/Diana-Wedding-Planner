@@ -102,8 +102,6 @@ export default async function AboutPage() {
       {/* Stats Section */}
       <StatsSection
         stats={stats}
-        className="bg-secondary/50 py-20 md:py-16"
-        valueClassName="font-serif text-4xl md:text-6xl text-accent mb-4"
       />
 
       {/* Philosophy Section */}
