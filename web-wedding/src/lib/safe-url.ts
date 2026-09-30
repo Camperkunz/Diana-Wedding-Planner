@@ -127,3 +127,17 @@ export function safeMailtoHref(email: unknown): string | undefined {
   const href = `mailto:${value}`;
   return MAILTO.test(href) ? href : undefined;
 }
+
+/**
+ * Builds a `tel:` href from a phone number stored in the CMS.
+ *
+ * @returns the href, or `undefined` when the value looks unsafe — the caller then
+ * renders the number as plain text instead of a link.
+ */
+export function safeTelHref(phone: unknown): string | undefined {
+  const value = normalizeUrl(phone);
+  if (!value) return undefined;
+
+  const href = `tel:${value}`;
+  return TEL.test(href) ? href : undefined;
+}

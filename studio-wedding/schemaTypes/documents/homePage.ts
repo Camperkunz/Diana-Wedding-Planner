@@ -44,8 +44,15 @@ export const homePage = defineType({
 
     defineField({ name: 'aboutEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'about' }),
     defineField({ name: 'aboutHeading', title: 'Heading', type: 'string', fieldset: 'about', validation: (rule) => rule.required() }),
-    defineField({ name: 'aboutParagraph1', title: 'Paragraph 1', type: 'text', rows: 5, fieldset: 'about', validation: (rule) => rule.required() }),
-    defineField({ name: 'aboutParagraph2', title: 'Paragraph 2', type: 'text', rows: 5, fieldset: 'about' }),
+    defineField({
+      name: 'aboutParagraphs',
+      title: 'Paragraphs',
+      type: 'array',
+      fieldset: 'about',
+      description: 'Each item becomes one paragraph in the “Meet Diana” section. Add, drag to reorder, or delete items — the page renders exactly the paragraphs you have here, in this order.',
+      of: [{ type: 'text', rows: 5 }],
+      validation: (rule) => rule.min(1),
+    }),
     defineField({ name: 'aboutLinkLabel', title: 'Link Label', type: 'string', fieldset: 'about' }),
     defineField({ name: 'aboutLink', title: 'Link', type: 'string', fieldset: 'about', initialValue: '/about' }),
     defineField({ name: 'aboutImage1', title: 'Photo 1', type: 'image', options: { hotspot: true }, fieldset: 'about', description: 'Main (bigger) photo.', validation: (rule) => rule.required() }),

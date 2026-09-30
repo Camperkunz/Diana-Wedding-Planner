@@ -82,6 +82,9 @@ export default async function Home() {
     : [];
 
   const stats = content.stats?.length ? content.stats : [];
+  const aboutParagraphs = content.aboutParagraphs?.length
+    ? content.aboutParagraphs
+    : [];
   const emailHref = safeMailtoHref(settings?.email);
 
   return (
@@ -133,8 +136,9 @@ export default async function Home() {
               </h2>
 
               <div className="space-y-6 text-muted-foreground text-base md:text-lg font-light leading-relaxed">
-                <p>{content.aboutParagraph1}</p>
-                <p>{content.aboutParagraph2}</p>
+                {aboutParagraphs.map((paragraph: string, i: number) => (
+                  <p key={i}>{paragraph}</p>
+                ))}
               </div>
 
               <Link

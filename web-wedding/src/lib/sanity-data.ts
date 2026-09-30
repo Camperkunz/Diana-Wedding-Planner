@@ -94,8 +94,8 @@ export type HomePageContent = {
   heroSecondaryButtonLink?: string;
   aboutEyebrow?: string;
   aboutHeading?: string;
-  aboutParagraph1?: string;
-  aboutParagraph2?: string;
+  /** Paragraphs entered in the Studio, in display order. */
+  aboutParagraphs: string[];
   aboutLinkLabel?: string;
   aboutLink?: string;
   aboutImage1?: string;
@@ -303,12 +303,29 @@ export const getServices = cache(async (): Promise<Service[]> => {
   return (data || []).map(mapService);
 });
 
+/**
+ * The Studio stores the “Meet Diana” copy as an array of paragraphs, so the number
+ * of paragraphs is decided by the editor. `aboutParagraph1` / `aboutParagraph2` are
+ * the fields this section used before that array existed: they are folded in only
+ * while a document has no `aboutParagraphs` yet, so the page keeps its text until
+ * the content is migrated in the Studio. A blank line inside one entry also starts
+ * a new paragraph — the same convention the About page story already uses.
+ */
+function toParagraphs(value: unknown): string[] {
+  return (Array.isArray(value) ? value : [])
+    .flatMap((paragraph) => String(paragraph ?? '').split(/\n\s*\n/))
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+}
+
 export const getHomePage = cache(async (): Promise<HomePageContent | null> => {
+  // aboutParagraph1/aboutParagraph2 are the legacy fields read only as a fallback
+  // for documents that have not been migrated to aboutParagraphs yet.
   const data = await client.fetch(`*[_type == "homePage" && _id == "homePage"][0]{
     seo{ metaTitle, metaDescription, ogImage, canonicalUrl, noIndex, noFollow },
     heroEyebrow, heroHeading, heroDescription, heroImage, heroImageAlt,
     heroPrimaryButtonLabel, heroPrimaryButtonLink, heroSecondaryButtonLabel, heroSecondaryButtonLink,
-    aboutEyebrow, aboutHeading, aboutParagraph1, aboutParagraph2, aboutLinkLabel, aboutLink,
+    aboutEyebrow, aboutHeading, aboutParagraphs, aboutParagraph1, aboutParagraph2, aboutLinkLabel, aboutLink,
     aboutImage1, aboutImage2, aboutImage1Alt, aboutImage2Alt,
     stats[]{ value, label },
     servicesEyebrow, servicesHeading, servicesDescription, servicesButtonLabel, servicesButtonLink,
@@ -324,6 +341,11 @@ export const getHomePage = cache(async (): Promise<HomePageContent | null> => {
 
   return {
     ...data,
+    aboutParagraphs: toParagraphs(
+      data.aboutParagraphs?.length
+        ? data.aboutParagraphs
+        : [data.aboutParagraph1, data.aboutParagraph2]
+    ),
     seo: data.seo ? { metaTitle: data.seo.metaTitle, metaDescription: data.seo.metaDescription, ogImage: data.seo.ogImage ? urlFor(data.seo.ogImage).width(1200).auto('format').url() : undefined, canonicalUrl: data.seo.canonicalUrl, noIndex: data.seo.noIndex, noFollow: data.seo.noFollow } : undefined,
     heroImage: data.heroImage,
     aboutImage1: data.aboutImage1 ? urlFor(data.aboutImage1).width(900).auto('format').url() : undefined,

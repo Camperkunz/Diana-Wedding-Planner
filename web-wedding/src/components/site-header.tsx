@@ -31,6 +31,14 @@ function hasHero(pathname: string) {
   return heroRoutes.some((route) => (route === '/' ? pathname === '/' : pathname === route || pathname.startsWith(`${route}/`)));
 }
 
+/**
+ * Section-aware match for the navigation: `/portfolio/album` keeps `/portfolio`
+ * marked as the current section, exactly like `hasHero` does for the header overlay.
+ */
+function isActivePath(pathname: string, href: string) {
+  return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
+}
+
 const SOCIAL_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   instagram: SiInstagram,
   pinterest: SiPinterest,
@@ -137,28 +145,41 @@ export function SiteHeader({ settings, layout }: Props) {
         </Link>
 
         <div className="hidden lg:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              aria-current={pathname === link.href ? 'page' : undefined}
-              className={cn(
-                'text-sm font-medium tracking-wide uppercase transition-colors duration-300 relative py-1',
-                opaque
-                  ? pathname === link.href
-                    ? 'text-accent'
-                    : 'text-foreground/80 hover:text-foreground'
-                  : pathname === link.href
-                    ? 'text-accent'
-                    : 'text-white/80 hover:text-white'
-              )}
-            >
-              {link.label}
-              {pathname === link.href && (
-                <span className="absolute -bottom-0.5 left-0 right-0 h-px bg-accent" />
-              )}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const active = isActivePath(pathname, link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={pathname === link.href ? 'page' : active ? 'location' : undefined}
+                className={cn(
+                  'group relative py-1 text-sm font-medium tracking-wide uppercase transition-colors duration-300',
+                  opaque
+                    ? active
+                      ? 'text-accent'
+                      : 'text-foreground/80 hover:text-accent focus-visible:text-accent'
+                    : active
+                      ? 'text-white'
+                      : 'text-white/80 hover:text-white focus-visible:text-white'
+                )}
+              >
+                {link.label}
+                {/* The current page keeps this line; every other link slides the same line
+                    in on hover/keyboard focus, so the state is never colour alone (WCAG 1.4.1).
+                    In the transparent header the line uses the accent tint meant for photos —
+                    a dark `accent` text colour would sit at ~2:1 against the hero photo. */}
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'absolute -bottom-0.5 left-0 right-0 h-px origin-left transition-transform duration-300',
+                    'group-hover:scale-x-100 group-focus-visible:scale-x-100',
+                    opaque ? 'bg-accent' : 'bg-accent-overlay',
+                    active ? 'scale-x-100' : 'scale-x-0'
+                  )}
+                />
+              </Link>
+            );
+          })}
           <Link
             href={contactLink.href}
             className="bg-accent text-accent-foreground px-8 py-2.5 text-sm font-medium tracking-wide uppercase hover:bg-accent/90 transition-all duration-300 shadow-sm hover:shadow-md"
@@ -177,10 +198,10 @@ export function SiteHeader({ settings, layout }: Props) {
                     rel="noopener noreferrer"
                     aria-label={item.platform || 'Social Link'}
                     className={cn(
-                      'inline-flex items-center justify-center p-2 transition-colors duration-300',
+                      'inline-flex items-center justify-center rounded-full p-2 transition-colors duration-300',
                       opaque
-                        ? 'text-foreground/75 hover:text-accent'
-                        : 'text-white/75 hover:text-white'
+                        ? 'text-foreground/75 hover:bg-foreground/5 hover:text-accent focus-visible:bg-foreground/5 focus-visible:text-accent'
+                        : 'text-white/75 hover:bg-white/10 hover:text-white focus-visible:bg-white/10 focus-visible:text-white'
                     )}
                   >
                     {getSocialIcon(item.platform)}
@@ -216,25 +237,29 @@ export function SiteHeader({ settings, layout }: Props) {
         )}
       >
         <div className="container-wide py-6 flex flex-col gap-1">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              aria-current={pathname === link.href ? 'page' : undefined}
-              className={cn(
-                'relative py-3 text-base tracking-wide transition-colors duration-200 border-b border-border/50',
-                pathname === link.href ? 'text-accent' : 'text-foreground/80'
-              )}
-            >
-              {link.label}
-              {pathname === link.href && (
-                <span aria-hidden="true" className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent" />
-              )}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const active = isActivePath(pathname, link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={pathname === link.href ? 'page' : active ? 'location' : undefined}
+                className={cn(
+                  'relative py-3 text-base tracking-wide transition-colors duration-200 border-b border-border/50',
+                  'hover:bg-muted/60 hover:text-accent focus-visible:bg-muted/60 focus-visible:text-accent active:bg-muted',
+                  active ? 'text-accent' : 'text-foreground/80'
+                )}
+              >
+                {link.label}
+                {active && (
+                  <span aria-hidden="true" className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent" />
+                )}
+              </Link>
+            );
+          })}
           <Link
             href={contactLink.href}
-            className="mt-4 bg-accent text-accent-foreground px-8 py-3 text-center text-sm font-medium tracking-wide uppercase"
+            className="mt-4 bg-accent text-accent-foreground px-8 py-3 text-center text-sm font-medium tracking-wide uppercase transition-colors duration-300 hover:bg-accent/90 focus-visible:bg-accent/90 active:bg-accent/95"
           >
             {contactLink.label}
           </Link>
@@ -249,7 +274,7 @@ export function SiteHeader({ settings, layout }: Props) {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={item.platform || 'Social Link'}
-                    className="inline-flex items-center justify-center p-3 text-foreground/75 hover:text-accent transition-colors duration-300"
+                    className="inline-flex items-center justify-center rounded-full p-3 text-foreground/75 transition-colors duration-300 hover:bg-muted/60 hover:text-accent focus-visible:bg-muted/60 focus-visible:text-accent active:bg-muted"
                   >
                     {getSocialIcon(item.platform)}
                   </a>
