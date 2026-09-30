@@ -187,7 +187,7 @@ export function SiteHeader({ settings, layout }: Props) {
             {contactLink.label}
           </Link>
           {Boolean(settings?.socialLinks?.length) && (
-            <div className={cn('flex items-center border-l', opaque ? 'border-border' : 'border-white/20')}>
+            <div className={cn('flex items-center gap-1 border-l pl-3', opaque ? 'border-border' : 'border-white/20')}>
               {settings?.socialLinks?.map((item, index) => {
                 if (!item.url) return null;
                 return (

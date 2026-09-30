@@ -122,7 +122,7 @@ export function SiteFooter({ settings, layout }: Props) {
                   </span>
                 )}
               </li>
-              <li className="flex items-center gap-2 px-2 py-1">
+              <li className="flex items-center gap-2 py-1">
                 <MapPin className="w-4 h-4 text-accent-overlay shrink-0" aria-hidden="true" />
                 <span className="min-w-0 break-words">{address}</span>
               </li>
@@ -134,7 +134,7 @@ export function SiteFooter({ settings, layout }: Props) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Instagram"
-                  className="inline-flex items-center justify-center p-2 -m-1 rounded-full text-primary-foreground/75 hover:bg-primary-foreground/10 hover:text-white focus-visible:bg-primary-foreground/10 focus-visible:text-white transition-colors duration-200"
+                  className="inline-flex items-center justify-center p-2 -my-1 -ml-2 rounded-full text-primary-foreground/75 hover:bg-primary-foreground/10 hover:text-white focus-visible:bg-primary-foreground/10 focus-visible:text-white transition-colors duration-200"
                 >
                   <Instagram className="w-5 h-5" aria-hidden="true" />
                 </a>
