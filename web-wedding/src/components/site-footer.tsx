@@ -3,6 +3,7 @@ import { LuInstagram as Instagram, LuMail as Mail, LuMapPin as MapPin, LuPhone a
 import type { SiteLayout, SiteSettings } from '../lib/sanity-data';
 import { safeMailtoHref, safeTelHref } from '../lib/safe-url';
 import ResponsiveImage from './ui/ResponsiveImage';
+import { HomeLink } from './home-link';
 
 type Props = { settings: SiteSettings | null; layout: SiteLayout | null };
 
@@ -36,7 +37,7 @@ export function SiteFooter({ settings, layout }: Props) {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <span className="font-script text-4xl text-primary-foreground/90">
-                <Link href="/" className="flex items-center gap-3">
+                <HomeLink className="flex items-center gap-3">
                   {logo ? (
                     <ResponsiveImage
                       source={logo}
@@ -48,7 +49,7 @@ export function SiteFooter({ settings, layout }: Props) {
                   ) : (
                     settings?.name || 'D'
                   )}
-                </Link>
+                </HomeLink>
               </span>
               <div>
                 <p className="font-serif text-xl">{settings?.name || 'D'}</p>

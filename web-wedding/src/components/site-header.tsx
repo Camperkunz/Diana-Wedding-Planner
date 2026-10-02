@@ -15,6 +15,7 @@ import {
 import { cn } from '../lib/utils';
 import type { SiteLayout, SiteSettings } from '../lib/sanity-data';
 import ResponsiveImage from './ui/ResponsiveImage';
+import { HomeLink } from './home-link';
 
 type Props = { settings: SiteSettings | null; layout: SiteLayout | null };
 
@@ -67,17 +68,19 @@ export function SiteHeader({ settings, layout }: Props) {
   const logo = layout?.headerLogo || settings?.logo;
   const logoAlt = layout?.headerLogoAlt || settings?.logoAlt || `${settings?.name || 'Site'} logo`;
 
+  // Re-runs on every route change as well as on scroll: leaving a page without a
+  // hero (privacy, 404 …) used to keep the header opaque on the home page,
+  // because the scroll listener never fired when the position did not change.
   useEffect(() => {
     const updateHeader = () => {
-      const path = window.location.pathname;
-      setOpaque(window.scrollY > 100 || !hasHero(path));
+      setOpaque(window.scrollY > 100 || !hasHero(pathname));
     };
 
     updateHeader();
     window.addEventListener('scroll', updateHeader, { passive: true });
 
     return () => window.removeEventListener('scroll', updateHeader);
-  }, []);
+  }, [pathname]);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -113,10 +116,10 @@ export function SiteHeader({ settings, layout }: Props) {
       )}
     >
       <nav className="container-wide flex items-center justify-between h-20" aria-label="Main navigation">
-        <Link
-          href="/"
+        <HomeLink
           className="flex items-center gap-3 group"
           aria-label="Diana — Home"
+          onClick={() => setMobileOpen(false)}
         >
           {logo ? (
             <ResponsiveImage
@@ -150,7 +153,7 @@ export function SiteHeader({ settings, layout }: Props) {
               {settings?.tagline || ''}
             </span>
           </span>
-        </Link>
+        </HomeLink>
 
         <div className="hidden lg:flex items-center gap-8">
           {navLinks.map((link) => {
