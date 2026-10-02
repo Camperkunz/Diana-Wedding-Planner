@@ -57,7 +57,6 @@ export const contactPage = defineType({
     contactPhoneLabel: 'Phone',
     contactLocationLabel: 'Location',
     instagramLabel: 'Instagram',
-    instagramHandle: '@dianaweddings',
   },
   fieldsets: [
     {
@@ -254,12 +253,7 @@ export const contactPage = defineType({
       title: 'Instagram Label',
       type: 'string',
       fieldset: 'contactInfo',
-    }),
-    defineField({
-      name: 'instagramHandle',
-      title: 'Instagram Handle',
-      type: 'string',
-      fieldset: 'contactInfo',
+      description: 'Caption above the Instagram link. The handle and link are read from Site Settings > Social Media Accounts.',
     }),
     defineField({
       name: 'directReplyText',

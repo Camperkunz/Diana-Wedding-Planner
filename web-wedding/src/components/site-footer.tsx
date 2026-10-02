@@ -149,15 +149,32 @@ export function SiteFooter({ settings, layout }: Props) {
             ) : null}
           </div>
         </div>
-
         <div className="mt-12 pt-6 border-t border-primary-foreground/20 flex flex-col sm:flex-row items-center justify-between gap-8 sm:gap-3">
-          <div className="text-xs text-primary-foreground/70 items-center sm:items-start flex flex-col">
-            <p className="text-sm">
-              {layout?.copyrightText || `© ${new Date().getFullYear()} ${settings?.name || 'Site Title'} Wedding Planning. All rights reserved.`}
+          <div className="text-xs text-primary-foreground/70 items-center md:items-start flex flex-col">
+            <p className="text-sm text-center md:text-left mb-4 md:mb-0">
+              {layout?.copyrightText || `© ${new Date().getFullYear()} ${settings?.name} Wedding Planning. All rights reserved.`}
             </p>
-            <p>
-              Made with ❤️ by <a href="https://annanikiforova.vercel.app/?utm_source=wedding" target="_blank" rel="noopener noreferrer" className="hover:text-white hover:underline decoration-accent-overlay decoration-1 underline-offset-4 focus-visible:text-white focus-visible:underline transition-colors duration-200">Anna Nikiforova</a>
-            </p>
+            {/* Credit and the legal link share one line, so the policy sits next to
+                a neighbouring element instead of floating between the columns.
+                Both use the same affordance as the header/Explore links: the accent
+                line slides in from the left on hover *and* keyboard focus (WCAG 1.4.1).
+                They stay `primary-foreground/70` until hovered, so the policy never
+                draws the eye. */}
+            <div className="flex flex-col md:flex-row items-center md:items-baseline gap-x-3 gap-y-1">
+              <p>
+                Made with ❤️ by <a href="https://annanikiforova.vercel.app/?utm_source=wedding" target="_blank" rel="noopener noreferrer" className="group relative inline-block py-0.5 transition-colors duration-200 hover:text-white focus-visible:text-white">Anna Nikiforova<span aria-hidden="true" className="absolute bottom-0 left-0 right-0 h-px origin-left scale-x-0 bg-accent-overlay transition-transform duration-300 group-hover:scale-x-100 group-focus-visible:scale-x-100" /></a>
+              </p>
+              <span aria-hidden="true" className="hidden md:block text-primary-foreground/30">·</span>
+              <nav aria-label="Legal">
+                <Link
+                  href="/privacy"
+                  className="group relative inline-block py-0.5 transition-colors duration-200 hover:text-white focus-visible:text-white"
+                >
+                  Privacy Policy
+                  <span aria-hidden="true" className="absolute bottom-0 left-0 right-0 h-px origin-left scale-x-0 bg-accent-overlay transition-transform duration-300 group-hover:scale-x-100 group-focus-visible:scale-x-100" />
+                </Link>
+              </nav>
+            </div>
           </div>
           <p className="text-xs text-primary-foreground/70 ">
             {address}

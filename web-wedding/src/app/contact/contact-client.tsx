@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import Link from 'next/link';
 import { LuMail as Mail, LuPhone as Phone, LuMapPin as MapPin, LuInstagram as Instagram, LuSend as Send, LuCheck as Check } from 'react-icons/lu';
 import { sendEmailAction } from '@/app/actions/sendEmail';
+import { PRIVACY_POLICY_LAST_UPDATED } from '@/lib/legal';
 import HeroSection from '@/components/ui/HeroSection';
 
 interface ServiceItem {
@@ -46,9 +48,23 @@ interface ContactClientProps {
     contactPhoneLabel?: string;
     contactLocationLabel?: string;
     instagramLabel?: string;
-    instagramHandle?: string;
     directReplyText?: string;
   };
+}
+
+/**
+ * The contact card shows the shared Instagram account from Site Settings
+ * (Social Media Accounts). The handle is derived from that one URL so the
+ * page never keeps its own copy of it.
+ */
+function instagramHandleFromUrl(url?: string): string | null {
+  if (!url) return null;
+  try {
+    const segment = new URL(url).pathname.split('/').filter(Boolean)[0];
+    return segment ? `@${segment.replace(/^@/, '')}` : null;
+  } catch {
+    return null;
+  }
 }
 
 export default function ContactClient({ services, settings, c }: ContactClientProps) {
@@ -56,6 +72,13 @@ export default function ContactClient({ services, settings, c }: ContactClientPr
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState<Record<string, string>>({});
+  // Data-processing consent. The `required` attribute below already stops the
+  // browser from submitting without it; this state exists so the consent can be
+  // recorded with the message (proof of consent) and reset afterwards.
+  const [consent, setConsent] = useState(false);
+
+  const instagramUrl = settings.socialLinks.find((item) => item.platform === 'instagram')?.url;
+  const instagramHandle = instagramHandleFromUrl(instagramUrl);
 
   const handleInputChange = (label: string, value: string) => {
     setFormData((prev) => ({ ...prev, [label]: value }));
@@ -70,7 +93,17 @@ export default function ContactClient({ services, settings, c }: ContactClientPr
     // discards the submission when it is filled (see actions/sendEmail.ts).
     // The recipient is resolved server-side from Sanity inside the action —
     // never sent from the client (prevents abuse as an open email relay).
-    const result = await sendEmailAction({ formData });
+    //
+    // The consent is recorded with the message: the delivered e-mail itself is
+    // the record that consent was given, and to which revision of the policy it
+    // referred. The label is deliberately free of "name"/"email", so it cannot
+    // confuse the reply-to/subject detection in the action.
+    const result = await sendEmailAction({
+      formData: {
+        ...formData,
+        'Privacy Policy Consent': `Accepted — policy version ${PRIVACY_POLICY_LAST_UPDATED}`,
+      },
+    });
 
     setIsSubmitting(false);
 
@@ -122,6 +155,7 @@ export default function ContactClient({ services, settings, c }: ContactClientPr
                     onClick={() => {
                       setSubmitted(false);
                       setFormData({});
+                      setConsent(false);
                     }}
                     className="mt-8 text-sm text-muted-foreground hover:text-accent transition-colors"
                   >
@@ -224,6 +258,36 @@ export default function ContactClient({ services, settings, c }: ContactClientPr
                     );
                   })}
 
+                  {/* Data-processing consent — last element of the form, right above
+                      the submit button. `required` gives the same native validation as
+                      the other fields, and the text is one <label> so the checkbox is
+                      clickable through the whole sentence. */}
+                  <div className="flex items-start gap-3 rounded-sm border border-border/60 bg-card/50 p-4">
+                    <input
+                      id="privacy-consent"
+                      type="checkbox"
+                      required
+                      checked={consent}
+                      onChange={(e) => setConsent(e.target.checked)}
+                      className="mt-1 h-4 w-4 shrink-0 cursor-pointer accent-accent"
+                    />
+                    <label
+                      htmlFor="privacy-consent"
+                      className="cursor-pointer text-sm font-light leading-relaxed text-muted-foreground"
+                    >
+                      I have read and agree to the{' '}
+                      <Link
+                        href="/privacy"
+                        className="text-accent underline underline-offset-2 hover:text-accent/80 focus-visible:text-accent/80"
+                      >
+                        Privacy Policy
+                      </Link>{' '}
+                      and consent to the processing of my personal data for the purpose of answering my
+                      enquiry, including the use of cookies and analytics as described there.{' '}
+                      <span className="text-accent">*</span>
+                    </label>
+                  </div>
+
                   {errorMessage && (
                     <p className="text-sm text-red-500 font-light">{errorMessage}</p>
                   )}
@@ -289,26 +353,28 @@ export default function ContactClient({ services, settings, c }: ContactClientPr
                       </div>
                     </li>
                   )}
-                  <li>
-                    <a
-                      href={settings.socialLinks.find((item) => item.platform === 'instagram')?.url || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-5 p-3 -mx-3 rounded-2xl hover:bg-muted/50 transition-colors group"
-                    >
-                      <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0 group-hover:bg-accent group-hover:text-accent-foreground transition-all duration-300">
-                        <Instagram className="w-5 h-5 text-accent group-hover:text-current" />
-                      </div>
-                      <div>
-                        <p className="text-sm uppercase tracking-wide text-muted-foreground mb-1 font-light">
-                          {c.instagramLabel}
-                        </p>
-                        <p className="text-base text-foreground font-medium group-hover:text-accent transition-colors">
-                          {c.instagramHandle}
-                        </p>
-                      </div>
-                    </a>
-                  </li>
+                  {instagramUrl && instagramHandle && (
+                    <li>
+                      <a
+                        href={instagramUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-5 p-3 -mx-3 rounded-2xl hover:bg-muted/50 transition-colors group"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0 group-hover:bg-accent group-hover:text-accent-foreground transition-all duration-300">
+                          <Instagram className="w-5 h-5 text-accent group-hover:text-current" />
+                        </div>
+                        <div>
+                          <p className="text-sm uppercase tracking-wide text-muted-foreground mb-1 font-light">
+                            {c.instagramLabel || 'Instagram'}
+                          </p>
+                          <p className="text-base text-foreground font-medium group-hover:text-accent transition-colors">
+                            {instagramHandle}
+                          </p>
+                        </div>
+                      </a>
+                    </li>
+                  )}
                 </ul>
 
                 <div className="mt-6 pt-4 border-t border-border/60">

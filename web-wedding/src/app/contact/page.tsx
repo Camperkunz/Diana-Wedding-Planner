@@ -29,7 +29,7 @@ export default async function ContactPage() {
                 phone: settings?.phone || layout?.footerPhone,
                 location: settings?.location,
                 serviceArea: settings?.serviceArea || layout?.footerAddress,
-                socialLinks: layout?.footerSocialLinks || settings?.socialLinks || [],
+                socialLinks: settings?.socialLinks?.length ? settings.socialLinks : layout?.footerSocialLinks || [],
             }}
             c={{
                 ...page,
