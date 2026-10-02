@@ -6,46 +6,29 @@ import {
   getSiteSettings,
   getAlbums,
   getServices,
+  buildSeoMetadata,
 } from '@/lib/sanity-data';
 import { TestimonialsSection } from '@/components/testimonials-section';
 import { StatsSection } from '@/components/stats-section';
 import { FadeIn } from '@/components/fade-in';
 import HeroSection, { HeroBackground, buildHeading } from '@/components/ui/HeroSection';
 import SafeLink from '@/components/ui/SafeLink';
+import ResponsiveImage from '@/components/ui/ResponsiveImage';
 import { safeMailtoHref } from '@/lib/safe-url';
 
 const fallback = {};
 
 export async function generateMetadata() {
-  const [home, settings] = await Promise.all([
-    getHomePage(),
-    getSiteSettings(),
-  ]);
+  const [home, settings] = await Promise.all([getHomePage(), getSiteSettings()]);
 
-  const seo = home?.seo || settings?.seo;
-
-  return {
-    title:
-      seo?.metaTitle ||
-      'Diana — Wedding Planner in Ottawa | Personal, Hands-On Wedding Planning',
-    description:
-      seo?.metaDescription ||
-      'Independent, personal wedding planning in Ottawa.',
-    alternates: seo?.canonicalUrl
-      ? { canonical: seo.canonicalUrl }
-      : undefined,
-    robots: seo?.noIndex
-      ? {
-        index: false,
-        follow: !seo?.noFollow,
-      }
-      : undefined,
-    openGraph: seo?.ogImage
-      ? {
-        images: [seo.ogImage],
-      }
-      : undefined,
-  };
+  // Page SEO first, site-wide SEO as the base: the home page doubles as the
+  // default social preview for the whole website. Always returns complete
+  // openGraph/twitter blocks (see buildSeoMetadata).
+  return buildSeoMetadata(
+    home?.seo || settings?.seo,
+    'Diana — Wedding Planner in Ottawa | Personal, Hands-On Wedding Planning',
+    'Independent, personal wedding planning in Ottawa.'
+  );
 }
 
 export default async function Home() {
@@ -154,20 +137,22 @@ export default async function Home() {
           <FadeIn delay={150} className="order-1 lg:order-2">
             <div className="relative w-3/4 mx-auto">
               <div className="overflow-hidden rounded-sm shadow-md">
-                <img
-                  src={content.aboutImage1}
+                <ResponsiveImage
+                  source={content.aboutImage1}
                   alt={content.aboutImage1Alt}
+                  sizes="(min-width: 1024px) 34vw, (min-width: 768px) 60vw, 75vw"
+                  widths={[480, 768, 1024, 1440]}
                   className="aspect-[4/5] w-full object-cover"
-                  loading="lazy"
                 />
               </div>
 
               <div className="absolute -bottom-10 -left-6 hidden sm:block w-[45%] overflow-hidden rounded-sm border-[8px] border-background lg:-left-12">
-                <img
-                  src={content.aboutImage2}
+                <ResponsiveImage
+                  source={content.aboutImage2}
                   alt={content.aboutImage2Alt}
+                  sizes="(min-width: 1024px) 15vw, (min-width: 640px) 30vw, 60vw"
+                  widths={[320, 480, 768, 1024]}
                   className="aspect-[3/4] w-full object-cover"
-                  loading="lazy"
                 />
               </div>
             </div>
@@ -219,11 +204,12 @@ export default async function Home() {
                   className="group flex flex-col h-full"
                 >
                   <div className="aspect-[4/3] overflow-hidden rounded-sm mb-4 relative">
-                    <img
-                      src={service.image}
+                    <ResponsiveImage
+                      source={service.image}
                       alt={service.imageAlt || service.name}
+                      sizes="(min-width: 768px) 33vw, 100vw"
+                      widths={[480, 768, 1024, 1440]}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                      loading="lazy"
                     />
                   </div>
 
@@ -264,11 +250,12 @@ export default async function Home() {
       {/* QUOTE */}
       <section className="relative py-24 md:py-28 overflow-hidden">
         <div className="absolute inset-0">
-          <img
-            src={content.quoteImage}
+          <ResponsiveImage
+            source={content.quoteImage}
             alt={content.quoteImageAlt}
+            sizes="100vw"
+            widths={[768, 1024, 1440, 1920]}
             className="w-full h-full object-cover"
-            loading="lazy"
           />
 
           <div className="absolute inset-0 bg-black/60" />
@@ -338,11 +325,16 @@ export default async function Home() {
                       : 'aspect-[16/10] sm:aspect-[4/5]'
                   )}
                 >
-                  <img
-                    src={album.coverImage}
+                  <ResponsiveImage
+                    source={album.coverImage}
                     alt={album.coverImageAlt || album.title}
+                    sizes={
+                      i === 0
+                        ? '(min-width: 640px) 50vw, 100vw'
+                        : '(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw'
+                    }
+                    widths={[480, 768, 1024, 1440]}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                    loading="lazy"
                   />
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent" />
@@ -410,11 +402,12 @@ export default async function Home() {
             <div className="hidden lg:block">
               <FadeIn delay={200} className="sticky top-28">
                 <div className="aspect-[3/4] overflow-hidden rounded-sm shadow-md">
-                  <img
-                    src={content.approachImage}
+                  <ResponsiveImage
+                    source={content.approachImage}
                     alt={content.approachImageAlt}
+                    sizes="(min-width: 1024px) 30vw, 100vw"
+                    widths={[480, 768, 1024]}
                     className="w-full h-full object-cover"
-                    loading="lazy"
                   />
                 </div>
               </FadeIn>

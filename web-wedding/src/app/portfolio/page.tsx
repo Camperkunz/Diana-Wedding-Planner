@@ -6,6 +6,7 @@ import {
     buildSeoMetadata,
 } from '@/lib/sanity-data';
 import HeroSection from '@/components/ui/HeroSection';
+import ResponsiveImage from '@/components/ui/ResponsiveImage';
 
 const fallback = {};
 
@@ -13,7 +14,8 @@ export async function generateMetadata() {
     const page = await getPortfolioPage();
     return buildSeoMetadata(
         page?.seo,
-        'Portfolio — Weddings Planned by Diana | Ottawa'
+        'Portfolio — Weddings Planned by Diana | Ottawa',
+        'Real weddings planned and designed by Diana in Ottawa, Gatineau and Eastern Ontario — browse every celebration from ceremony to last dance.'
     );
 }
 
@@ -49,11 +51,12 @@ export default async function PortfolioPage() {
                                 href={`/portfolio/${album.slug}`}
                                 className="group relative aspect-[4/5] overflow-hidden rounded-sm hover:shadow-xl transition-all duration-500"
                             >
-                                <img
-                                    src={album.coverImage}
+                                <ResponsiveImage
+                                    source={album.coverImage}
                                     alt={album.coverImageAlt || album.title}
+                                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                                    widths={[480, 768, 1024, 1440]}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                    loading="lazy"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent group-hover:from-black/85 transition-all duration-500" />
                                 <div className="absolute bottom-0 left-0 right-0 p-7">

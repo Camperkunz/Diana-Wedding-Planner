@@ -1,12 +1,7 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import {
-    imageObjectPosition,
-    sanityImage,
-    sanityImageSrcSet,
-    HERO_BLUR,
-    type ImageSource,
-} from '@/lib/sanity-image';
+import { HERO_BLUR, HERO_IMAGE_WIDTHS, type ImageSource } from '@/lib/sanity-image';
+import ResponsiveImage from '@/components/ui/ResponsiveImage';
 
 /**
  * The single hero used by every page of the site.
@@ -159,29 +154,21 @@ export function HeroBackground({
     priority = true,
     overlayClassName,
 }: HeroBackgroundProps) {
-    const src = sanityImage(image, 1920, HERO_BLUR);
-    const srcSet = sanityImageSrcSet(image, undefined, HERO_BLUR);
-    const objectPosition = imageObjectPosition(image);
-
     return (
         <div className="absolute inset-0 bg-foreground">
-            {src ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
-                    src={src}
-                    srcSet={srcSet}
-                    sizes="100vw"
-                    alt={imageAlt || ''}
-                    style={objectPosition ? { objectPosition } : undefined}
-                    /* Blur is baked into the CDN URL (HERO_BLUR) — no CSS filter on the
-                       LCP element. scale-105 keeps the original framing/edge coverage. */
-                    className="w-full h-full object-cover scale-105"
-                    loading={priority ? 'eager' : 'lazy'}
-                    fetchPriority={priority ? 'high' : 'auto'}
-                    decoding="async"
-                    referrerPolicy="no-referrer"
-                />
-            ) : null}
+            {/* Blur is baked into the CDN URL (HERO_BLUR): the browser paints no CSS
+                filter over the LCP element, and the blurred file is smaller than the
+                sharp one. `scale-105` keeps the original framing/edge coverage.
+                Works for both raw Sanity objects and URLs resolved earlier. */}
+            <ResponsiveImage
+                source={image}
+                alt={imageAlt}
+                sizes="100vw"
+                widths={HERO_IMAGE_WIDTHS}
+                blur={HERO_BLUR}
+                priority={priority}
+                className="w-full h-full object-cover scale-105"
+            />
 
             <div
                 className={cn(

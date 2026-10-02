@@ -1,7 +1,10 @@
 import { cache } from 'react';
+import type { Metadata } from 'next';
 import { client } from '@/app/sanity/client';
-import { urlFor } from '@/app/sanity/image';
 import type { SanityImageSource } from '@sanity/image-url';
+import { sanityImage } from '@/lib/sanity-image';
+import { safeImageSrc } from '@/lib/safe-url';
+import { absoluteUrl } from '@/lib/site';
 
 // Все геттеры ниже — НЕ СРОЧНЫЕ чтения: CDN-клиент (useCdn: true, квота 1M/мес)
 // + дедупликация cache() в рамках одного рендера. Срочные запросы (draft/preview,
@@ -170,13 +173,30 @@ const albumProjection = `
   photos[]{ image, alt, caption }
 `;
 
+/**
+ * Shared SEO projection: keeps the four editable values as they are and resolves
+ * the social-share photo to a real URL (`sanityImage` never throws and returns
+ * `undefined` for a deleted asset, so a missing picture cannot break a page).
+ */
+function mapSeo(seo: any) {
+  if (!seo) return undefined;
+  return {
+    metaTitle: seo.metaTitle,
+    metaDescription: seo.metaDescription,
+    ogImage: sanityImage(seo.ogImage, 1200),
+    canonicalUrl: seo.canonicalUrl,
+    noIndex: seo.noIndex,
+    noFollow: seo.noFollow,
+  };
+}
+
 function mapAlbum(album: any): Album {
   return {
     _id: album._id,
     slug: album.slug?.current || '',
     title: album.title,
     category: album.category,
-    coverImage: album.coverImage ? urlFor(album.coverImage).width(1800).auto('format').url() : undefined,
+    coverImage: sanityImage(album.coverImage, 1800),
     coverImageAlt: album.coverImageAlt,
     shortDescription: album.shortDescription,
     story: album.story || album.shortDescription,
@@ -184,12 +204,19 @@ function mapAlbum(album: any): Album {
     venue: album.venue,
     location: album.location,
     order: album.order,
-    seo: album.seo ? { metaTitle: album.seo.metaTitle, metaDescription: album.seo.metaDescription, ogImage: album.seo.ogImage, canonicalUrl: album.seo.canonicalUrl, noIndex: album.seo.noIndex, noFollow: album.seo.noFollow } : undefined,
-    photos: (album.photos || []).filter((p: any) => p.image).map((p: any) => ({
-      src: urlFor(p.image).width(1800).auto('format').url(),
-      alt: p.alt || album.title,
-      caption: p.caption,
-    })),
+    seo: mapSeo(album.seo),
+    // A photo whose asset is missing (deleted in the Studio, failed upload) is
+    // dropped instead of rendering an empty `src`, which would make the browser
+    // request the current page as an image.
+    photos: (album.photos || [])
+      .map((photo: any) => ({
+        src: sanityImage(photo.image, 1800),
+        alt: photo.alt || album.title,
+        caption: photo.caption,
+      }))
+      .filter((photo: { src?: string }): photo is { src: string; alt: string; caption?: string } =>
+        Boolean(photo.src)
+      ),
   };
 }
 
@@ -201,7 +228,7 @@ function mapService(service: any): Service {
     shortDescription: service.shortDescription,
     fullDescription: service.fullDescription,
     includes: service.includes || [],
-    image: service.image ? urlFor(service.image).width(1200).auto('format').url() : undefined,
+    image: sanityImage(service.image, 1200),
     imageAlt: service.imageAlt,
     startingPrice: service.startingPrice,
     featured: service.featured,
@@ -240,9 +267,15 @@ function mapSiteSettings(data: any): SiteSettings | null {
     tagline: data.tagline || '',
     location: data.location,
     serviceArea: data.serviceArea,
-    logo: data.logo ? urlFor(data.logo).width(600).auto('format').url() : undefined,
+    // 600px: wide enough for a 2x-retina header/footer logo (displayed up to
+    // 180px) without shipping a full-size asset as the default `src`.
+    logo: sanityImage(data.logo, 600),
     logoAlt: data.logoAlt,
-    favicon: data.favicon ? urlFor(data.favicon).width(64).height(64).fit('crop').auto('format').url() : undefined,
+    // The browser icon is requested as a square: `fit('crop')` + `height` keep it
+    // from being stretched, and `sanityImage` returns `undefined` if the asset was
+    // deleted instead of throwing inside the root layout (which would take down
+    // every page of the site).
+    favicon: sanityImage(data.favicon, 64, undefined, { height: 64, fit: 'crop' }),
     email: data.email,
     phone: data.phone,
     address: data.address,
@@ -254,14 +287,14 @@ function mapSiteSettings(data: any): SiteSettings | null {
       ? data.googleAnalyticsId.trim()
       : undefined,
     socialLinks: data.socialLinks || [],
-    seo: data.seo ? { metaTitle: data.seo.metaTitle, metaDescription: data.seo.metaDescription, ogImage: data.seo.ogImage ? urlFor(data.seo.ogImage).width(1200).auto('format').url() : undefined, canonicalUrl: data.seo.canonicalUrl, noIndex: data.seo.noIndex, noFollow: data.seo.noFollow } : undefined,
+    seo: mapSeo(data.seo),
   };
 }
 
 function mapSiteLayout(data: any): SiteLayout | null {
   if (!data) return null;
   return {
-    headerLogo: data.headerLogo ? urlFor(data.headerLogo).width(600).auto('format').url() : undefined,
+    headerLogo: sanityImage(data.headerLogo, 600),
     headerLogoAlt: data.headerLogo?.alt,
     navLinks: (data.navLinks || []).sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0)),
     copyrightText: data.copyrightText,
@@ -346,12 +379,12 @@ export const getHomePage = cache(async (): Promise<HomePageContent | null> => {
         ? data.aboutParagraphs
         : [data.aboutParagraph1, data.aboutParagraph2]
     ),
-    seo: data.seo ? { metaTitle: data.seo.metaTitle, metaDescription: data.seo.metaDescription, ogImage: data.seo.ogImage ? urlFor(data.seo.ogImage).width(1200).auto('format').url() : undefined, canonicalUrl: data.seo.canonicalUrl, noIndex: data.seo.noIndex, noFollow: data.seo.noFollow } : undefined,
+    seo: mapSeo(data.seo),
     heroImage: data.heroImage,
-    aboutImage1: data.aboutImage1 ? urlFor(data.aboutImage1).width(900).auto('format').url() : undefined,
-    aboutImage2: data.aboutImage2 ? urlFor(data.aboutImage2).width(900).auto('format').url() : undefined,
-    quoteImage: data.quoteImage ? urlFor(data.quoteImage).width(1920).auto('format').url() : undefined,
-    approachImage: data.approachImage ? urlFor(data.approachImage).width(900).auto('format').url() : undefined,
+    aboutImage1: sanityImage(data.aboutImage1, 900),
+    aboutImage2: sanityImage(data.aboutImage2, 900),
+    quoteImage: sanityImage(data.quoteImage, 1920),
+    approachImage: sanityImage(data.approachImage, 900),
     ctaImage: data.ctaImage,
     stats: data.stats || [],
     featuredServices: (data.featuredServices || []).map(mapService),
@@ -369,15 +402,6 @@ export const getBackstageVideos = cache(async () => {
     ]
     | order(order asc)
   `)
-});
-
-export const getPage = cache(async (slug: string) => {
-  return client.fetch(`*[_type == "page" && slug.current == $slug][0]{
-    _id, title, slug, seo{ metaTitle, metaDescription, ogImage, canonicalUrl, noIndex, noFollow }, sections[]{
-      ...,
-      _type == "galleryPreviewSection" => { featuredAlbums[]->{${albumProjection}} }
-    }
-  }`, { slug });
 });
 
 export type SiteDesign = {
@@ -401,12 +425,20 @@ export const getSiteDesign = cache(async (): Promise<SiteDesign | null> => {
   };
 });
 
-function pageProjection(type: string, slug: string) {
-  return client.fetch(`*[_type == $type && _id == $id][0]{...}`, { type, id: slug });
-}
-
+/**
+ * Reads one of the fixed page documents (`aboutPage`, `faqPage`, …).
+ *
+ * The canonical document id equals the type name. A page that was deleted and
+ * re-created by hand, however, gets a random id — the old query then returned
+ * `null` and the whole page rendered empty. So: prefer the document whose id is
+ * the type name and otherwise fall back to the most recently edited document of
+ * that type, which means a page can never silently disappear from the website.
+ */
 export const getFixedPage = cache(async (type: string) => {
-  return pageProjection(type, type);
+  return client.fetch(
+    `*[_type == $type] | order(select(_id == $type => 0, 1) asc, _updatedAt desc)[0]{...}`,
+    { type }
+  );
 });
 
 export async function getAboutPage() { return getFixedPage('aboutPage'); }
@@ -431,12 +463,46 @@ export async function getFaqPage() { return getFixedPage('faqPage'); }
 export async function getBackstagePage() { return getFixedPage('backstagePage'); }
 export async function getContactPage() { return getFixedPage('contactPage'); }
 
-export function buildSeoMetadata(seo: any, fallbackTitle: string, fallbackDescription?: string) {
+/**
+ * Page metadata for every route.
+ *
+ * `openGraph`/`twitter` are always returned — not only when the editor uploaded
+ * a social image. Next.js replaces the parent layout's `openGraph` object as a
+ * whole, so returning `undefined` here silently erased the site-wide tags and
+ * most pages shipped with no social preview at all. The site-wide image and
+ * description are used when the page has none of its own.
+ */
+export async function buildSeoMetadata(
+  seo: any,
+  fallbackTitle: string,
+  fallbackDescription?: string
+): Promise<Metadata> {
+  const settings = await getSiteSettings();
+
+  const title = seo?.metaTitle || fallbackTitle;
+  const description =
+    seo?.metaDescription || fallbackDescription || settings?.seo?.metaDescription;
+  const image = seo?.ogImage || settings?.seo?.ogImage;
+  const url = seo?.canonicalUrl;
+
   return {
-    title: seo?.metaTitle || fallbackTitle,
-    description: seo?.metaDescription || fallbackDescription,
-    alternates: seo?.canonicalUrl ? { canonical: seo.canonicalUrl } : undefined,
+    title,
+    description,
+    alternates: url ? { canonical: url } : undefined,
     robots: seo?.noIndex ? { index: false, follow: !seo?.noFollow } : undefined,
-    openGraph: seo?.ogImage ? { images: [seo.ogImage] } : undefined,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      siteName: settings?.name || undefined,
+      url,
+      images: image ? [{ url: image }] : undefined,
+    },
+    twitter: {
+      card: image ? 'summary_large_image' : 'summary',
+      title,
+      description,
+      images: image ? [image] : undefined,
+    },
   };
 }

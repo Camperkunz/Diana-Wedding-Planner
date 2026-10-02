@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { LuArrowRight as ArrowRight } from 'react-icons/lu';
-import { urlFor } from '@/app/sanity/image';
+import ResponsiveImage from '@/components/ui/ResponsiveImage';
 import HeroSection from '@/components/ui/HeroSection';
 import SafeLink from '@/components/ui/SafeLink';
 
@@ -47,7 +47,7 @@ export function CmsSections({ sections }: { sections: any[] }) {
               <RichText value={section.bodyText} />
             </div>
             <div className={section.layoutVariant === 'left' ? 'order-2' : 'order-1 lg:order-2'}>
-              {section.image && <div className="aspect-[3/4] overflow-hidden rounded-sm shadow-md"><img src={urlFor(section.image).width(1200).auto('format').url()} alt={section.image.alt || section.heading || ''} className="w-full h-full object-cover" loading="lazy" /></div>}
+              {section.image && <div className="aspect-[3/4] overflow-hidden rounded-sm shadow-md"><ResponsiveImage source={section.image} alt={section.image.alt || section.heading || ''} sizes="(min-width: 1024px) 50vw, 100vw" widths={[480, 768, 1024, 1440]} className="w-full h-full object-cover" /></div>}
             </div>
           </div>
         </section>;
@@ -61,7 +61,7 @@ export function CmsSections({ sections }: { sections: any[] }) {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
               {(section.featuredAlbums || []).map((album: any) => album.coverImage && <Link key={album._id} href={`/portfolio/${album.slug?.current || ''}`} className="group relative aspect-[4/5] overflow-hidden rounded-sm">
-                <img src={urlFor(album.coverImage).width(1200).auto('format').url()} alt={album.coverImageAlt || album.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                <ResponsiveImage source={album.coverImage} alt={album.coverImageAlt || album.title} sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" widths={[480, 768, 1024, 1440]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-7"><p className="text-white/90 text-sm uppercase tracking-wide mb-2">{album.category}</p><h3 className="font-serif text-white text-2xl">{album.title}</h3></div>
               </Link>)}

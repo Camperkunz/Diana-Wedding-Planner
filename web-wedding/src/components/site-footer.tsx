@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { LuInstagram as Instagram, LuMail as Mail, LuMapPin as MapPin, LuPhone as Phone } from 'react-icons/lu';
 import type { SiteLayout, SiteSettings } from '../lib/sanity-data';
 import { safeMailtoHref, safeTelHref } from '../lib/safe-url';
+import ResponsiveImage from './ui/ResponsiveImage';
 
 type Props = { settings: SiteSettings | null; layout: SiteLayout | null };
 
@@ -37,7 +38,13 @@ export function SiteFooter({ settings, layout }: Props) {
               <span className="font-script text-4xl text-primary-foreground/90">
                 <Link href="/" className="flex items-center gap-3">
                   {logo ? (
-                    <img src={logo} alt={settings?.name || 'D'} className="h-12 w-auto brightness-0 invert" />
+                    <ResponsiveImage
+                      source={logo}
+                      alt={settings?.name || 'D'}
+                      sizes="120px"
+                      widths={[200, 400, 600]}
+                      className="h-12 w-auto brightness-0 invert"
+                    />
                   ) : (
                     settings?.name || 'D'
                   )}

@@ -65,12 +65,22 @@ export default function BackstageClient({
                                 onClick={() => setActiveVideo(video.embedUrl)}
                             >
                                 <div className="relative aspect-video overflow-hidden rounded-sm shadow-sm group-hover:shadow-xl transition-all duration-500">
-                                    <img
-                                        src={video.thumbnail || '/placeholder-thumb.jpg'}
-                                        alt={video.thumbnailAlt || video.title}
-                                        className="w-full h-full object-cover"
-                                        loading="lazy"
-                                    />
+                                    {/* No thumbnail → a neutral panel, not the old
+                                        `/placeholder-thumb.jpg` (no public/ file, so it
+                                        rendered a broken image). */}
+                                    {video.thumbnail ? (
+                                        <img
+                                            src={video.thumbnail}
+                                            alt={video.thumbnailAlt || video.title}
+                                            className="w-full h-full object-cover"
+                                            loading="lazy"
+                                        />
+                                    ) : (
+                                        <div
+                                            className="w-full h-full bg-gradient-to-br from-foreground to-foreground/70"
+                                            aria-hidden="true"
+                                        />
+                                    )}
                                     <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
                                         <div className="w-16 h-16 bg-accent/90 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                                             <Play className="w-7 h-7 text-white fill-white ml-1" />

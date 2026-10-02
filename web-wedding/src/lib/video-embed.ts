@@ -149,7 +149,7 @@ export async function getVimeoThumbnail(rawUrl: string): Promise<string | null> 
  * Главная функция: если ручное превью не задано в Sanity,
  * пытается сгенерировать его автоматически по ссылке на видео.
  * Возвращает null, если распознать/получить превью не удалось —
- * тогда на фронте сработает fallback '/placeholder-thumb.jpg'.
+ * тогда на фронте вместо превью рисуется нейтральная плашка.
  */
 export async function getAutoThumbnail(rawUrl?: string | null): Promise<string | null> {
     const parsed = parseVideoUrl(rawUrl);

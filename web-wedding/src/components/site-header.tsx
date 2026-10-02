@@ -14,6 +14,7 @@ import {
 } from 'react-icons/si';
 import { cn } from '../lib/utils';
 import type { SiteLayout, SiteSettings } from '../lib/sanity-data';
+import ResponsiveImage from './ui/ResponsiveImage';
 
 type Props = { settings: SiteSettings | null; layout: SiteLayout | null };
 
@@ -118,7 +119,14 @@ export function SiteHeader({ settings, layout }: Props) {
           aria-label="Diana — Home"
         >
           {logo ? (
-            <img src={logo} alt={logoAlt} className={cn('max-h-12 w-auto max-w-[180px] object-contain transition-opacity duration-300', !opaque && 'brightness-0 invert')} />
+            <ResponsiveImage
+              source={logo}
+              alt={logoAlt}
+              sizes="180px"
+              widths={[200, 400, 600]}
+              priority
+              className={cn('max-h-12 w-auto max-w-[180px] object-contain transition-opacity duration-300', !opaque && 'brightness-0 invert')}
+            />
           ) : (
             <span className={cn('font-script text-3xl md:text-4xl leading-none transition-colors duration-300', opaque ? 'text-foreground group-hover:text-accent' : 'text-white group-hover:text-accent')}>
               {settings?.name?.charAt(0)}

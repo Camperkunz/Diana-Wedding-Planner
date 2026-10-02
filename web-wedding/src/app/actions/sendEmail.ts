@@ -76,6 +76,15 @@ export async function sendEmailAction({ formData }: SendEmailParams) {
             return { success: false, error: 'Too many messages sent. Please try again later.' };
         }
 
+        // Honeypot: `_hp_website` is a visually hidden field in the form that
+        // people never see or fill. Bots that auto-complete every input report
+        // "success" but the message is dropped before anything is sent.
+        const honeypot =
+            typeof formData?.['_hp_website'] === 'string' ? formData['_hp_website'].trim() : '';
+        if (honeypot) {
+            return { success: true };
+        }
+
         // Recipient comes from the CMS, never from the client payload.
         const [page, settings, layout] = await Promise.all([
             getContactPage(),

@@ -10,6 +10,8 @@ import { SiteHeader } from '../components/site-header';
 import { SiteFooter } from '../components/site-footer';
 import { FloatingContact } from '../components/floating-contact';
 import { getSiteDesign, getSiteLayout, getSiteSettings, hexToHsl } from '../lib/sanity-data';
+import { SITE_URL } from '../lib/site';
+import { JsonLd } from '../components/json-ld';
 import { GoogleAnalytics } from '../components/google-analytics';
 
 const jost = Jost({ subsets: ['latin'], weight: ['300', '400', '500'], variable: '--font-jost' });
@@ -32,7 +34,7 @@ export const revalidate = 60;
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
   return {
-    metadataBase: new URL('https://dianaweddings.ca'),
+    metadataBase: new URL(SITE_URL),
     title: settings?.seo?.metaTitle || settings?.name || 'Wedding Planner',
     description: settings?.seo?.metaDescription || settings?.tagline,
     icons: settings?.favicon ? { icon: settings.favicon } : undefined,
@@ -86,6 +88,31 @@ export default async function RootLayout({
 
   const style = { ...vars, ...fontVars } as CSSProperties;
 
+  // schema.org structured data for search engines (knowledge panel, rich
+  // results). Built from Site Settings only — everything below is either
+  // authored in the Studio or a constant, never user input, and JsonLd escapes
+  // `<` so no CMS string can break out of the script tag.
+  const sameAs = (settings?.socialLinks || [])
+    .map((link) => link.url)
+    .filter(Boolean);
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ProfessionalService',
+    name: settings?.name || 'Diana — Wedding Planner',
+    url: SITE_URL,
+    logo: settings?.logo || undefined,
+    image: settings?.seo?.ogImage || undefined,
+    description:
+      settings?.seo?.metaDescription || settings?.tagline || undefined,
+    email: settings?.email || undefined,
+    telephone: settings?.phone || undefined,
+    address: settings?.location
+      ? { '@type': 'PostalAddress', addressLocality: settings.location }
+      : undefined,
+    areaServed: settings?.serviceArea || undefined,
+    sameAs: sameAs.length ? sameAs : undefined,
+  };
+
   return (
     <html
       lang="en"
@@ -93,6 +120,7 @@ export default async function RootLayout({
       className={`${jost.variable} ${cormorant.variable} ${dancing.variable}`}
     >
       <body className="font-sans bg-background text-foreground" style={style}>
+        <JsonLd data={jsonLd} />
         <a
           href="#main-content"
           className="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-4 focus-visible:left-4 focus-visible:z-[60] focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:px-5 focus-visible:py-3 focus-visible:text-sm focus-visible:uppercase focus-visible:tracking-wide focus-visible:shadow-lg"

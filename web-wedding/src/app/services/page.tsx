@@ -7,13 +7,17 @@ import {
   ComparisonRow,
 } from '@/lib/sanity-data';
 import HeroSection from '@/components/ui/HeroSection';
-import { sanityImage } from '@/lib/sanity-image';
+import ResponsiveImage from '@/components/ui/ResponsiveImage';
 
 const fallback = {};
 
 export async function generateMetadata() {
   const page = await getServicesPage();
-  return buildSeoMetadata(page?.seo, 'Services — Wedding Planning with Diana | Ottawa');
+  return buildSeoMetadata(
+    page?.seo,
+    'Services — Wedding Planning with Diana | Ottawa',
+    'Full-service wedding planning, partial planning and day-of coordination with Diana — compare what each package includes and starting prices.'
+  );
 }
 
 export default async function ServicesPage() {
@@ -57,11 +61,12 @@ export default async function ServicesPage() {
             >
               <div className={i % 2 === 1 ? 'lg:order-2' : ''}>
                 <div className="aspect-[4/3] overflow-hidden rounded-sm shadow-md">
-                  <img
-                    src={sanityImage(service.image)}
+                  <ResponsiveImage
+                    source={service.image}
                     alt={service.imageAlt || service.name}
+                    sizes="(min-width: 1024px) 50vw, 100vw"
+                    widths={[640, 768, 1024, 1440]}
                     className="w-full h-full object-cover"
-                    loading="lazy"
                   />
                 </div>
               </div>

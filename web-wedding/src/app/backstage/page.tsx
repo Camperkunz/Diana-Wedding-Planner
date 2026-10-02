@@ -1,9 +1,21 @@
-import { getBackstagePage, getBackstageVideos } from '@/lib/sanity-data';
+import type { Metadata } from 'next';
+import { getBackstagePage, getBackstageVideos, buildSeoMetadata } from '@/lib/sanity-data';
 import { sanityImage } from '@/lib/sanity-image';
 import { getEmbedUrl, getAutoThumbnail } from '@/lib/video-embed';
 import BackstageClient, { Video } from './backstage-client';
 
 const fallback = {};
+
+// This route had no metadata of its own, so it inherited nothing useful:
+// no canonical, no description beyond the root default, and no preview card.
+export async function generateMetadata(): Promise<Metadata> {
+    const page = await getBackstagePage();
+    return buildSeoMetadata(
+        page?.seo,
+        'Backstage — Behind the Scenes | Diana, Ottawa Wedding Planner',
+        'Behind the scenes of weddings planned by Diana: films, real celebrations and the details that never make it into the gallery.'
+    );
+}
 
 export default async function BackstagePage() {
     const page = await getBackstagePage();

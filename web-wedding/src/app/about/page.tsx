@@ -5,10 +5,9 @@ import {
   getSiteSettings,
   buildSeoMetadata
 } from '@/lib/sanity-data';
-import { sanityImage } from '@/lib/sanity-image';
-import { getTestimonials, getStats } from '@/lib/data';
 import { StatsSection } from '@/components/stats-section';
 import HeroSection from '@/components/ui/HeroSection';
+import ResponsiveImage from '@/components/ui/ResponsiveImage';
 
 // Fallback data
 const fallback = {};
@@ -26,8 +25,9 @@ export default async function AboutPage() {
   const [page, settings] = await Promise.all([getAboutPage(), getSiteSettings()]);
   const c = { ...fallback, ...(page || {}) } as typeof fallback & Record<string, any>;
 
-  const stats = c.stats?.length ? c.stats : getStats();
-  const testimonials = c.testimonials?.length ? c.testimonials : getTestimonials();
+  // No mock fallbacks: stats come from the Studio only, and StatsSection hides
+  // itself while the list is empty (see components/stats-section.tsx).
+  const stats = c.stats || [];
   const paragraphs = String(c.storyParagraphs || '').split(/\n\s*\n/).filter(Boolean);
   const glance = c.glanceItems?.length ? c.glanceItems : [];
   const philosophy = c.philosophyItems?.length ? c.philosophyItems : [];
@@ -64,11 +64,12 @@ export default async function AboutPage() {
             {/* Sidebar Image & Glance Card */}
             <div className="space-y-8">
               <div className="aspect-[3/4] overflow-hidden rounded-sm shadow-md">
-                <img
-                  src={sanityImage(c.storyImage, 800)}
+                <ResponsiveImage
+                  source={c.storyImage}
                   alt={c.storyImageAlt}
+                  sizes="(min-width: 1024px) 33vw, 100vw"
+                  widths={[480, 768, 1024, 1440]}
                   className="w-full h-full object-cover"
-                  loading="lazy"
                 />
               </div>
 

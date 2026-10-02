@@ -66,6 +66,8 @@ export default function ContactClient({ services, settings, c }: ContactClientPr
     setIsSubmitting(true);
     setErrorMessage(null);
 
+    // Honeypot value rides along with the real fields; the server silently
+    // discards the submission when it is filled (see actions/sendEmail.ts).
     // The recipient is resolved server-side from Sanity inside the action —
     // never sent from the client (prevents abuse as an open email relay).
     const result = await sendEmailAction({ formData });
@@ -128,6 +130,19 @@ export default function ContactClient({ services, settings, c }: ContactClientPr
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Honeypot — visually hidden and skipped by keyboard/screen
+                    readers. Humans never fill it; bots that do get a fake
+                    "success" response and their message is dropped server-side. */}
+                <input
+                  type="text"
+                  name="_hp_website"
+                  value={formData['_hp_website'] || ''}
+                  onChange={(e) => handleInputChange('_hp_website', e.target.value)}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  className="absolute left-[-9999px] top-0 h-0 w-0 overflow-hidden opacity-0"
+                />
                   {c.customFields?.map((field, idx) => {
                     const fieldId = field._key || `field-${idx}`;
                     return (

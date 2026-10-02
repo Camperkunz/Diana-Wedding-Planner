@@ -1,9 +1,10 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { LuArrowRight as ArrowRight, LuArrowLeft as ArrowLeft, LuMapPin as MapPin, LuCalendar as Calendar } from 'react-icons/lu';
-import { getAlbum, getAlbums } from '@/lib/sanity-data';
-import { sanityImage } from '@/lib/sanity-image';
+import { getAlbum, getAlbums, getSiteSettings } from '@/lib/sanity-data';
 import HeroSection from '@/components/ui/HeroSection';
+import ResponsiveImage from '@/components/ui/ResponsiveImage';
 
 export function generateStaticParams() {
   return getAlbums().then((albums) => albums.map((album) => ({ albumSlug: album.slug })));
@@ -13,16 +14,40 @@ export async function generateMetadata({
   params,
 }: {
   params: Promise<{ albumSlug: string }>;
-}) {
+}): Promise<Metadata> {
   const { albumSlug } = await params;
-  const album = await getAlbum(albumSlug);
+  const [album, settings] = await Promise.all([getAlbum(albumSlug), getSiteSettings()]);
   if (!album) return { title: 'Album Not Found' };
+
+  const title =
+    album.seo?.metaTitle ||
+    `${album.title} — ${album.category} | Diana, Ottawa Wedding Planner`;
+  const description = album.seo?.metaDescription || (album.story || album.title).slice(0, 160);
+  // Album cover doubles as the share image when the editor set none.
+  const image = album.seo?.ogImage || album.coverImage || settings?.seo?.ogImage;
+  const url = album.seo?.canonicalUrl;
+
+  // openGraph/twitter are always present — omitting them would wipe the
+  // site-wide tags inherited from the root layout (Next.js replaces the whole
+  // object per key, it does not merge field by field).
   return {
-    title: album.seo?.metaTitle || `${album.title} — ${album.category} | Diana, Ottawa Wedding Planner`,
-    description: album.seo?.metaDescription || (album.story || album.title).slice(0, 160),
-    alternates: album.seo?.canonicalUrl ? { canonical: album.seo.canonicalUrl } : undefined,
+    title,
+    description,
+    alternates: url ? { canonical: url } : undefined,
     robots: album.seo?.noIndex ? { index: false, follow: !album.seo?.noFollow } : undefined,
-    openGraph: album.seo?.ogImage ? { images: [sanityImage(album.seo.ogImage, 1200) || ''] } : undefined,
+    openGraph: {
+      title,
+      description,
+      type: 'article',
+      url,
+      images: image ? [{ url: image }] : undefined,
+    },
+    twitter: {
+      card: image ? 'summary_large_image' : 'summary',
+      title,
+      description,
+      images: image ? [image] : undefined,
+    },
   };
 }
 
@@ -86,12 +111,16 @@ export default async function AlbumPage({
                 className={`group relative overflow-hidden rounded-sm shadow-sm ${i === 0 || i === 3 ? 'sm:col-span-2 aspect-[16/10]' : 'aspect-[4/5]'
                   }`}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={photo.src}
-                  alt={photo.alt}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
+                <ResponsiveImage
+                    source={photo.src}
+                    alt={photo.alt}
+                    sizes={
+                        i === 0 || i === 3
+                            ? '(min-width: 1024px) 66vw, (min-width: 640px) 100vw, 100vw'
+                            : '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw'
+                    }
+                    widths={[480, 768, 1024, 1440, 1920]}
+                    className="w-full h-full object-cover"
                 />
                 {photo.caption && (
                   <figcaption className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent text-white text-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
