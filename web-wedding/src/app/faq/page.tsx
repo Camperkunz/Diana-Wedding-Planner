@@ -11,6 +11,19 @@ import HeroSection from '@/components/ui/HeroSection';
 
 const fallback = {};
 
+/**
+ * Splits a Studio `text` value into paragraphs: every newline the editor types
+ * becomes a new paragraph on the page (the same `<p>` + spacing convention the
+ * About story uses, but keyed on single line breaks instead of blank lines).
+ */
+function toParagraphs(value: unknown): string[] {
+    return String(value ?? '')
+        .replace(/\r\n?/g, '\n')
+        .split(/\n+/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+}
+
 export async function generateMetadata() {
     const page = await getFaqPage();
     return buildSeoMetadata(
@@ -63,7 +76,13 @@ export default async function FaqPage() {
                                                     {item.question}
                                                 </AccordionTrigger>
                                                 <AccordionContent className="text-muted-foreground leading-relaxed text-base font-light">
-                                                    {item.answer}
+                                                    <div className="space-y-4">
+                                                        {toParagraphs(item.answer).map(
+                                                            (paragraph, pIndex) => (
+                                                                <p key={pIndex}>{paragraph}</p>
+                                                            )
+                                                        )}
+                                                    </div>
                                                 </AccordionContent>
                                             </AccordionItem>
                                         ))}
@@ -80,9 +99,11 @@ export default async function FaqPage() {
                                 <h2 className="font-serif text-2xl md:text-3xl mb-6 text-balance">
                                     {c.contactHeading}
                                 </h2>
-                                <p className="text-muted-foreground font-light mb-10 max-w-xl mx-auto leading-relaxed">
-                                    {c.contactDescription}
-                                </p>
+                                <div className="text-muted-foreground font-light mb-10 max-w-xl mx-auto leading-relaxed space-y-4">
+                                    {toParagraphs(c.contactDescription).map((paragraph, pIndex) => (
+                                        <p key={pIndex}>{paragraph}</p>
+                                    ))}
+                                </div>
                                 {c.contactButtonLabel && (
                                     <Link
                                         href={c.contactButtonLink || '/contact'}

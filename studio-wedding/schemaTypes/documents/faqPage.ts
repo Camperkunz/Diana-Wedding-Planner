@@ -19,7 +19,15 @@ export const faqPage = defineType({
     defineField({ name: 'heroImageAlt', title: 'Photo Alt Text', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
     defineField({
       name: 'items', title: 'FAQ Items', type: 'array', fieldset: 'questions', of: [{
-        type: 'object', name: 'faqItem', fields: [
+        type: 'object', name: 'faqItem',
+        preview: {
+          select: { title: 'question', subtitle: 'category' },
+          prepare: ({ title, subtitle }: Record<string, any>) => ({
+            title: title || 'Untitled question',
+            subtitle,
+          }),
+        },
+        fields: [
           defineField({ name: 'category', title: 'Category', type: 'string', validation: (rule) => rule.required() }),
           defineField({ name: 'question', title: 'Question', type: 'string', validation: (rule) => rule.required() }),
           defineField({ name: 'answer', title: 'Answer', type: 'text', rows: 6, validation: (rule) => rule.required() }),
