@@ -44,7 +44,7 @@ export default async function AboutPage() {
 
       {/* Story Section */}
       <section className="py-16 md:py-20 bg-background">
-        <div className="container-narrow">
+        <div className="container-wide">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 items-start">
             {/* Story Text */}
             <div className="lg:col-span-2 space-y-8">
@@ -107,7 +107,7 @@ export default async function AboutPage() {
 
       {/* Philosophy Section */}
       <section className="py-28 md:py-40 bg-secondary/40">
-        <div className="container-narrow">
+        <div className="container-wide">
           <div className="text-center mb-20">
             <p className="text-xs uppercase tracking-wide-lg text-accent mb-6">
               {c.philosophyEyebrow}
