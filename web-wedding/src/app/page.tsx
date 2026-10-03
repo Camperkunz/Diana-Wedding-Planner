@@ -307,6 +307,7 @@ export default async function Home() {
                 key={album._id || i}
                 delay={i * 100}
                 className={cn(
+                  'h-full',
                   i === 0
                     ? 'sm:col-span-2 lg:col-span-2'
                     : 'sm:col-span-1'
@@ -319,7 +320,13 @@ export default async function Home() {
                       : '/portfolio'
                   }
                   className={cn(
-                    'group relative overflow-hidden rounded-sm hover:shadow-xl transition-all duration-500 block w-full',
+                    // `h-full` is the fix for mismatched card heights: the row
+                    // is sized by the tallest card (the wide 16/10 one) and
+                    // every sibling stretches to it, so the vertical 4/5
+                    // previews no longer leave a gap underneath. With an
+                    // explicit height the aspect-ratio is ignored and
+                    // `object-cover` fills the box instead.
+                    'group relative overflow-hidden rounded-sm hover:shadow-xl transition-all duration-500 block w-full h-full',
                     i === 0
                       ? 'aspect-[16/10]'
                       : 'aspect-[16/10] sm:aspect-[4/5]'

@@ -46,14 +46,13 @@ export type Album = {
   slug: string;
   title: string;
   category?: string;
+  /** Resolved cover: the explicit `coverImage` or, when unset, the first gallery photo. */
   coverImage?: string;
   coverImageAlt?: string;
   story?: string;
-  shortDescription?: string;
   date?: string;
   venue?: string;
   location?: string;
-  order?: number;
   photos: { src: string; alt: string; caption?: string }[];
   seo?: { metaTitle?: string; metaDescription?: string; ogImage?: any; canonicalUrl?: string; noIndex?: boolean; noFollow?: boolean };
 };
@@ -167,7 +166,7 @@ export function hexToHsl(hex?: string) {
 }
 
 const albumProjection = `
-  _id, title, slug, category, coverImage, coverImageAlt, shortDescription, order,
+  _id, title, slug, category, coverImage, coverImageAlt,
   story, date, venue, location,
   seo{ metaTitle, metaDescription, ogImage, canonicalUrl, noIndex, noFollow },
   photos[]{ image, alt, caption }
@@ -191,32 +190,34 @@ function mapSeo(seo: any) {
 }
 
 function mapAlbum(album: any): Album {
+  // Photos first: the cover falls back to the first gallery photo when the
+  // editor did not pick an override in the Studio.
+  const photos = (album.photos || [])
+    .map((photo: any) => ({
+      src: sanityImage(photo.image, 1800),
+      alt: photo.alt || album.title,
+      caption: photo.caption,
+    }))
+    .filter((photo: { src?: string }): photo is { src: string; alt: string; caption?: string } =>
+      Boolean(photo.src)
+    );
+
   return {
     _id: album._id,
     slug: album.slug?.current || '',
     title: album.title,
     category: album.category,
-    coverImage: sanityImage(album.coverImage, 1800),
+    coverImage: sanityImage(album.coverImage, 1800) || photos[0]?.src,
     coverImageAlt: album.coverImageAlt,
-    shortDescription: album.shortDescription,
-    story: album.story || album.shortDescription,
+    story: album.story,
     date: album.date,
     venue: album.venue,
     location: album.location,
-    order: album.order,
     seo: mapSeo(album.seo),
     // A photo whose asset is missing (deleted in the Studio, failed upload) is
     // dropped instead of rendering an empty `src`, which would make the browser
     // request the current page as an image.
-    photos: (album.photos || [])
-      .map((photo: any) => ({
-        src: sanityImage(photo.image, 1800),
-        alt: photo.alt || album.title,
-        caption: photo.caption,
-      }))
-      .filter((photo: { src?: string }): photo is { src: string; alt: string; caption?: string } =>
-        Boolean(photo.src)
-      ),
+    photos,
   };
 }
 
@@ -320,7 +321,9 @@ export const getSiteLayout = cache(async (): Promise<SiteLayout | null> => {
 });
 
 export const getAlbums = cache(async (): Promise<Album[]> => {
-  const data = await client.fetch(`*[_type == "album"] | order(coalesce(order, 9999) asc, _createdAt desc){${albumProjection}}`);
+  // Newest first: the Studio no longer has a display-order field, so a freshly
+  // published album surfaces at the top of the portfolio and the home page.
+  const data = await client.fetch(`*[_type == "album"] | order(_createdAt desc){${albumProjection}}`);
   return (data || []).map(mapAlbum);
 });
 

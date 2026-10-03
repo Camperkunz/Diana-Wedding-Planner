@@ -88,24 +88,34 @@ export default async function AlbumPage({
         ) : null}
       </HeroSection>
 
-      {/* Story */}
-      <section className="py-16 md:py-20 bg-background">
-        <div className="container-narrow">
-          <div className="max-w-3xl mx-auto">
-            <p className="text-xs uppercase tracking-wide-lg text-accent mb-6">
-              The Story
-            </p>
-            <p className="text-muted-foreground text-base md:text-lg font-light leading-relaxed">
-              {album.story || ''}
-            </p>
+      {/* Story — only when the editor actually wrote one; otherwise the page
+          starts straight with the gallery. */}
+      {album.story ? (
+        <section className="py-16 md:py-20 bg-background">
+          <div className="container-narrow">
+            <div className="max-w-3xl mx-auto">
+              <p className="text-xs uppercase tracking-wide-lg text-accent mb-6">
+                The Story
+              </p>
+              <p className="text-muted-foreground text-base md:text-lg font-light leading-relaxed">
+                {album.story}
+              </p>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       {/* Gallery — CSS multi-column masonry: every photo keeps its own aspect
           ratio, so nothing is ever cropped and the browser downloads exactly
           the pixels that end up on screen. */}
-      <section className="pb-28 md:pb-40 bg-background">
+      <section
+        className={`pb-28 md:pb-40 bg-background${
+          // With a story the section above already contributes its `py`
+          // bottom spacing; without one the gallery would touch the hero, so
+          // mirror that same gap here.
+          album.story ? '' : ' pt-16 md:pt-20'
+        }`}
+      >
         <div className="container-wide">
           <div className="columns-1 gap-6 sm:columns-2 lg:columns-3 lg:gap-8">
             {album.photos.map((photo, i) => {

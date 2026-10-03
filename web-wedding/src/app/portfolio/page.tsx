@@ -45,7 +45,15 @@ export default async function PortfolioPage() {
                         {c.introText}
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
-                        {albums.map((album) => (
+                        {albums.map((album) => {
+                            // Only render the meta line when there is something
+                            // to show — an empty venue/location used to leave a
+                            // lone "·" floating under the title.
+                            const place = [album.venue, album.location]
+                                .filter(Boolean)
+                                .join(', ');
+
+                            return (
                             <Link
                                 key={album.slug}
                                 href={`/portfolio/${album.slug}`}
@@ -66,12 +74,15 @@ export default async function PortfolioPage() {
                                     <h2 className="font-serif text-white text-3xl mb-1">
                                         {album.title}
                                     </h2>
-                                    <p className="text-white/60 text-xs font-light">
-                                        {album.venue} · {album.location}
-                                    </p>
+                                    {place && (
+                                        <p className="text-white/60 text-xs font-light">
+                                            {place}
+                                        </p>
+                                    )}
                                 </div>
                             </Link>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             </section>

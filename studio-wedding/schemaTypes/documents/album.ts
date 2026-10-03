@@ -1,16 +1,18 @@
-import { defineType, defineField } from 'sanity';
+import {defineType, defineField} from 'sanity';
+import {BulkPhotosInput} from '../../components/BulkPhotosInput';
 
 export const album = defineType({
   name: 'album',
   title: 'Wedding Album',
   type: 'document',
-  description: 'A wedding story in Diana’s portfolio. The album page layout is fixed; you control the story and photos.',
+  description:
+    'A wedding story in Diana’s portfolio. Enter the title, drop in the photos — that is the minimum. Everything else is optional.',
   fieldsets: [
     { name: 'identity', title: 'Wedding Details', options: { collapsible: true, collapsed: false } },
-    { name: 'story', title: 'Story', options: { collapsible: true, collapsed: false } },
-    { name: 'cover', title: 'Cover Photo', options: { collapsible: true, collapsed: true } },
     { name: 'gallery', title: 'Gallery Photos', options: { collapsible: true, collapsed: false } },
-    { name: 'display', title: 'Portfolio Display', options: { collapsible: true, collapsed: true } },
+    { name: 'cover', title: 'Cover Photo', options: { collapsible: true, collapsed: true } },
+    { name: 'story', title: 'Story', options: { collapsible: true, collapsed: true } },
+    { name: 'optional', title: 'Optional Details', options: { collapsible: true, collapsed: true } },
     { name: 'seo', title: 'SEO', options: { collapsible: true, collapsed: true } },
   ],
   fields: [
@@ -35,89 +37,19 @@ export const album = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
-      name: 'coverImage',
-      title: 'Cover Image',
-      type: 'image',
-      fieldset: 'cover',
-      options: {
-        hotspot: true,
-      },
-      description: 'The main photo shown for this album in the portfolio grid. Recommended size: at least 940×650 pixels.',
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      name: 'coverImageAlt',
-      title: 'Cover Image Alt Text',
-      type: 'string',
-      fieldset: 'cover',
-      description: 'A short description of the cover image for screen readers, e.g. "Outdoor ceremony with white canopy and florals".',
-    }),
-    defineField({
-      name: 'shortDescription',
-      title: 'Short Description',
-      type: 'text',
-      fieldset: 'story',
-      rows: 3,
-      description: 'A brief summary shown in the portfolio grid and at the top of the album page.',
-    }),
-    defineField({
-      name: 'story',
-      title: 'Story',
-      type: 'text',
-      fieldset: 'story',
-      rows: 6,
-      description: 'The longer story shown on the individual album page.',
-    }),
-    defineField({
-      name: 'date',
-      title: 'Wedding Date / Label',
-      type: 'string',
-      fieldset: 'identity',
-      description: 'Optional date or date label shown on the album page, e.g. September 2025.',
-    }),
-    defineField({
-      name: 'venue',
-      title: 'Venue',
-      type: 'string',
-      fieldset: 'identity',
-    }),
-    defineField({
-      name: 'location',
-      title: 'Location',
-      type: 'string',
-      fieldset: 'identity',
-    }),
-    defineField({
       name: 'category',
       title: 'Category',
       type: 'string',
       fieldset: 'identity',
-      description: 'A label for the wedding type, e.g. "Garden Wedding" or "Ballroom Reception".',
-      options: {
-        list: [
-          { title: 'Garden Wedding', value: 'Garden Wedding' },
-          { title: 'Ballroom Reception', value: 'Ballroom Reception' },
-          { title: 'Rustic Barn Wedding', value: 'Rustic Barn Wedding' },
-          { title: 'Intimate Elopement', value: 'Intimate Elopement' },
-          { title: 'Modern Hotel Wedding', value: 'Modern Hotel Wedding' },
-          { title: 'Cultural Fusion Wedding', value: 'Cultural Fusion Wedding' },
-        ],
-        layout: 'radio',
-      },
-    }),
-    defineField({
-      name: 'order',
-      title: 'Display Order',
-      type: 'number',
-      fieldset: 'display',
-      description: 'Lower numbers appear first in the portfolio grid. Use 1, 2, 3, etc.',
-      initialValue: 1,
+      description:
+        'A free-text label for the wedding type shown above the title, e.g. "Garden Wedding", "Ballroom Reception" or "Intimate Elopement". Type anything you like.',
     }),
     defineField({
       name: 'photos',
       title: 'Photos',
       type: 'array',
       fieldset: 'gallery',
+      components: { input: BulkPhotosInput },
       of: [
         {
           type: 'object',
@@ -134,36 +66,62 @@ export const album = defineType({
               description: 'Upload or select a photo for this album.',
               validation: (rule) => rule.required(),
             }),
-            defineField({
-              name: 'alt',
-              title: 'Alt Text',
-              type: 'string',
-              description: 'A short description of the photo for screen readers, e.g. "Bride and groom kissing at the ceremony".',
-            }),
-            defineField({
-              name: 'caption',
-              title: 'Caption',
-              type: 'string',
-              description: 'An optional caption shown with the photo, e.g. "The first kiss as a married couple".',
-            }),
           ],
-          preview: {
-            select: {
-              title: 'alt',
-              subtitle: 'caption',
-              media: 'image',
-            },
-            prepare({ title, subtitle, media }: { title?: string; subtitle?: string; media?: any }) {
-              return {
-                title: title || 'Untitled Photo',
-                subtitle: subtitle || 'No caption',
-                media: media || undefined,
-              };
-            },
-          },
         },
       ],
-      description: 'The photos in this album. Drag to reorder. Each photo needs an image and alt text.',
+      description:
+        'Drag & drop as many photos as you like, or use the button to select files — they are all added at once. The first photo becomes the album cover. Drag the thumbnails to reorder.',
+      validation: (rule) =>
+        rule.min(1).warning('Publishing without photos leaves the album page empty.'),
+    }),
+    defineField({
+      name: 'coverImage',
+      title: 'Cover Image (override)',
+      type: 'image',
+      fieldset: 'cover',
+      options: {
+        hotspot: true,
+      },
+      description:
+        'Optional — when left empty, the first gallery photo is used as the cover automatically. Only set this to pick a different photo.',
+    }),
+    defineField({
+      name: 'coverImageAlt',
+      title: 'Cover Image Alt Text',
+      type: 'string',
+      fieldset: 'cover',
+      description: 'A short description of the cover image for screen readers, e.g. "Outdoor ceremony with white canopy and florals".',
+    }),
+    defineField({
+      name: 'story',
+      title: 'Story',
+      type: 'text',
+      fieldset: 'story',
+      rows: 6,
+      description:
+        'The description shown at the top of the album page. Leave empty to skip it — the page will show only the photos.',
+    }),
+    defineField({
+      name: 'date',
+      title: 'Wedding Date / Label',
+      type: 'string',
+      fieldset: 'optional',
+      description:
+        'Optional, e.g. "September 2025". Leave empty when it is not relevant — nothing is shown then.',
+    }),
+    defineField({
+      name: 'venue',
+      title: 'Venue',
+      type: 'string',
+      fieldset: 'optional',
+      description: 'Optional. Leave empty when there is no venue to name.',
+    }),
+    defineField({
+      name: 'location',
+      title: 'Location',
+      type: 'string',
+      fieldset: 'optional',
+      description: 'Optional, e.g. "Ottawa, Canada". Leave empty when unknown.',
     }),
     defineField({ name: 'seo', title: 'Search & Social Preview', type: 'seo', fieldset: 'seo' }),
   ],
