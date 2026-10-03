@@ -1,11 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import type { CSSProperties, ReactNode } from 'react';
-import {
-  Jost,
-  Cormorant_Garamond,
-  Dancing_Script,
-} from 'next/font/google';
 import { SiteHeader } from '../components/site-header';
 import { SiteFooter } from '../components/site-footer';
 import { FloatingContact } from '../components/floating-contact';
@@ -13,18 +8,6 @@ import { getSiteDesign, getSiteLayout, getSiteSettings, hexToHsl } from '../lib/
 import { SITE_URL } from '../lib/site';
 import { JsonLd } from '../components/json-ld';
 import { GoogleAnalytics } from '../components/google-analytics';
-
-const jost = Jost({ subsets: ['latin'], weight: ['300', '400', '500'], variable: '--font-jost' });
-const cormorant = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  variable: '--font-cormorant',
-});
-const dancing = Dancing_Script({
-  subsets: ['latin'],
-  weight: ['600'],
-  variable: '--font-dancing',
-});
 
 // Without this, Next.js statically caches every page at build time and Studio
 // edits will not appear on the live site until the next deploy. This makes
@@ -79,11 +62,14 @@ export default async function RootLayout({
   }
 
   // The type system is fixed: Jost (sans) + Cormorant Garamond (serif) + Dancing Script (accents).
+  // The fonts themselves are self-hosted (public/fonts, declared in globals.css);
+  // next/font/google was removed because its Google Fonts fetch breaks Turbopack
+  // builds (vercel/next.js#99114).
   // Changing fonts is a code change on purpose — no CMS preset.
   const fontVars = {
-    '--font-sans': 'var(--font-jost)',
-    '--font-serif': 'var(--font-cormorant)',
-    '--font-script': 'var(--font-dancing)',
+    '--font-sans': "'Jost'",
+    '--font-serif': "'Cormorant Garamond'",
+    '--font-script': "'Dancing Script'",
   };
 
   const style = { ...vars, ...fontVars } as CSSProperties;
@@ -114,15 +100,16 @@ export default async function RootLayout({
   };
 
   return (
-    <html
-      lang="en"
-      data-scroll-behavior="smooth"
-      className={`${jost.variable} ${cormorant.variable} ${dancing.variable}`}
-    >
+    <html lang="en" data-scroll-behavior="smooth">
       {/* Every photo is served from Sanity's CDN: opening the connection while
           the HTML is still parsing saves a DNS + TCP + TLS round trip before
           the first image request. React 19 hoists <link> into <head>. */}
       <link rel="preconnect" href="https://cdn.sanity.io" />
+      {/* Self-hosted fonts: preload the latin files (what next/font did with
+          subsets: ["latin"]). React 19 hoists these into <head>. */}
+      <link rel="preload" as="font" type="font/woff2" href="/fonts/jost-latin.woff2" crossOrigin="anonymous" />
+      <link rel="preload" as="font" type="font/woff2" href="/fonts/cormorant-garamond-latin.woff2" crossOrigin="anonymous" />
+      <link rel="preload" as="font" type="font/woff2" href="/fonts/dancing-script-latin.woff2" crossOrigin="anonymous" />
       <body className="font-sans bg-background text-foreground" style={style}>
         <JsonLd data={jsonLd} />
         <a
