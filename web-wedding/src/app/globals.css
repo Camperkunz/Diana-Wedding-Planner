@@ -133,6 +133,15 @@
     animation: scaleIn 0.6s ease-out both;
   }
 
+  /* content-visibility: auto — the browser skips layout and paint for gallery
+     items far off-screen (an album can hold 100+ photos). Only safe on a box
+     whose height comes from `aspect-ratio`: while an item is skipped its
+     contents are not measured, so the size must come from the box itself or
+     the masonry columns would jump. */
+  .cv-auto {
+    content-visibility: auto;
+  }
+
 }
 
 @keyframes fadeInUp {

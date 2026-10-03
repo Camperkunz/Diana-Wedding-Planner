@@ -329,9 +329,15 @@ export default async function Home() {
                     source={album.coverImage}
                     alt={album.coverImageAlt || album.title}
                     sizes={
+                      // Card 0 takes 2 of the 4 columns: full width below lg,
+                      // half the grid from lg up — the old
+                      // `(min-width: 640px) 50vw` told tablets (640-1023px) to
+                      // fetch half the pixels they actually render. `min()`
+                      // caps each value to the real column: `container-wide`
+                      // stops at 80rem, so plain vw over-fetches on wide screens.
                       i === 0
-                        ? '(min-width: 640px) 50vw, 100vw'
-                        : '(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw'
+                        ? '(min-width: 1024px) min(50vw, 37rem), 100vw'
+                        : '(min-width: 1024px) min(25vw, 17.5rem), (min-width: 640px) 50vw, 100vw'
                     }
                     widths={[480, 768, 1024, 1440]}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"

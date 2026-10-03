@@ -5,6 +5,7 @@ import { LuArrowRight as ArrowRight, LuArrowLeft as ArrowLeft, LuMapPin as MapPi
 import { getAlbum, getAlbums, getSiteSettings } from '@/lib/sanity-data';
 import HeroSection from '@/components/ui/HeroSection';
 import ResponsiveImage from '@/components/ui/ResponsiveImage';
+import { imageDimensions } from '@/lib/sanity-image';
 
 export function generateStaticParams() {
   return getAlbums().then((albums) => albums.map((album) => ({ albumSlug: album.slug })));
@@ -101,34 +102,42 @@ export default async function AlbumPage({
         </div>
       </section>
 
-      {/* Gallery */}
+      {/* Gallery — CSS multi-column masonry: every photo keeps its own aspect
+          ratio, so nothing is ever cropped and the browser downloads exactly
+          the pixels that end up on screen. */}
       <section className="pb-28 md:pb-40 bg-background">
         <div className="container-wide">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {album.photos.map((photo, i) => (
-              <figure
-                key={i}
-                className={`group relative overflow-hidden rounded-sm shadow-sm ${i === 0 || i === 3 ? 'sm:col-span-2 aspect-[16/10]' : 'aspect-[4/5]'
+          <div className="columns-1 gap-6 sm:columns-2 lg:columns-3 lg:gap-8">
+            {album.photos.map((photo, i) => {
+              const dimensions = imageDimensions(photo.src);
+
+              return (
+                <figure
+                  key={i}
+                  className={`group relative mb-6 overflow-hidden rounded-sm shadow-sm break-inside-avoid lg:mb-8${
+                    dimensions ? ' cv-auto' : ''
                   }`}
-              >
-                <ResponsiveImage
+                  style={
+                    dimensions
+                      ? { aspectRatio: `${dimensions.width} / ${dimensions.height}` }
+                      : undefined
+                  }
+                >
+                  <ResponsiveImage
                     source={photo.src}
                     alt={photo.alt}
-                    sizes={
-                        i === 0 || i === 3
-                            ? '(min-width: 1024px) 66vw, (min-width: 640px) 100vw, 100vw'
-                            : '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw'
-                    }
+                    sizes="(min-width: 1024px) min(33vw, 24rem), (min-width: 640px) 50vw, 100vw"
                     widths={[480, 768, 1024, 1440, 1920]}
-                    className="w-full h-full object-cover"
-                />
-                {photo.caption && (
-                  <figcaption className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent text-white text-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
-                    {photo.caption}
-                  </figcaption>
-                )}
-              </figure>
-            ))}
+                    className="w-full h-auto"
+                  />
+                  {photo.caption && (
+                    <figcaption className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent text-white text-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
+                      {photo.caption}
+                    </figcaption>
+                  )}
+                </figure>
+              );
+            })}
           </div>
         </div>
       </section>

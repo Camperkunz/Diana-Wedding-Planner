@@ -119,6 +119,10 @@ export default async function RootLayout({
       data-scroll-behavior="smooth"
       className={`${jost.variable} ${cormorant.variable} ${dancing.variable}`}
     >
+      {/* Every photo is served from Sanity's CDN: opening the connection while
+          the HTML is still parsing saves a DNS + TCP + TLS round trip before
+          the first image request. React 19 hoists <link> into <head>. */}
+      <link rel="preconnect" href="https://cdn.sanity.io" />
       <body className="font-sans bg-background text-foreground" style={style}>
         <JsonLd data={jsonLd} />
         <a
