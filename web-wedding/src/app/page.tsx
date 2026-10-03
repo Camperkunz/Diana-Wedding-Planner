@@ -465,14 +465,19 @@ export default async function Home() {
               <ArrowRight className="w-4 h-4" />
             </Link>
 
-            <p className="text-white/70 text-sm mt-8 font-light">
+            <p className="text-white/70 text-md mt-6 font-light">
               {content.ctaDirectContactText}{' '}
               {emailHref && (
                 <a
                   href={emailHref}
-                  className="text-white/80 hover:text-accent transition-colors"
+                  className="group relative inline-block py-0.5 text-white/80 hover:text-white focus-visible:text-white transition-colors duration-200"
                 >
                   {settings?.email}
+                  {/* Same slide-in line as the header/footer links */}
+                  <span
+                    aria-hidden="true"
+                    className="absolute bottom-0 left-0 right-0 h-px origin-left scale-x-0 bg-accent-overlay transition-transform duration-300 group-hover:scale-x-100 group-focus-visible:scale-x-100"
+                  />
                 </a>
               )}
             </p>
