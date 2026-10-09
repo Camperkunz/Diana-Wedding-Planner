@@ -9,6 +9,7 @@ const SINGLETON_IDS = {
   faqPage: 'faqPage',
   backstagePage: 'backstagePage',
   contactPage: 'contactPage',
+  privacyPolicy: 'privacyPolicy',
 } as const
 
 const singleton = (S: any, id: string, schemaType: string, title: string) =>
@@ -55,6 +56,17 @@ export const deskStructure = (S: any) =>
               singleton(S, SINGLETON_IDS.siteSettings, 'siteSettings', 'Business & Contact Info'),
               singleton(S, SINGLETON_IDS.siteDesign, 'siteDesign', 'Colors'),
               singleton(S, SINGLETON_IDS.siteLayout, 'siteLayout', 'Header & Footer Menu'),
+
+              S.listItem()
+                .id('policies')
+                .title('Policies')
+                .child(
+                  S.list()
+                    .title('Policies')
+                    .items([
+                      singleton(S, SINGLETON_IDS.privacyPolicy, 'privacyPolicy', 'Privacy Policy'),
+                    ])
+                ),
             ])
         ),
 

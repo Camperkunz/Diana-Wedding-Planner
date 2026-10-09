@@ -24,6 +24,8 @@ interface CustomField {
 
 interface ContactClientProps {
   services?: ServiceItem[];
+  /** Policy version from the Studio; the consent line falls back to the code constant. */
+  policyLastUpdated?: string;
   settings: {
     email?: string;
     phone?: string;
@@ -67,7 +69,7 @@ function instagramHandleFromUrl(url?: string): string | null {
   }
 }
 
-export default function ContactClient({ services, settings, c }: ContactClientProps) {
+export default function ContactClient({ services, settings, policyLastUpdated, c }: ContactClientProps) {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -101,7 +103,7 @@ export default function ContactClient({ services, settings, c }: ContactClientPr
     const result = await sendEmailAction({
       formData: {
         ...formData,
-        'Privacy Policy Consent': `Accepted — policy version ${PRIVACY_POLICY_LAST_UPDATED}`,
+        'Privacy Policy Consent': `Accepted — policy version ${policyLastUpdated || PRIVACY_POLICY_LAST_UPDATED}`,
       },
     });
 

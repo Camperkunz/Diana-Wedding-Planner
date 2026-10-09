@@ -10,6 +10,7 @@ import { portfolioPage } from './documents/portfolioPage';
 import { faqPage } from './documents/faqPage';
 import { backstagePage } from './documents/backstagePage';
 import { contactPage } from './documents/contactPage';
+import { privacyPolicy } from './documents/privacyPolicy';
 import backstageVideo from './documents/backstageVideo'
 
 import { seo } from './objects/shared/seo';
@@ -31,6 +32,7 @@ export const schemaTypes = [
   faqPage,
   backstagePage,
   contactPage,
+  privacyPolicy,
   backstageVideo,
   // Shared objects
   seo,

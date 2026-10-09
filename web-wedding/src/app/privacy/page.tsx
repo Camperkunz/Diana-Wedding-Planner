@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { getSiteLayout, getSiteSettings, buildSeoMetadata } from '@/lib/sanity-data';
+import { Fragment } from 'react';
+import { getSiteLayout, getSiteSettings, getPrivacyPolicy, buildSeoMetadata } from '@/lib/sanity-data';
 import { absoluteUrl } from '@/lib/site';
 import { PRIVACY_POLICY_LAST_UPDATED } from '@/lib/legal';
 import { safeMailtoHref } from '@/lib/safe-url';
@@ -7,12 +8,19 @@ import { safeMailtoHref } from '@/lib/safe-url';
 /**
  * Privacy Policy.
  *
- * The text lives in code on purpose: a legal document is reviewed, versioned and
- * shipped together with a deploy, so it cannot drift away from what the website
- * actually does — Google Analytics 4 with IP anonymisation and Google Signals
- * off, the Resend-powered contact form, the Sanity CMS. The business details
- * (name, e-mail, address) are read from the CMS instead of being copied here, so
- * the policy can never show a stale address.
+ * The text now lives in the Studio (Brand & Settings > Policies > Privacy Policy)
+ * as a plain `text` field so the editor can update it without a deploy; this page
+ * parses the small inline syntax the field documents in the Studio:
+ *
+ *   - every non-empty line is one paragraph (spacing is applied automatically),
+ *   - a line starting with `## ` is a section heading,
+ *   - consecutive lines starting with `- ` form one bulleted list,
+ *   - `{name}`, `{email}`, `{address}` and `{location}` are replaced with the
+ *     live values from Site Settings, so the policy can never show a stale
+ *     address (the guarantee the old hardcoded version was built around).
+ *
+ * While the Studio document has no text yet (or was emptied by mistake), the
+ * last known policy below renders instead — a legal page must never go blank.
  */
 
 export async function generateMetadata() {
@@ -56,8 +64,118 @@ function Code({ children }: { children: ReactNode }) {
 const externalLink =
   'text-accent underline underline-offset-2 hover:text-accent/80 focus-visible:text-accent/80';
 
+/** One parsed unit of the Studio `content` field. */
+type PolicyBlock =
+  | { type: 'heading'; text: string }
+  | { type: 'paragraph'; text: string }
+  | { type: 'list'; items: string[] };
+
+/** Live business values substituted into `{…}` tokens; mirrors Site Settings. */
+type PolicyValues = {
+  name: string;
+  email: string;
+  emailHref?: string;
+  address: string;
+  location: string;
+};
+
+/** The tokens the Studio field documents; kept in sync with its description. */
+const TOKEN_PATTERN = /\{(name|email|address|location)\}/g;
+
+/**
+ * Parses the Studio `content` field. Syntax (documented on the field in the
+ * Studio): every non-empty line is one paragraph, a line starting with `## ` is
+ * a section heading, and consecutive lines starting with `- ` form one list.
+ * Blank lines are ignored — paragraph spacing is the renderer's job.
+ */
+function parsePolicy(value: unknown): PolicyBlock[] {
+  const lines = String(value ?? '')
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const blocks: PolicyBlock[] = [];
+  for (const line of lines) {
+    if (line.startsWith('## ')) {
+      blocks.push({ type: 'heading', text: line.slice(3).trim() });
+      continue;
+    }
+    if (line.startsWith('- ')) {
+      const item = line.slice(2).trim();
+      const last = blocks[blocks.length - 1];
+      if (last?.type === 'list') last.items.push(item);
+      else blocks.push({ type: 'list', items: [item] });
+      continue;
+    }
+    blocks.push({ type: 'paragraph', text: line });
+  }
+  return blocks;
+}
+
+/** Plain-text resolution of the `{…}` tokens, used for empty-block checks. */
+function resolveTokens(text: string, values: PolicyValues): string {
+  return text.replace(TOKEN_PATTERN, (_, token: string) => {
+    const value = values[token as keyof PolicyValues];
+    return typeof value === 'string' ? value : '';
+  });
+}
+
+/** Renders one line with `{…}` tokens; `{email}` becomes a mailto link. */
+function renderTokens(text: string, values: PolicyValues): ReactNode {
+  const parts = text.split(/(\{(?:name|email|address|location)\})/g);
+  if (parts.length === 1) return text;
+  return parts.map((part, index) => {
+    switch (part) {
+      case '{name}':
+        return <Fragment key={index}>{values.name}</Fragment>;
+      case '{email}':
+        if (!values.email) return null;
+        return values.emailHref ? (
+          <a key={index} href={values.emailHref} className={externalLink}>
+            {values.email}
+          </a>
+        ) : (
+          <Fragment key={index}>{values.email}</Fragment>
+        );
+      case '{address}':
+        return values.address ? <Fragment key={index}>{values.address}</Fragment> : null;
+      case '{location}':
+        return values.location ? <Fragment key={index}>{values.location}</Fragment> : null;
+      default:
+        return <Fragment key={index}>{part}</Fragment>;
+    }
+  });
+}
+
+/** Renders parsed blocks with the shared H2 / P / Bullets spacing. */
+function PolicyText({ blocks, values }: { blocks: PolicyBlock[]; values: PolicyValues }) {
+  return (
+    <>
+      {blocks.map((block, index) => {
+        if (block.type === 'heading') {
+          return <H2 key={index}>{renderTokens(block.text, values)}</H2>;
+        }
+        if (block.type === 'list') {
+          const items = block.items
+            .filter((item) => resolveTokens(item, values).trim())
+            .map((item) => renderTokens(item, values));
+          return items.length ? <Bullets key={index} items={items} /> : null;
+        }
+        // Drop paragraphs that resolve to nothing (e.g. an empty {address} line).
+        if (!resolveTokens(block.text, values).trim()) return null;
+        return <P key={index}>{renderTokens(block.text, values)}</P>;
+      })}
+    </>
+  );
+}
+
 export default async function PrivacyPage() {
-  const [settings, layout] = await Promise.all([getSiteSettings(), getSiteLayout()]);
+  const [settings, layout, policy] = await Promise.all([
+    getSiteSettings(),
+    getSiteLayout(),
+    getPrivacyPolicy(),
+  ]);
 
   // Same sources the footer uses, so the policy and the footer always agree.
   const businessName = settings?.name || 'Diana — Wedding Planner';
@@ -66,16 +184,26 @@ export default async function PrivacyPage() {
   const location = settings?.location || settings?.serviceArea || '';
   const address = layout?.footerAddress || settings?.address || settings?.location || '';
 
+  const values: PolicyValues = { name: businessName, email, emailHref, address, location };
+  // The Studio text wins; the constant is the fallback while the document has
+  // not been published yet (it also feeds the consent recorded by the form).
+  const lastUpdated = policy?.lastUpdated || PRIVACY_POLICY_LAST_UPDATED;
+  const blocks = parsePolicy(policy?.content);
+
   return (
     <section className="pt-28 pb-20 md:pt-40 md:pb-28 bg-background">
       <div className="container-narrow">
         <p className="text-xs uppercase tracking-wide-lg text-accent mb-6">Legal</p>
         <h1 className="font-serif text-4xl md:text-5xl leading-tight mb-4">Privacy Policy</h1>
         <p className="text-sm text-muted-foreground font-light mb-12">
-          Last updated: {PRIVACY_POLICY_LAST_UPDATED}
+          Last updated: {lastUpdated}
         </p>
 
         <div className="text-muted-foreground font-light leading-relaxed">
+          {blocks.length > 0 ? (
+            <PolicyText blocks={blocks} values={values} />
+          ) : (
+            <>
           <P>
             This Privacy Policy explains how {businessName} (&ldquo;we&rdquo;, &ldquo;us&rdquo;,
             &ldquo;our&rdquo;) collects, uses, stores and protects personal information when you visit this website (the &ldquo;Site&rdquo;) or contact us through the Site.
@@ -343,6 +471,8 @@ export default async function PrivacyPage() {
             </a>
             .
           </P>
+            </>
+          )}
         </div>
       </div>
     </section>

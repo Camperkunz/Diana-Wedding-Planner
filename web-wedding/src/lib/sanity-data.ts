@@ -465,6 +465,10 @@ export async function getPortfolioPage() { return getFixedPage('portfolioPage');
 export async function getFaqPage() { return getFixedPage('faqPage'); }
 export async function getBackstagePage() { return getFixedPage('backstagePage'); }
 export async function getContactPage() { return getFixedPage('contactPage'); }
+// privacyPolicy lives under Brand & Settings > Policies in the Studio; `content`
+// is a plain text field parsed by src/app/privacy/page.tsx (see the syntax note
+// on the field in the Studio).
+export async function getPrivacyPolicy() { return getFixedPage('privacyPolicy'); }
 
 /**
  * Page metadata for every route.

@@ -4,6 +4,7 @@ import {
     getSiteLayout,
     getContactPage,
     getServices,
+    getPrivacyPolicy,
     buildSeoMetadata
 } from '@/lib/sanity-data';
 import { sanityImage } from '@/lib/sanity-image';
@@ -14,11 +15,12 @@ export async function generateMetadata() {
 }
 
 export default async function ContactPage() {
-    const [page, settings, layout, services] = await Promise.all([
+    const [page, settings, layout, services, privacy] = await Promise.all([
         getContactPage(),
         getSiteSettings(),
         getSiteLayout(),
         getServices(),
+        getPrivacyPolicy(),
     ]);
 
     return (
@@ -31,6 +33,10 @@ export default async function ContactPage() {
                 serviceArea: settings?.serviceArea || layout?.footerAddress,
                 socialLinks: settings?.socialLinks?.length ? settings.socialLinks : layout?.footerSocialLinks || [],
             }}
+            // Version of the policy the consent checkbox refers to. Read from the
+            // same Studio document the /privacy page renders, so the recorded
+            // consent and the published text can never drift apart.
+            policyLastUpdated={privacy?.lastUpdated}
             c={{
                 ...page,
                 heroImage: sanityImage(page?.heroImage),
