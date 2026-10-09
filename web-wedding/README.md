@@ -82,19 +82,15 @@ Cloudflare dashboard → the Worker → **Settings → Build**:
 | Preview command | `npx wrangler versions upload` |
 
 `wrangler.jsonc` in this folder is what gets deployed — `.open-next/worker.js`
-plus `.open-next/assets` — and it declares the bindings (static assets, the R2
-incremental cache) and compatibility flags the Worker needs. `open-next.config.ts`
-selects the R2 incremental cache so pages with `revalidate` are not re-rendered
-on every request.
+plus `.open-next/assets` — and it declares the bindings and compatibility flags
+the Worker needs. `open-next.config.ts` stores the ISR cache in Cloudflare KV
+(free plan, no R2), so Sanity changes appear within ~1-2 minutes with no redeploy.
 
 ### One-time setup
 
-The R2 bucket used for the incremental cache has to exist before the first
-deploy; neither the build nor `wrangler deploy` creates it:
-
-```bash
-npx wrangler r2 bucket create diana-wedding-opennext-cache
-```
+Create a KV namespace (free, no card needed): Cloudflare dashboard →
+Storage & databases → KV → Create namespace (any name). Copy its ID into
+`kv_namespaces[0].id` in `wrangler.jsonc`.
 
 ### Local production preview
 

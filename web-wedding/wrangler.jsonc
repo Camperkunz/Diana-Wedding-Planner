@@ -5,7 +5,10 @@
   "main": ".open-next/worker.js",
   "name": "diana-wedding",
   "compatibility_date": "2026-10-01",
-  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public"
+  ],
   "assets": {
     // Everything in `public/` plus the Next.js static chunks, served directly
     // by the asset server. See `public/_headers` for their cache headers.
@@ -21,14 +24,12 @@
       "service": "diana-wedding"
     }
   ],
-  "r2_buckets": [
-    // Incremental (ISR) cache. Pages that set `revalidate` are stored here so
-    // they are not re-rendered (and re-fetched from Sanity) on every request.
-    // The bucket has to exist before deploying:
-    //   npx wrangler r2 bucket create diana-wedding-opennext-cache
+  "kv_namespaces": [
+    // ISR cache (free). Create once in the dashboard:
+    // Storage & databases → KV → Create namespace, then paste its ID below.
     {
-      "binding": "NEXT_INC_CACHE_R2_BUCKET",
-      "bucket_name": "diana-wedding-opennext-cache"
+      "binding": "NEXT_INC_CACHE_KV",
+      "id": "8f868ee802cf42e490418950f0a42ea9"
     }
   ]
   // No `images` binding on purpose: this site never uses `next/image`, every
