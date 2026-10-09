@@ -17,12 +17,12 @@
   "dependencies": {
     "@sanity/color-input": "^6.1.4",
     "@sanity/image-url": "^2.1.1",
-    "@sanity/vision": "^6.17.0",
+    "@sanity/vision": "^6.18.0",
     "@tailwindcss/typography": "^0.5.20",
     "next-sanity": "^13.3.4",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "sanity": "^6.17.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "sanity": "^6.18.0",
     "styled-components": "^6.1.18"
   },
   "devDependencies": {
@@ -33,6 +33,10 @@
     "eslint": "^10.8.1",
     "prettier": "^3.5",
     "typescript": "^5.8"
+  },
+  "overrides": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
   },
   "prettier": {
     "bracketSpacing": false,
