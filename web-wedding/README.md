@@ -44,7 +44,7 @@ dashboard (project → Settings → Environment Variables) in production.
 | --- | --- | --- |
 | `NEXT_PUBLIC_SANITY_PROJECT_ID` | yes | Sanity project the Studio writes to. |
 | `NEXT_PUBLIC_SANITY_DATASET` | yes | Usually `production`. |
-| `NEXT_PUBLIC_SITE_URL` | recommended | Public origin of the site, e.g. `https://dianaweddings.ca`. Drives `metadataBase`, canonical URLs, `og:url`, `robots.txt` and the sitemap. Falls back to the built-in default when unset. |
+| `NEXT_PUBLIC_SITE_URL` | yes (production) | Public origin of the site, e.g. `https://example.com`. Drives `metadataBase`, canonical URLs and `og:url`. Required — a production build fails without it. Locally the fallback is `http://localhost:3000`. |
 | `RESEND_API_KEY` | yes (contact form) | API key from [resend.com](https://resend.com). |
 | `RESEND_FROM_ADDRESS` | yes (contact form) | Verified sender, e.g. `Diana <hello@example.ca>`. When missing, the form falls back to `Contact Form <onboarding@resend.dev>` — Resend only accepts that for test emails to your own account, so production must set a **verified** address. |
 | `RESEND_FALLBACK_EMAIL` | optional | Last-resort recipient when no valid address is configured in the Studio. |
