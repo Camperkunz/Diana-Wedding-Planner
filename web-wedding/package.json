@@ -1,11 +1,14 @@
 {
-  "name": "nextjs",
+  "name": "diana-wedding",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy -- --keep-vars",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -15,7 +18,7 @@
     "@types/react-dom": "18.2.7",
     "autoprefixer": "10.4.15",
     "clsx": "^2.1.1",
-    "next": "^16.3.4",
+    "next": "^16.4.0",
     "next-sanity": "^13.3.4",
     "postcss": "^8.5.28",
     "react": "^19.2.4",
@@ -28,6 +31,8 @@
     "typescript": "5.2.2"
   },
   "devDependencies": {
-    "@types/react": "^19.2.14"
+    "@opennextjs/cloudflare": "^1.20.10",
+    "@types/react": "^19.2.14",
+    "wrangler": "^4.149.0"
   }
 }

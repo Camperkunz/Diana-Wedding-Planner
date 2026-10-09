@@ -1,0 +1,36 @@
+{
+  // Configuration for the Cloudflare Worker that serves this Next.js app.
+  // The build output referenced below is produced by `opennextjs-cloudflare build`.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "diana-wedding",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    // Everything in `public/` plus the Next.js static chunks, served directly
+    // by the asset server. See `public/_headers` for their cache headers.
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      // Self-reference service binding, the service name must match the worker
+      // name. Used by the incremental cache.
+      // see https://opennext.js.org/cloudflare/caching
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "diana-wedding"
+    }
+  ],
+  "r2_buckets": [
+    // Incremental (ISR) cache. Pages that set `revalidate` are stored here so
+    // they are not re-rendered (and re-fetched from Sanity) on every request.
+    // The bucket has to exist before deploying:
+    //   npx wrangler r2 bucket create diana-wedding-opennext-cache
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "diana-wedding-opennext-cache"
+    }
+  ]
+  // No `images` binding on purpose: this site never uses `next/image`, every
+  // photo is a plain <img> pointing at the Sanity CDN.
+}

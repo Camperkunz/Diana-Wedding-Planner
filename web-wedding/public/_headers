@@ -1,0 +1,8 @@
+# Headers for files served directly by Cloudflare's static asset server.
+#
+# Next.js `headers()` in next.config.mjs only applies to responses produced by
+# the Worker, and files under /_next/static are served by the asset server
+# instead. Fingerprinted build output never changes, so it can be cached
+# forever.
+/_next/static/*
+  Cache-Control: public,max-age=31536000,immutable

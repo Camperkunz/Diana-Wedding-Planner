@@ -4,7 +4,16 @@ import { Resend } from 'resend';
 import { headers } from 'next/headers';
 import { getContactPage, getSiteLayout, getSiteSettings } from '@/lib/sanity-data';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// The Resend client is created on first use, not at module scope. `process.env`
+// is only guaranteed to be populated while the Worker is handling a request, and
+// the Resend constructor throws when the API key is missing — so building the
+// client during a cold start would break the contact form.
+let resendClient: Resend | null = null;
+
+function getResend(): Resend {
+    resendClient ??= new Resend(process.env.RESEND_API_KEY);
+    return resendClient;
+}
 
 interface SendEmailParams {
     formData: Record<string, string>;
@@ -138,7 +147,7 @@ export async function sendEmailAction({ formData }: SendEmailParams) {
             )
             .join('');
 
-        const { error } = await resend.emails.send({
+        const { error } = await getResend().emails.send({
             from: FROM_ADDRESS,
             to: [targetEmail],
             ...(replyTo ? { replyTo } : {}),

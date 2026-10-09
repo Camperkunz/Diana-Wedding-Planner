@@ -2,9 +2,9 @@
  * The one place that knows the public address of the website.
  *
  * Nothing else hard-codes a domain: canonical tags, `og:url` and every other
- * absolute URL on the site read it from here. Set `NEXT_PUBLIC_SITE_URL` in
- * the hosting dashboard (project -> Environment Variables) and every URL
- * follows — no code change, no redeploy of the content.
+ * absolute URL on the site read it from here. Set `NEXT_PUBLIC_SITE_URL` as a
+ * *build* variable in the Cloudflare dashboard (Worker -> Settings -> Variables
+ * and Secrets) and every URL follows — no code change, no redeploy of the content.
  *
  * There is deliberately NO built-in production domain:
  *  - in development the address falls back to http://localhost:3000;
