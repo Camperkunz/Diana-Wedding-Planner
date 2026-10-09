@@ -135,10 +135,10 @@ export async function getVimeoThumbnail(rawUrl: string): Promise<string | null> 
     try {
         const res = await fetch(
             `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(rawUrl)}`,
-            { next: { revalidate: 60 * 60 * 24 } } // кэш на сутки, чтобы не дёргать API на каждый рендер
+            { next: { revalidate: 60 * 60 * 24 } } // cache for 24 hours
         );
         if (!res.ok) return null;
-        const data = await res.json();
+        const data = (await res.json()) as { thumbnail_url?: string };
         return data.thumbnail_url ?? null;
     } catch {
         return null;
