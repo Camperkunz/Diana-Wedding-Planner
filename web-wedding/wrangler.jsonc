@@ -29,7 +29,7 @@
     // Storage & databases → KV → Create namespace, then paste its ID below.
     {
       "binding": "NEXT_INC_CACHE_KV",
-      "id": "8f868ee802cf42e490418950f0a42ea9"
+      "id": "8c05337262664c7f9693a7ad77174b8d"
     }
   ],
   "observability": {
@@ -43,9 +43,6 @@
       "enabled": false,
       "head_sampling_rate": 1,
       "persist": true
-    },
-    "issue_detection": {
-      "enabled": false
     }
     // No `images` binding on purpose: this site never uses `next/image`, every
     // photo is a plain <img> pointing at the Sanity CDN.
