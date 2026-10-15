@@ -56,7 +56,7 @@ they go in:
 | `NEXT_PUBLIC_SANITY_DATASET` | Build | yes | Sanity dataset (`production`) |
 | `NEXT_PUBLIC_SITE_URL` | Build | yes in production | Canonical origin, used for metadata/Open Graph. Falling back to localhost in a production build is treated as a mistake and fails the build on purpose |
 | `RESEND_API_KEY` | Runtime (secret) | yes | Sending contact-form email |
-| `RESEND_FROM_ADDRESS` | Runtime | yes in production | Verified sender. When unset the code falls back to Resend's test sender and email is only deliverable to the account owner |
+| `RESEND_FROM_ADDRESS` | Runtime | yes | Verified sender, as `Name <addr@domain>`. Required — when it is missing the submission is rejected with a generic error and the reason is logged. There is no test-sender fallback |
 | `RESEND_FALLBACK_EMAIL` | Runtime | optional | Last-resort recipient if the recipient in Sanity is unusable |
 
 > Careful: the Cloudflare adapter compiles the `.env*` files into the Worker
@@ -122,7 +122,10 @@ When a visitor submits the contact form:
 
 Before launch, confirm that `RESEND_API_KEY` and `RESEND_FROM_ADDRESS` are set as
 *runtime* secrets in the dashboard and that the sender domain is verified in
-Resend; then submit a real test message against the deployed site.
+Resend; then submit a real test message against the deployed site. The sender has
+**no fallback**: if `RESEND_FROM_ADDRESS` is missing, the submission fails with a
+generic error and the Worker logs `Contact form: RESEND_FROM_ADDRESS is not
+configured.`
 
 ## SEO
 

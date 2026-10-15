@@ -113,8 +113,13 @@ export async function sendEmailAction({ formData }: SendEmailParams) {
             return { success: false, error: GENERIC_ERROR };
         }
 
-        // from берётся из env, а не хардкодится
-        const FROM_ADDRESS = process.env.RESEND_FROM_ADDRESS || 'Contact Form <onboarding@resend.dev>';
+        // Sender comes from env only. There is deliberately no fallback: a hardcoded
+        // test sender would silently make production mail undeliverable.
+        const FROM_ADDRESS = sanitizeText(process.env.RESEND_FROM_ADDRESS, 320);
+        if (!FROM_ADDRESS) {
+            console.error('Contact form: RESEND_FROM_ADDRESS is not configured.');
+            return { success: false, error: GENERIC_ERROR };
+        }
 
         // Sanitised, bounded copy of the submitted fields.
         const entries: [string, string][] = [];
