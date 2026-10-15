@@ -116,16 +116,33 @@ When a visitor submits the contact form:
 1. the recipient address is resolved **server-side** from Sanity, never taken
    from the request, so the action cannot be abused as an open mail relay;
 2. every interpolated value is HTML-escaped;
-3. the reply-to address is dropped unless it parses as an email address;
-4. submissions are rate limited per IP in memory (best effort — it resets on cold
-   starts and is per-instance, so it is not a substitute for a CAPTCHA or a WAF).
+3. the reply-to address is taken from the first field that looks like an email
+   field *and* holds a valid address, falling back to the first valid address in
+   the form — never from an unvalidated value;
+4. submissions are rate limited in memory per caller (best effort — it resets on
+   cold starts and is per-instance, so it is not a substitute for a CAPTCHA or a
+   WAF). The bucket is keyed on `cf-connecting-ip`, falling back to the last
+   `x-forwarded-for` hop and then `x-real-ip`, because the *first*
+   `x-forwarded-for` entry is whatever the visitor sent. Only a submission that
+   really reaches Resend counts, and a full log drops expired buckets instead of
+   resetting everybody's limit;
+5. every attempt carries a deterministic Resend idempotency key (caller, content
+   and minute), so a double-click or a retried submission is deduplicated rather
+   than delivered twice;
+6. the message is sent as HTML *and* plain text.
+
+Resend failures are logged with the provider's error name
+(`daily_quota_exceeded`, `rate_limit_exceeded`, `validation_error`, …) so a quota
+or sender-domain problem stays diagnosable; visitors always receive the same
+generic message.
 
 Before launch, confirm that `RESEND_API_KEY` and `RESEND_FROM_ADDRESS` are set as
 *runtime* secrets in the dashboard and that the sender domain is verified in
 Resend; then submit a real test message against the deployed site. The sender has
 **no fallback**: if `RESEND_FROM_ADDRESS` is missing, the submission fails with a
 generic error and the Worker logs `Contact form: RESEND_FROM_ADDRESS is not
-configured.`
+configured.` A log line about "no client IP header found" means the rate limiter
+is falling back to a coarser bucket — worth checking once via `wrangler tail`.
 
 ## SEO
 
