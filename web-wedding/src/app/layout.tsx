@@ -9,10 +9,10 @@ import { SITE_URL } from '../lib/site';
 import { JsonLd } from '../components/json-ld';
 import { GoogleAnalytics } from '../components/google-analytics';
 
-// Without this, Next.js statically caches every page at build time and Studio
-// edits will not appear on the live site until the next deploy. This makes
-// every route re-fetch fresh content from Sanity at most once a minute.
-export const revalidate = 60;
+// Revalidation is configured per route (`export const revalidate` in each
+// page.tsx), not here: the old layout-level `revalidate = 60` forced every
+// route to re-render once a minute, which burned Worker CPU and KV writes
+// (free tier: 1,000 writes/day). Studio edits still appear without a redeploy.
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();

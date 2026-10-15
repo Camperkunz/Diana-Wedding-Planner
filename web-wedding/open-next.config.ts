@@ -9,4 +9,7 @@ import memoryQueue from "@opennextjs/cloudflare/overrides/queue/memory-queue";
 export default defineCloudflareConfig({
 	incrementalCache: kvIncrementalCache,
 	queue: memoryQueue,
+	// Serve SSG/ISR responses straight from the KV cache entry, without booting
+	// the Next.js server bundle. Big CPU/latency win on cache hits.
+	enableCacheInterception: true,
 });

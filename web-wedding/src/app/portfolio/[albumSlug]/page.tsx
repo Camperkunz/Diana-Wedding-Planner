@@ -7,6 +7,9 @@ import HeroSection from '@/components/ui/HeroSection';
 import ResponsiveImage from '@/components/ui/ResponsiveImage';
 import { imageDimensions } from '@/lib/sanity-image';
 
+// ISR: album edits appear within this window, no redeploy needed.
+export const revalidate = 1800;
+
 export function generateStaticParams() {
   return getAlbums().then((albums) => albums.map((album) => ({ albumSlug: album.slug })));
 }

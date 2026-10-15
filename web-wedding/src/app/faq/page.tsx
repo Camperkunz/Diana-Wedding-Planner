@@ -11,6 +11,9 @@ import HeroSection from '@/components/ui/HeroSection';
 
 const fallback = {};
 
+// ISR: Studio edits appear within this window, no redeploy needed.
+export const revalidate = 1800;
+
 /**
  * Splits a Studio `text` value into paragraphs: every newline the editor types
  * becomes a new paragraph on the page (the same `<p>` + spacing convention the

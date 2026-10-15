@@ -5,6 +5,13 @@
   "main": ".open-next/worker.js",
   "name": "diana-wedding",
   "compatibility_date": "2026-10-01",
+  // Workers Cache: eligible GET/HEAD responses are served from Cloudflare's
+  // edge WITHOUT invoking the Worker (zero CPU on hits). Next/OpenNext emit
+  // `s-maxage=<revalidate>` for SSG/ISR pages, which defines the edge TTL.
+  // Revert by deleting this block if ISR revalidation ever stalls.
+  "cache": {
+    "enabled": true
+  },
   "compatibility_flags": [
     "nodejs_compat",
     "global_fetch_strictly_public"

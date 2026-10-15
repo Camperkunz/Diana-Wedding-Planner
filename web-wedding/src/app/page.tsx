@@ -18,6 +18,10 @@ import { safeMailtoHref } from '@/lib/safe-url';
 
 const fallback = {};
 
+// ISR freshness for the home page (the most visited route). This value is also
+// the Cloudflare edge TTL (Next emits `s-maxage=<revalidate>`).
+export const revalidate = 600;
+
 export async function generateMetadata() {
   const [home, settings] = await Promise.all([getHomePage(), getSiteSettings()]);
 

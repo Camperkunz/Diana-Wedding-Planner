@@ -12,6 +12,9 @@ import ResponsiveImage from '@/components/ui/ResponsiveImage';
 // Fallback data
 const fallback = {};
 
+// ISR: Studio edits appear within this window, no redeploy needed.
+export const revalidate = 1800;
+
 export async function generateMetadata() {
   const page = await getAboutPage();
   return buildSeoMetadata(

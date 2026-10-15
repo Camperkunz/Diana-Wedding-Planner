@@ -11,6 +11,9 @@ import ResponsiveImage from '@/components/ui/ResponsiveImage';
 
 const fallback = {};
 
+// ISR: Studio edits (services, comparison table) appear within this window.
+export const revalidate = 1800;
+
 export async function generateMetadata() {
   const page = await getServicesPage();
   return buildSeoMetadata(

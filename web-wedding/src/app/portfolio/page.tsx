@@ -10,6 +10,9 @@ import ResponsiveImage from '@/components/ui/ResponsiveImage';
 
 const fallback = {};
 
+// ISR: new albums edited in the Studio appear within this window.
+export const revalidate = 1800;
+
 export async function generateMetadata() {
     const page = await getPortfolioPage();
     return buildSeoMetadata(
