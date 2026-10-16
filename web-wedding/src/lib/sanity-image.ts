@@ -21,6 +21,24 @@ export const HERO_IMAGE_WIDTHS = [640, 960, 1280, 1600, 1920] as const;
 export const CONTENT_IMAGE_WIDTHS = [480, 640, 800, 960, 1200, 1600, 1920] as const;
 
 /**
+ * Widths for the album gallery grid (`columns-1 sm:columns-2 lg:columns-3` inside
+ * `.container-wide`).
+ *
+ * The widest a gallery column ever gets is the three-column layout at the
+ * container's 1280px ceiling: less 80px of padding and two 32px gaps, divided by
+ * three — about 379 CSS px. So a 1024px file already covers a 2.5× screen and
+ * 1280px a 3× one on desktop, which makes 1440 and 1920 unreachable entries that
+ * only add markup to every photo. 1280 is also the new `src` fallback: the old
+ * 1800 asked the CDN for 500px of detail that could never be displayed.
+ *
+ * Known trade: a single-column phone under 640px at 3× DPR would want ~1900
+ * physical pixels and gets 1280 (~30% of the theoretical detail there).
+ * 320 was considered and left out — it only ever serves viewports under 480px at
+ * 1×, at the price of one more URL on every photo.
+ */
+export const GALLERY_IMAGE_WIDTHS = [480, 768, 1024, 1280] as const;
+
+/**
  * Hero photo blur, baked into the CDN URL so the browser never runs a CSS
  * filter over a full-viewport image (that filter used to cost paint time on
  * every hero). Sanity accepts 0–100 but ignores values below 5 (verified:

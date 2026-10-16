@@ -6,7 +6,7 @@ import { getAlbum, getAlbums, getSiteSettings } from '@/lib/sanity-data';
 import { safeCanonicalUrl } from '@/lib/safe-url';
 import HeroSection from '@/components/ui/HeroSection';
 import ResponsiveImage from '@/components/ui/ResponsiveImage';
-import { imageDimensions } from '@/lib/sanity-image';
+import { GALLERY_IMAGE_WIDTHS } from '@/lib/sanity-image';
 
 // ISR: album edits appear within this window, no redeploy needed.
 export const revalidate = 1800;
@@ -123,36 +123,40 @@ export default async function AlbumPage({
       >
         <div className="container-wide">
           <div className="columns-1 gap-6 sm:columns-2 lg:columns-3 lg:gap-8">
-            {album.photos.map((photo, i) => {
-              const dimensions = imageDimensions(photo.src);
-
-              return (
-                <figure
-                  key={i}
-                  className={`group relative mb-6 overflow-hidden rounded-sm shadow-sm break-inside-avoid lg:mb-8${
-                    dimensions ? ' cv-auto' : ''
-                  }`}
-                  style={
-                    dimensions
-                      ? { aspectRatio: `${dimensions.width} / ${dimensions.height}` }
-                      : undefined
-                  }
-                >
-                  <ResponsiveImage
-                    source={photo.src}
-                    alt={photo.alt}
-                    sizes="(min-width: 1024px) min(33vw, 24rem), (min-width: 640px) 50vw, 100vw"
-                    widths={[480, 768, 1024, 1440, 1920]}
-                    className="w-full h-auto"
-                  />
-                  {photo.caption && (
-                    <figcaption className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent text-white text-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
-                      {photo.caption}
-                    </figcaption>
-                  )}
-                </figure>
-              );
-            })}
+            {album.photos.map((photo) => (
+              <figure
+                // `_key` from the Studio, so an edited gallery cannot reshuffle
+                // (and re-mount) the photos that follow the edit.
+                key={photo.id}
+                // `cv-auto` on every photo, not only the ones whose size is
+                // known: `contain-intrinsic-size` keeps the column in place if a
+                // photo has no usable dimensions (see globals.css).
+                className="group relative mb-6 overflow-hidden rounded-sm shadow-sm break-inside-avoid cv-auto lg:mb-8"
+                style={
+                  photo.width && photo.height
+                    ? { aspectRatio: `${photo.width} / ${photo.height}` }
+                    : undefined
+                }
+              >
+                <ResponsiveImage
+                  source={photo.src}
+                  // src, srcSet and the pixel size are precomputed in
+                  // `mapAlbum` — this render only formats them.
+                  srcSet={photo.srcSet}
+                  width={photo.width}
+                  height={photo.height}
+                  alt={photo.alt}
+                  sizes="(min-width: 1024px) min(33vw, 24rem), (min-width: 640px) 50vw, 100vw"
+                  widths={GALLERY_IMAGE_WIDTHS}
+                  className="w-full h-auto"
+                />
+                {photo.caption && (
+                  <figcaption className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent text-white text-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
+                    {photo.caption}
+                  </figcaption>
+                )}
+              </figure>
+            ))}
           </div>
         </div>
       </section>

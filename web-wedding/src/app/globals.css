@@ -240,12 +240,16 @@
   }
 
   /* content-visibility: auto — the browser skips layout and paint for gallery
-     items far off-screen (an album can hold 100+ photos). Only safe on a box
-     whose height comes from `aspect-ratio`: while an item is skipped its
-     contents are not measured, so the size must come from the box itself or
-     the masonry columns would jump. */
+     items far off-screen (an album can hold 100+ photos). Safe on a box whose
+     height is owned by the element itself: every gallery figure that has usable
+     dimensions carries its own inline `aspect-ratio`. Others get
+     `contain-intrinsic-size` below, which is only a *placeholder* — not the
+     intended size — and the `auto` keyword makes the browser remember the real
+     height after the first render, so a photo without metadata cannot collapse
+     its column. */
   .cv-auto {
     content-visibility: auto;
+    contain-intrinsic-size: auto 400px;
   }
 
 }

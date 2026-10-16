@@ -20,6 +20,15 @@ type ResponsiveImageProps = {
   sizes?: string;
   widths?: readonly number[];
   blur?: number;
+  /**
+   * Precomputed responsive set (see `AlbumPhoto.srcSet`). The album gallery
+   * builds one in the data layer so a photo does not get its URL re-written for
+   * every width on every render.
+   */
+  srcSet?: string;
+  /** Precomputed pixel size, when the data layer already knows it. */
+  width?: number;
+  height?: number;
   className?: string;
   style?: CSSProperties;
   /** Above the fold: load immediately with high priority. */
@@ -49,17 +58,22 @@ export default function ResponsiveImage({
   sizes = '100vw',
   widths = CONTENT_IMAGE_WIDTHS,
   blur,
+  srcSet: srcSetProp,
+  width,
+  height,
   className,
   style,
   priority = false,
   objectPosition,
 }: ResponsiveImageProps) {
-  const dimensions = imageDimensions(source);
+  // A precomputed size (album gallery) wins over reading the URL: same values,
+  // without re-parsing the file name for every photo of the album.
+  const dimensions = width && height ? { width, height } : imageDimensions(source);
   const requestedWidth = widths[widths.length - 1] ?? 1920;
   const src = sanityImage(source, dimensions?.width ? Math.min(dimensions.width, requestedWidth) : requestedWidth, blur);
   if (!src) return null;
 
-  const srcSet = sanityImageSrcSet(source, widths, blur);
+  const srcSet = srcSetProp ?? sanityImageSrcSet(source, widths, blur);
   const position = objectPosition ?? imageObjectPosition(source);
 
   return (
