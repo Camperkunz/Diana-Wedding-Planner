@@ -39,6 +39,9 @@ export default async function BackstagePage() {
                 title: video.title || '',
                 description: video.description || '',
                 embedUrl: getEmbedUrl(video.videoUrl) || '',
+                // Original URL: the client links to it when the video cannot be
+                // embedded (SafeLink sanitises it there).
+                videoUrl: video.videoUrl,
                 thumbnail,
                 thumbnailAlt: video.title || 'Video thumbnail',
             };

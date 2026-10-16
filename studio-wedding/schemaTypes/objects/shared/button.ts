@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity';
+import { validLink } from './linkValidation';
 
 export const button = defineType({
   name: 'button',
@@ -17,7 +18,7 @@ export const button = defineType({
       title: 'Link',
       type: 'string',
       description: 'Where the button goes. Use a page path like "/contact" or a full URL like "https://example.com".',
-      validation: (rule) => rule.required(),
+      validation: (rule) => validLink(rule.required()),
     }),
     defineField({
       name: 'style',

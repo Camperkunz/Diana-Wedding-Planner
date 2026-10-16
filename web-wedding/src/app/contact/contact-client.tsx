@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { LuMail as Mail, LuPhone as Phone, LuMapPin as MapPin, LuInstagram as Instagram, LuSend as Send, LuCheck as Check } from 'react-icons/lu';
 import { sendEmailAction } from '@/app/actions/sendEmail';
 import { PRIVACY_POLICY_LAST_UPDATED } from '@/lib/legal';
+import { safeMailtoHref } from '@/lib/safe-url';
 import HeroSection from '@/components/ui/HeroSection';
 
 interface ServiceItem {
@@ -81,6 +82,29 @@ export default function ContactClient({ services, settings, policyLastUpdated, c
 
   const instagramUrl = settings.socialLinks.find((item) => item.platform === 'instagram')?.url;
   const instagramHandle = instagramHandleFromUrl(instagramUrl);
+  // CMS values are untrusted: a malformed address renders as plain text,
+  // never as a broken or query-injectable `mailto:` target (same rule as the
+  // header, footer and home page).
+  const emailHref = safeMailtoHref(settings.email);
+
+  // Shared markup for the email row in the contact card. The row is only a link
+  // when `safeMailtoHref` approved the address; otherwise the identical content
+  // renders as plain text (no hover affordance, no dead href).
+  const contactEmailRow = (
+    <>
+      <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0 group-hover:bg-accent group-hover:text-accent-foreground transition-all duration-300">
+        <Mail className="w-5 h-5 text-accent group-hover:text-current" />
+      </div>
+      <div>
+        <p className="text-sm uppercase tracking-wide text-muted-foreground mb-1 font-light">
+          {c.contactEmailLabel}
+        </p>
+        <p className="text-base text-foreground font-medium group-hover:text-accent transition-colors">
+          {settings.email}
+        </p>
+      </div>
+    </>
+  );
 
   const handleInputChange = (label: string, value: string) => {
     setFormData((prev) => ({ ...prev, [label]: value }));
@@ -147,11 +171,14 @@ export default function ContactClient({ services, settings, policyLastUpdated, c
                   <h3 className="font-serif text-2xl mb-4">{c.successHeading}</h3>
                   <p className="text-muted-foreground font-light leading-relaxed max-w-md mx-auto">
                     {c.successDescription}{' '}
-                    {settings.email && (
-                      <a href={`mailto:${settings.email}`} className="text-accent">
-                        {settings.email}
-                      </a>
-                    )}
+                    {settings.email &&
+                      (emailHref ? (
+                        <a href={emailHref} className="text-accent">
+                          {settings.email}
+                        </a>
+                      ) : (
+                        <span className="text-accent">{settings.email}</span>
+                      ))}
                   </p>
                   <button
                     onClick={() => {
@@ -314,19 +341,15 @@ export default function ContactClient({ services, settings, policyLastUpdated, c
                 <ul className="space-y-2">
                   {settings.email && (
                     <li>
-                      <a href={`mailto:${settings.email}`} className="flex items-center gap-5 p-3 -mx-3 rounded-2xl hover:bg-muted/50 transition-colors group">
-                        <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0 group-hover:bg-accent group-hover:text-accent-foreground transition-all duration-300">
-                          <Mail className="w-5 h-5 text-accent group-hover:text-current" />
-                        </div>
-                        <div>
-                          <p className="text-sm uppercase tracking-wide text-muted-foreground mb-1 font-light">
-                            {c.contactEmailLabel}
-                          </p>
-                          <p className="text-base text-foreground font-medium group-hover:text-accent transition-colors">
-                            {settings.email}
-                          </p>
-                        </div>
-                      </a>
+                      {emailHref ? (
+                        <a href={emailHref} className="flex items-center gap-5 p-3 -mx-3 rounded-2xl hover:bg-muted/50 transition-colors group">
+                          {contactEmailRow}
+                        </a>
+                      ) : (
+                        <span className="flex items-center gap-5 p-3 -mx-3 rounded-2xl">
+                          {contactEmailRow}
+                        </span>
+                      )}
                     </li>
                   )}
                   {settings.phone && (

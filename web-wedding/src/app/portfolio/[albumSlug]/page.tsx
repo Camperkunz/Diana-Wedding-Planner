@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { LuArrowRight as ArrowRight, LuArrowLeft as ArrowLeft, LuMapPin as MapPin, LuCalendar as Calendar } from 'react-icons/lu';
 import { getAlbum, getAlbums, getSiteSettings } from '@/lib/sanity-data';
+import { safeCanonicalUrl } from '@/lib/safe-url';
 import HeroSection from '@/components/ui/HeroSection';
 import ResponsiveImage from '@/components/ui/ResponsiveImage';
 import { imageDimensions } from '@/lib/sanity-image';
@@ -29,7 +30,8 @@ export async function generateMetadata({
   const description = album.seo?.metaDescription || (album.story || album.title).slice(0, 160);
   // Album cover doubles as the share image when the editor set none.
   const image = album.seo?.ogImage || album.coverImage || settings?.seo?.ogImage;
-  const url = album.seo?.canonicalUrl;
+  // Only an absolute http(s) URL may become a canonical — see safe-url.ts.
+  const url = safeCanonicalUrl(album.seo?.canonicalUrl);
 
   // openGraph/twitter are always present — omitting them would wipe the
   // site-wide tags inherited from the root layout (Next.js replaces the whole

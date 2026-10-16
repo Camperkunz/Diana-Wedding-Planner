@@ -1,5 +1,6 @@
 import { defineType, defineField } from 'sanity';
 import { heroHeading } from '../objects/shared/heroHeading';
+import { validLink } from '../objects/shared/linkValidation';
 
 const imageField = (name: string, title: string, description?: string, fieldset?: string) =>
   defineField({
@@ -38,9 +39,9 @@ export const homePage = defineType({
     defineField({ name: 'heroImage', title: 'Background Image', type: 'image', options: { hotspot: true }, fieldset: 'hero', description: 'The large hero photo. Recommended: 1920px wide or larger.', validation: (rule) => rule.required() }),
     defineField({ name: 'heroImageAlt', title: 'Image Alt Text', type: 'string', fieldset: 'hero', validation: (rule) => rule.required() }),
     defineField({ name: 'heroPrimaryButtonLabel', title: 'Primary Button Label', type: 'string', fieldset: 'hero' }),
-    defineField({ name: 'heroPrimaryButtonLink', title: 'Primary Button Link', type: 'string', fieldset: 'hero', initialValue: '/contact' }),
+    defineField({ name: 'heroPrimaryButtonLink', title: 'Primary Button Link', type: 'string', fieldset: 'hero', initialValue: '/contact', validation: (rule) => validLink(rule) }),
     defineField({ name: 'heroSecondaryButtonLabel', title: 'Secondary Button Label', type: 'string', fieldset: 'hero' }),
-    defineField({ name: 'heroSecondaryButtonLink', title: 'Secondary Button Link', type: 'string', fieldset: 'hero', initialValue: '/services' }),
+    defineField({ name: 'heroSecondaryButtonLink', title: 'Secondary Button Link', type: 'string', fieldset: 'hero', initialValue: '/services', validation: (rule) => validLink(rule) }),
 
     defineField({ name: 'aboutEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'about' }),
     defineField({ name: 'aboutHeading', title: 'Heading', type: 'string', fieldset: 'about', validation: (rule) => rule.required() }),
@@ -54,7 +55,7 @@ export const homePage = defineType({
       validation: (rule) => rule.min(1),
     }),
     defineField({ name: 'aboutLinkLabel', title: 'Link Label', type: 'string', fieldset: 'about' }),
-    defineField({ name: 'aboutLink', title: 'Link', type: 'string', fieldset: 'about', initialValue: '/about' }),
+    defineField({ name: 'aboutLink', title: 'Link', type: 'string', fieldset: 'about', initialValue: '/about', validation: (rule) => validLink(rule) }),
     defineField({ name: 'aboutImage1', title: 'Photo 1', type: 'image', options: { hotspot: true }, fieldset: 'about', description: 'Main (bigger) photo.', validation: (rule) => rule.required() }),
     defineField({ name: 'aboutImage2', title: 'Photo 2', type: 'image', options: { hotspot: true }, fieldset: 'about', description: 'Smaller photo.', validation: (rule) => rule.required() }),
     defineField({ name: 'aboutImage1Alt', title: 'Photo 1 Alt Text', type: 'string', fieldset: 'about', validation: (rule) => rule.required() }),
@@ -74,7 +75,7 @@ export const homePage = defineType({
     defineField({ name: 'servicesHeading', title: 'Heading', type: 'string', fieldset: 'services', validation: (rule) => rule.required() }),
     defineField({ name: 'servicesDescription', title: 'Description', type: 'text', rows: 3, fieldset: 'services' }),
     defineField({ name: 'servicesButtonLabel', title: 'Button Label', type: 'string', fieldset: 'services' }),
-    defineField({ name: 'servicesButtonLink', title: 'Button Link', type: 'string', fieldset: 'services', initialValue: '/services' }),
+    defineField({ name: 'servicesButtonLink', title: 'Button Link', type: 'string', fieldset: 'services', initialValue: '/services', validation: (rule) => validLink(rule) }),
     defineField({ name: 'featuredServices', title: 'Services to Show', type: 'array', fieldset: 'services', of: [{ type: 'reference', to: [{ type: 'service' }] }], validation: (rule) => rule.max(3) }),
 
     defineField({ name: 'quoteImage', title: 'Background Image', type: 'image', fieldset: 'quote', options: { hotspot: true }, validation: (rule) => rule.required() }),
@@ -85,7 +86,7 @@ export const homePage = defineType({
     defineField({ name: 'portfolioEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'portfolio' }),
     defineField({ name: 'portfolioHeading', title: 'Heading', type: 'string', fieldset: 'portfolio', validation: (rule) => rule.required() }),
     defineField({ name: 'portfolioButtonLabel', title: 'Button Label', type: 'string', fieldset: 'portfolio' }),
-    defineField({ name: 'portfolioButtonLink', title: 'Button Link', type: 'string', fieldset: 'portfolio', initialValue: '/portfolio' }),
+    defineField({ name: 'portfolioButtonLink', title: 'Button Link', type: 'string', fieldset: 'portfolio', initialValue: '/portfolio', validation: (rule) => validLink(rule) }),
     defineField({ name: 'featuredAlbums', title: 'Albums to Show', type: 'array', fieldset: 'portfolio', of: [{ type: 'reference', to: [{ type: 'album' }] }], validation: (rule) => rule.max(4) }),
 
     defineField({ name: 'approachEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'approach' }),
@@ -119,7 +120,7 @@ export const homePage = defineType({
     defineField({ name: 'ctaHeading', title: 'Heading', type: 'string', fieldset: 'cta', description: 'Wrap a word in *asterisks* to give it the handwritten style — e.g. Let us *plan* your day.', validation: (rule) => rule.required() }),
     defineField({ name: 'ctaDescription', title: 'Description', type: 'text', rows: 5, fieldset: 'cta', validation: (rule) => rule.required() }),
     defineField({ name: 'ctaButtonLabel', title: 'Button Label', type: 'string', fieldset: 'cta' }),
-    defineField({ name: 'ctaButtonLink', title: 'Button Link', type: 'string', fieldset: 'cta', initialValue: '/contact' }),
+    defineField({ name: 'ctaButtonLink', title: 'Button Link', type: 'string', fieldset: 'cta', initialValue: '/contact', validation: (rule) => validLink(rule) }),
     defineField({ name: 'ctaDirectContactText', title: 'Direct Contact Line', type: 'string', fieldset: 'cta', description: 'Short text before the email address, e.g. “Or reach me directly at”.' }),
     defineField({ name: 'ctaImage', title: 'Background Image', type: 'image', fieldset: 'cta', options: { hotspot: true }, validation: (rule) => rule.required() }),
     defineField({ name: 'ctaImageAlt', title: 'Image Alt Text', type: 'string', fieldset: 'cta', validation: (rule) => rule.required() }),

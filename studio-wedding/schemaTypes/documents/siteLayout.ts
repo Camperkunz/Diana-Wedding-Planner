@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity'
+import { validLink } from '../objects/shared/linkValidation'
 
 const navItem = {
   type: 'object',
@@ -6,7 +7,13 @@ const navItem = {
   title: 'Navigation Link',
   fields: [
     defineField({ name: 'label', title: 'Menu Label', type: 'string', validation: (rule) => rule.required() }),
-    defineField({ name: 'link', title: 'Destination', type: 'string', description: 'Example: /about or https://example.com', validation: (rule) => rule.required() }),
+    defineField({
+      name: 'link',
+      title: 'Destination',
+      type: 'string',
+      description: 'Example: /about or https://example.com',
+      validation: (rule) => validLink(rule.required()),
+    }),
   ],
   preview: { select: { title: 'label', subtitle: 'link' } },
 }

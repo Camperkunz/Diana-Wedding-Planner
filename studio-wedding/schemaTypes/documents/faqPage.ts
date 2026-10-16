@@ -1,5 +1,6 @@
 import { defineType, defineField } from 'sanity'
 import { heroHeading } from '../objects/shared/heroHeading'
+import { validLink } from '../objects/shared/linkValidation'
 
 export const faqPage = defineType({
   name: 'faqPage',
@@ -37,7 +38,7 @@ export const faqPage = defineType({
     defineField({ name: 'contactHeading', title: 'Heading', type: 'string', fieldset: 'contact', validation: (rule) => rule.required() }),
     defineField({ name: 'contactDescription', title: 'Description', type: 'text', rows: 5, fieldset: 'contact', validation: (rule) => rule.required() }),
     defineField({ name: 'contactButtonLabel', title: 'Button Label', type: 'string', fieldset: 'contact' }),
-    defineField({ name: 'contactButtonLink', title: 'Button Link', type: 'string', fieldset: 'contact', initialValue: '/contact' }),
+    defineField({ name: 'contactButtonLink', title: 'Button Link', type: 'string', fieldset: 'contact', initialValue: '/contact', validation: (rule) => validLink(rule) }),
     defineField({ name: 'seo', title: 'Search & Social Preview', type: 'seo', fieldset: 'seo' }),
   ],
   preview: { prepare: () => ({ title: 'FAQ Page', subtitle: 'Fixed design · editable content only' }) },

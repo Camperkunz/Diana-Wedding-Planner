@@ -27,7 +27,7 @@ export const socialLink = defineType({
       title: 'Link URL',
       type: 'url',
       description: 'The full web address, e.g. "https://instagram.com/yourname".',
-      validation: (rule) => rule.required(),
+      validation: (rule) => rule.required().uri({ scheme: ['http', 'https'] }),
     }),
   ],
   preview: {

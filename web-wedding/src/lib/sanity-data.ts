@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { client } from '@/app/sanity/client';
 import type { SanityImageSource } from '@sanity/image-url';
 import { sanityImage } from '@/lib/sanity-image';
-import { safeImageSrc } from '@/lib/safe-url';
+import { safeCanonicalUrl, safeImageSrc } from '@/lib/safe-url';
 import { absoluteUrl } from '@/lib/site';
 
 // Все геттеры ниже — НЕ СРОЧНЫЕ чтения: CDN-клиент (useCdn: true, квота 1M/мес)
@@ -142,8 +142,12 @@ export type HomePageContent = {
 
 export function hexToHsl(hex?: string) {
   if (!hex) return undefined;
-  const value = hex.replace('#', '');
-  if (value.length !== 6) return undefined;
+  const value = hex.trim().replace('#', '');
+  // Strict hex check: a 6-character non-hex value (e.g. "#zzzzzz") used to pass
+  // the old length-only guard, and parseInt() then produced NaN — every derived
+  // custom property (--accent, --ring, …) became an invalid CSS token, so every
+  // `hsl(var(--…))` declaration using it silently disappeared site-wide.
+  if (!/^[0-9a-f]{6}$/i.test(value)) return undefined;
   const r = parseInt(value.slice(0, 2), 16) / 255;
   const g = parseInt(value.slice(2, 4), 16) / 255;
   const b = parseInt(value.slice(4, 6), 16) / 255;
@@ -490,7 +494,9 @@ export async function buildSeoMetadata(
   const description =
     seo?.metaDescription || fallbackDescription || settings?.seo?.metaDescription;
   const image = seo?.ogImage || settings?.seo?.ogImage;
-  const url = seo?.canonicalUrl;
+  // A canonical must be an absolute http(s) URL; a relative or malformed editor
+  // value would deindex the page, so it is dropped instead of emitted.
+  const url = safeCanonicalUrl(seo?.canonicalUrl);
 
   return {
     title,

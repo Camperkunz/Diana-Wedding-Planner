@@ -1,71 +1,23 @@
 /**
  * Принимает ЛЮБУЮ ссылку на видео (обычную страницу или уже готовый embed)
  * с YouTube или Vimeo и возвращает корректный embed-URL для iframe.
- * Если формат не распознан — возвращает исходную строку как есть (fallback).
+ *
+ * Если формат не распознан — возвращает пустую строку. Раньше здесь
+ * возвращалась исходная ссылка как есть, из-за чего на странице Backstage
+ * рисовался пустой iframe: YouTube/Vimeo и CSP `frame-src` запрещают
+ * кадрировать обычные страницы. Пустая строка позволяет UI показать
+ * обычную ссылку на исходную страницу вместо мёртвого плеера.
  */
 export function getEmbedUrl(rawUrl?: string | null): string {
-    if (!rawUrl) return '';
-    const url = rawUrl.trim();
+    const parsed = parseVideoUrl(rawUrl);
+    if (!parsed) return '';
 
-    try {
-        const u = new URL(url);
-        const host = u.hostname.replace(/^www\./, '');
-
-        // ---- YouTube ----
-        if (host === 'youtube.com' || host === 'm.youtube.com') {
-            // Уже embed-ссылка: youtube.com/embed/VIDEO_ID
-            if (u.pathname.startsWith('/embed/')) {
-                return url;
-            }
-            // Обычная ссылка: youtube.com/watch?v=VIDEO_ID
-            const videoId = u.searchParams.get('v');
-            if (videoId) {
-                return `https://www.youtube.com/embed/${videoId}`;
-            }
-            // Ссылка вида youtube.com/shorts/VIDEO_ID
-            const shortsMatch = u.pathname.match(/^\/shorts\/([^/]+)/);
-            if (shortsMatch) {
-                return `https://www.youtube.com/embed/${shortsMatch[1]}`;
-            }
-        }
-
-        if (host === 'youtu.be') {
-            // Короткая ссылка: youtu.be/VIDEO_ID
-            const videoId = u.pathname.slice(1);
-            if (videoId) {
-                return `https://www.youtube.com/embed/${videoId}`;
-            }
-        }
-
-        // ---- Vimeo ----
-        if (host === 'vimeo.com') {
-            // Обычная ссылка: vimeo.com/391114036
-            // Может быть вида vimeo.com/391114036/abcdef1234 (приватное видео с hash в пути)
-            const parts = u.pathname.split('/').filter(Boolean);
-            const videoId = parts[0];
-            const hash = parts[1]; // приватный hash, если есть в пути
-
-            if (videoId && /^\d+$/.test(videoId)) {
-                const embed = `https://player.vimeo.com/video/${videoId}`;
-                if (hash) {
-                    return `${embed}?h=${hash}`;
-                }
-                // Если hash передали через query (?h=...), просто перенести его
-                const hParam = u.searchParams.get('h');
-                return hParam ? `${embed}?h=${hParam}` : embed;
-            }
-        }
-
-        if (host === 'player.vimeo.com') {
-            // Уже готовый embed
-            return url;
-        }
-    } catch {
-        // Невалидный URL — просто вернуть как есть, чтобы не падать
-        return url;
+    if (parsed.platform === 'youtube') {
+        return `https://www.youtube.com/embed/${parsed.id}`;
     }
 
-    return url;
+    const embed = `https://player.vimeo.com/video/${parsed.id}`;
+    return parsed.hash ? `${embed}?h=${parsed.hash}` : embed;
 }
 
 type ParsedVideo =

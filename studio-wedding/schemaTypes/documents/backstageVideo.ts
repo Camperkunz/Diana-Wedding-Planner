@@ -37,11 +37,13 @@ export default defineType({
 
         defineField({
             name: 'videoUrl',
-            title: 'YouTube Embed URL',
+            title: 'Video Link',
             type: 'url',
             description:
-                'Example: https://www.youtube.com/embed/VIDEO_ID or any other embeddable video URL.',
-            validation: (Rule) => Rule.required(),
+                'A YouTube or Vimeo link: a watch page (https://www.youtube.com/watch?v=VIDEO_ID, https://youtu.be/VIDEO_ID), ' +
+                'a Shorts link, or an already-embedded URL (https://www.youtube.com/embed/VIDEO_ID, https://vimeo.com/123456789). ' +
+                'Links this site cannot recognise are shown as a plain link to the video instead of a player.',
+            validation: (Rule) => Rule.required().uri({ scheme: ['http', 'https'] }),
             fieldset: 'videoDetails',
         }),
 

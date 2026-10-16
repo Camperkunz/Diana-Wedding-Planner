@@ -21,7 +21,8 @@ export const seo = defineType({
     }),
     defineField({
       name: 'canonicalUrl', title: 'Canonical URL', type: 'url',
-      description: 'Usually leave this empty. Only use it when this page should point search engines to another URL.',
+      description: 'Usually leave this empty. Only use it when this page should point search engines to another URL — a full absolute address like https://example.com/page.',
+      validation: (rule) => rule.uri({ scheme: ['http', 'https'] }),
     }),
     defineField({
       name: 'noIndex', title: 'Hide from Search Engines', type: 'boolean', initialValue: false,

@@ -5,12 +5,16 @@ import { useState } from 'react';
 import { withAutoplay } from '@/lib/video-embed';
 import { LuArrowRight as ArrowRight, LuPlay as Play, LuX as X } from 'react-icons/lu';
 import HeroSection from '@/components/ui/HeroSection';
+import SafeLink from '@/components/ui/SafeLink';
 
 export type Video = {
     id?: string;
     title: string;
     description?: string;
+    /** Embeddable URL; empty when the link could not be recognised. */
     embedUrl: string;
+    /** Original link from the CMS — used when the video cannot be embedded. */
+    videoUrl?: string;
     thumbnail?: string;
     thumbnailAlt?: string;
 };
@@ -58,45 +62,73 @@ export default function BackstageClient({
             <section className="pb-28 md:pb-40 bg-background">
                 <div className="container-wide">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
-                        {videos.map((video, i) => (
-                            <article
-                                key={video.id || i}
-                                className="group cursor-pointer"
-                                onClick={() => setActiveVideo(video.embedUrl)}
-                            >
-                                <div className="relative aspect-video overflow-hidden rounded-sm shadow-sm group-hover:shadow-xl transition-all duration-500">
-                                    {/* No thumbnail → a neutral panel, not the old
-                                        `/placeholder-thumb.jpg` (no public/ file, so it
-                                        rendered a broken image). */}
-                                    {video.thumbnail ? (
-                                        <img
-                                            src={video.thumbnail}
-                                            alt={video.thumbnailAlt || video.title}
-                                            className="w-full h-full object-cover"
-                                            loading="lazy"
-                                        />
-                                    ) : (
-                                        <div
-                                            className="w-full h-full bg-gradient-to-br from-foreground to-foreground/70"
-                                            aria-hidden="true"
-                                        />
-                                    )}
-                                    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
-                                        <div className="w-16 h-16 bg-accent/90 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                            <Play className="w-7 h-7 text-white fill-white ml-1" />
+                        {videos.map((video, i) => {
+                            const card = (
+                                <>
+                                    <div className="relative aspect-video overflow-hidden rounded-sm shadow-sm group-hover:shadow-xl transition-all duration-500">
+                                        {/* No thumbnail → a neutral panel, not the old
+                                            `/placeholder-thumb.jpg` (no public/ file, so it
+                                            rendered a broken image). */}
+                                        {video.thumbnail ? (
+                                            <img
+                                                src={video.thumbnail}
+                                                alt={video.thumbnailAlt || video.title}
+                                                className="w-full h-full object-cover"
+                                                loading="lazy"
+                                            />
+                                        ) : (
+                                            <div
+                                                className="w-full h-full bg-gradient-to-br from-foreground to-foreground/70"
+                                                aria-hidden="true"
+                                            />
+                                        )}
+                                        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
+                                            <div className="w-16 h-16 bg-accent/90 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                                <Play className="w-7 h-7 text-white fill-white ml-1" />
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <h3 className="font-serif text-xl mt-5 group-hover:text-accent transition-colors duration-300">
-                                    {video.title}
-                                </h3>
-                                {video.description && (
-                                    <p className="text-muted-foreground text-sm mt-2 font-light leading-relaxed">
-                                        {video.description}
-                                    </p>
-                                )}
-                            </article>
-                        ))}
+                                    <h3 className="font-serif text-xl mt-5 group-hover:text-accent transition-colors duration-300">
+                                        {video.title}
+                                    </h3>
+                                    {video.description && (
+                                        <p className="text-muted-foreground text-sm mt-2 font-light leading-relaxed">
+                                            {video.description}
+                                        </p>
+                                    )}
+                                </>
+                            );
+
+                            // A link we can embed → click opens the player modal. An
+                            // unrecognised URL would produce a blank iframe (the video
+                            // host or the CSP `frame-src` refuses to be framed), so the
+                            // card links out to the original page instead.
+                            if (video.embedUrl) {
+                                return (
+                                    <article
+                                        key={video.id || i}
+                                        className="group cursor-pointer"
+                                        onClick={() => setActiveVideo(video.embedUrl)}
+                                    >
+                                        {card}
+                                    </article>
+                                );
+                            }
+
+                            if (video.videoUrl) {
+                                return (
+                                    <SafeLink key={video.id || i} href={video.videoUrl} className="group block">
+                                        {card}
+                                    </SafeLink>
+                                );
+                            }
+
+                            return (
+                                <article key={video.id || i} className="group">
+                                    {card}
+                                </article>
+                            );
+                        })}
                     </div>
                 </div>
             </section>

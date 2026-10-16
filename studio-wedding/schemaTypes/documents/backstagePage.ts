@@ -1,5 +1,6 @@
 import { defineType, defineField } from 'sanity'
 import { heroHeading } from '../objects/shared/heroHeading'
+import { validLink } from '../objects/shared/linkValidation'
 
 export const backstagePage = defineType({
   name: 'backstagePage',
@@ -20,7 +21,7 @@ export const backstagePage = defineType({
     defineField({ name: 'introText', title: 'Introduction', type: 'text', rows: 5, fieldset: 'intro', validation: (rule) => rule.required() }),
     defineField({ name: 'ctaHeading', title: 'Heading', type: 'string', fieldset: 'cta', validation: (rule) => rule.required() }),
     defineField({ name: 'ctaButtonLabel', title: 'Button Label', type: 'string', fieldset: 'cta' }),
-    defineField({ name: 'ctaButtonLink', title: 'Button Link', type: 'string', fieldset: 'cta', initialValue: '/contact' }),
+    defineField({ name: 'ctaButtonLink', title: 'Button Link', type: 'string', fieldset: 'cta', initialValue: '/contact', validation: (rule) => validLink(rule) }),
     defineField({ name: 'seo', title: 'Search & Social Preview', type: 'seo', fieldset: 'seo' }),
   ],
   preview: { prepare: () => ({ title: 'Backstage Page', subtitle: 'Fixed design · editable content only' }) },

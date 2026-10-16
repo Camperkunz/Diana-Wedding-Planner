@@ -11,6 +11,17 @@ const color = (name: string, title: string, description: string, initialValue: s
       _type: 'color',
       hex: initialValue,
     },
+    // The website converts this hex into CSS custom properties; anything but a
+    // 6-digit hex (the shape hexToHsl accepts) would silently break the theme,
+    // so the editor gets a warning instead of shipping an invisible failure.
+    validation: (rule) =>
+      rule
+        .custom((value) => {
+          const hex = (value as { hex?: string } | undefined)?.hex
+          if (!hex) return true
+          return /^#[0-9a-f]{6}$/i.test(hex) || 'Use a 6-digit hex color like #941d3f.'
+        })
+        .warning(),
   })
 
 export const siteDesign = defineType({

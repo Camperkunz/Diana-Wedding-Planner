@@ -141,3 +141,26 @@ export function safeTelHref(phone: unknown): string | undefined {
   const href = `tel:${value}`;
   return TEL.test(href) ? href : undefined;
 }
+
+/**
+ * Sanitised canonical URL for `<link rel="canonical">` and the Open Graph `url`.
+ *
+ * A relative or malformed value in `seo.canonicalUrl` can deindex or misattribute
+ * a page, so only absolute `http(s)` URLs are ever emitted.
+ *
+ * @returns the normalised URL, or `undefined` when it is missing or not an
+ * absolute http(s) URL — the caller then omits the canonical tag entirely.
+ */
+export function safeCanonicalUrl(value: unknown): string | undefined {
+  const url = normalizeUrl(value);
+  if (!url) return undefined;
+
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return undefined;
+  } catch {
+    return undefined;
+  }
+
+  return url;
+}
