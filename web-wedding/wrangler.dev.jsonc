@@ -1,0 +1,37 @@
+{
+  // Config used ONLY by `next dev` (see next.config.mjs →
+  // initOpenNextCloudflareForDev({ configPath }) ). Deployments, `preview` and
+  // `wrangler dev` always use wrangler.jsonc.
+  //
+  // Why a second file exists: `next dev` obtains its Cloudflare bindings via
+  // wrangler's `getPlatformProxy`, which starts Miniflare with a hard-coded
+  // EMPTY worker script (`script: ""`) — it never loads `main` — so no worker
+  // code runs and nothing can export the `DOQueueHandler` class. Keeping the
+  // Durable Object binding here therefore makes workerd print, on every dev
+  // start:
+  //   A DurableObjectNamespace in the config referenced the class
+  //   "DOQueueHandler", but no such Durable Object class is exported from the
+  //   worker. […] Future versions of workerd may make this a startup-time
+  //   error.
+  // Internal Durable Objects cannot work inside the platform proxy at all
+  // (wrangler says so itself), and `next dev` never queues an ISR
+  // revalidation — every request is rendered on demand — so this config simply
+  // has no Durable Objects.
+  //
+  // KEEP IN SYNC: everything below mirrors the non-DO parts of wrangler.jsonc
+  // (name, compatibility, vars, KV). If you add a binding or a `vars` entry
+  // there and your app reads it at runtime, add it here too.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "diana-wedding",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "vars": {
+    "NEXT_CACHE_DO_QUEUE_REVALIDATION_TIMEOUT_MS": "30000"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "NEXT_INC_CACHE_KV",
+      "id": "8c05337262664c7f9693a7ad77174b8d"
+    }
+  ]
+}

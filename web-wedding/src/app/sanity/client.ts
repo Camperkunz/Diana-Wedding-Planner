@@ -4,6 +4,16 @@ const baseConfig = {
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
   apiVersion: '2026-05-15',
+  /**
+   * Без таймаута зависший запрос к Content Lake держал ISR-рендер бесконечно:
+   * на stale-странице OpenNext обрывает ревалидацию по своему таймауту (было
+   * 10 с в memory-очереди), страница остаётся устаревшей, а каждый посетитель
+   * ждёт этот таймаут. Теперь неудачный запрос падает за 5 с и повторяется
+   * дважды — рендер успевает завершиться (геттеры в lib/sanity-data.ts
+   * null-safe, поэтому страница отдаётся без части контента, а не висит).
+   */
+  timeout: 5_000,
+  maxRetries: 2,
 };
 
 /**

@@ -534,10 +534,18 @@ export const getSiteDesign = cache(async (): Promise<SiteDesign | null> => {
  * that type, which means a page can never silently disappear from the website.
  */
 export const getFixedPage = cache(async (type: string) => {
-  return client.fetch(
+  const data = await client.fetch(
     `*[_type == $type] | order(select(_id == $type => 0, 1) asc, _updatedAt desc)[0]{...}`,
     { type }
   );
+  if (!data) return null;
+  // `seo.ogImage` is a Studio `image` field, so GROQ returns an object — not a
+  // URL. Next's metadata resolver expects a string and throws
+  // `The "path" argument must be of type string` while prerendering a page
+  // whose Open Graph image is an object, which in turn makes every ISR
+  // revalidation of that page fail. `mapSeo` resolves it the same way the
+  // album and settings getters do.
+  return { ...data, seo: mapSeo(data.seo) };
 });
 
 export async function getAboutPage() { return getFixedPage('aboutPage'); }
@@ -545,7 +553,7 @@ export async function getAboutPage() { return getFixedPage('aboutPage'); }
 // servicesPage has its own query (rather than the generic getFixedPage) because
 // comparisonRows needs its service references dereferenced into plain serviceId/value pairs.
 export const getServicesPage = cache(async () => {
-  return client.fetch(`*[_type == "servicesPage" && _id == "servicesPage"][0]{
+  const data = await client.fetch(`*[_type == "servicesPage" && _id == "servicesPage"][0]{
     ...,
     comparisonRows[]{
       label,
@@ -555,6 +563,9 @@ export const getServicesPage = cache(async () => {
       }
     }
   }`);
+  if (!data) return null;
+  // See getFixedPage: the social image arrives as an image object.
+  return { ...data, seo: mapSeo(data.seo) };
 });
 
 export async function getPortfolioPage() { return getFixedPage('portfolioPage'); }
@@ -585,7 +596,7 @@ export async function buildSeoMetadata(
   const title = seo?.metaTitle || fallbackTitle;
   const description =
     seo?.metaDescription || fallbackDescription || settings?.seo?.metaDescription;
-  const image = seo?.ogImage || settings?.seo?.ogImage;
+  const image = sanityImage(seo?.ogImage || settings?.seo?.ogImage, 1200);
   // A canonical must be an absolute http(s) URL; a relative or malformed editor
   // value would deindex the page, so it is dropped instead of emitted.
   const url = safeCanonicalUrl(seo?.canonicalUrl);

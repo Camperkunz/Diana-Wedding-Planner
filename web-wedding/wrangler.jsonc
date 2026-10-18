@@ -39,6 +39,36 @@
       "id": "8c05337262664c7f9693a7ad77174b8d"
     }
   ],
+  "vars": {
+    // ISR revalidation (Durable Object queue). A Sanity query can take up to
+    // 3 × 5s (client `timeout` × `maxRetries`) before it gives up, so allow
+    // 30s per revalidation attempt instead of the adapter's 10s default —
+    // otherwise a slow Content Lake response aborts the re-render again.
+    "NEXT_CACHE_DO_QUEUE_REVALIDATION_TIMEOUT_MS": "30000"
+  },
+  "durable_objects": {
+    "bindings": [
+      // ISR revalidation queue (see open-next.config.ts). The class is exported
+      // by the adapter's worker entry (`.open-next/worker.js`), so it only has
+      // to be bound here. On the free plan Durable Objects with SQLite storage
+      // are included, which is what the queue uses for its dedupe/retry state.
+      //
+      // NOTE: `next dev` reads `wrangler.dev.jsonc` instead of this file (see
+      // next.config.mjs) — a Durable Object binding cannot work there because
+      // the dev platform runs Miniflare with an empty worker script. Keep the
+      // non-DO parts of the two files in sync.
+      {
+        "name": "NEXT_CACHE_DO_QUEUE",
+        "class_name": "DOQueueHandler"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["DOQueueHandler"]
+    }
+  ],
   "observability": {
     "logs": {
       "enabled": true,

@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+import { fileURLToPath } from 'node:url';
 import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
 
 // ── Security headers ────────────────────────────────────────────────────────
@@ -71,4 +72,20 @@ export default nextConfig;
 // Lets `next dev` see the Cloudflare bindings (and the .env files, the same way
 // the deployed Worker does). The @opennextjs/cloudflare adapter is ESM-only,
 // which is the reason this config lives in a .mjs file.
-initOpenNextCloudflareForDev();
+//
+// A dedicated config file is passed instead of `wrangler.jsonc` because the dev
+// platform is wrangler's `getPlatformProxy`, which starts Miniflare with an
+// EMPTY worker script: it never loads `main`, so nothing exports the
+// `DOQueueHandler` Durable Object and workerd warns on every dev start that
+// NEXT_CACHE_DO_QUEUE references a class that does not exist (a future workerd
+// release may even turn that into a startup error). `next dev` renders every
+// request on demand, so it never queues an ISR revalidation and does not need
+// Durable Objects at all. `wrangler.dev.jsonc` therefore mirrors the non-DO
+// parts of `wrangler.jsonc` — keep the two in sync if you add bindings or
+// `vars` that the app reads at runtime. Deployments, `preview` and
+// `wrangler dev` keep using `wrangler.jsonc` (with the DO queue).
+initOpenNextCloudflareForDev({
+  configPath: fileURLToPath(new URL('./wrangler.dev.jsonc', import.meta.url)),
+});
+
+
