@@ -164,7 +164,7 @@ export default function ContactClient({ services, settings, policyLastUpdated, c
               </p>
 
               {submitted ? (
-                <div className="bg-card rounded-sm p-12 border border-border shadow-sm text-center">
+                <div role="status" className="bg-card rounded-sm p-12 border border-border shadow-sm text-center">
                   <div className="w-16 h-16 bg-accent/20 flex items-center justify-center mx-auto mb-8">
                     <Check className="w-8 h-8 text-accent" />
                   </div>
@@ -263,7 +263,9 @@ export default function ContactClient({ services, settings, policyLastUpdated, c
                             {field.fieldType === 'textarea' ? (
                               <textarea
                                 id={fieldId}
+                                name={field.label}
                                 required={field.required}
+                                maxLength={2000}
                                 rows={6}
                                 value={formData[field.label] || ''}
                                 onChange={(e) => handleInputChange(field.label, e.target.value)}
@@ -274,6 +276,15 @@ export default function ContactClient({ services, settings, policyLastUpdated, c
                               <input
                                 id={fieldId}
                                 type={field.fieldType}
+                                name={field.label}
+                                autoComplete={
+                                  field.fieldType === 'email'
+                                    ? 'email'
+                                    : /name/i.test(field.label)
+                                      ? 'name'
+                                      : undefined
+                                }
+                                maxLength={500}
                                 required={field.required}
                                 value={formData[field.label] || ''}
                                 onChange={(e) => handleInputChange(field.label, e.target.value)}
@@ -318,7 +329,7 @@ export default function ContactClient({ services, settings, policyLastUpdated, c
                   </div>
 
                   {errorMessage && (
-                    <p className="text-sm text-red-500 font-light">{errorMessage}</p>
+                    <p role="alert" className="text-sm text-destructive font-normal">{errorMessage}</p>
                   )}
 
                   <button

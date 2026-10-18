@@ -191,7 +191,7 @@ export default async function Home() {
               </div>
 
               <Link
-                href={content.servicesButtonLink}
+                href={content.servicesButtonLink || '/services'}
                 className="inline-flex items-center gap-2 border border-accent text-accent px-8 py-3 text-sm uppercase tracking-wide hover:bg-accent hover:text-accent-foreground transition-all duration-300 shrink-0 w-fit self-start md:self-center"
               >
                 {content.servicesButtonLabel}
@@ -296,7 +296,7 @@ export default async function Home() {
               </div>
 
               <Link
-                href={content.portfolioButtonLink}
+                href={content.portfolioButtonLink || '/portfolio'}
                 className="inline-flex items-center gap-2 text-sm uppercase tracking-wide text-accent hover:gap-4 transition-all duration-300"
               >
                 {content.portfolioButtonLabel}

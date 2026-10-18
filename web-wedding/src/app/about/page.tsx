@@ -148,7 +148,7 @@ export default async function AboutPage() {
             {c.ctaDescription}
           </p>
           <Link
-            href={c.ctaButtonLink}
+            href={c.ctaButtonLink || '/contact'}
             className="inline-flex items-center gap-3 bg-accent text-accent-foreground px-12 py-3.5 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-lg hover:shadow-xl"
           >
             {c.ctaButtonLabel}

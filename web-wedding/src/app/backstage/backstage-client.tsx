@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { withAutoplay } from '@/lib/video-embed';
 import { LuArrowRight as ArrowRight, LuPlay as Play, LuX as X } from 'react-icons/lu';
 import HeroSection from '@/components/ui/HeroSection';
@@ -40,6 +40,36 @@ export default function BackstageClient({
     videos: Video[];
 }) {
     const [activeVideo, setActiveVideo] = useState<string | null>(null);
+    const lastFocusedRef = useRef<HTMLElement | null>(null);
+    const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+    const openVideo = (embedUrl: string) => {
+        lastFocusedRef.current = document.activeElement as HTMLElement | null;
+        setActiveVideo(embedUrl);
+    };
+
+    const closeVideo = () => {
+        setActiveVideo(null);
+        lastFocusedRef.current?.focus();
+    };
+
+    // Modal a11y: Esc closes, focus moves into the dialog and Tab stays on the
+    // close button (the iframe is the only other focus target), page scroll locked.
+    useEffect(() => {
+        if (!activeVideo) return;
+        closeButtonRef.current?.focus();
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') closeVideo();
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => {
+            window.removeEventListener('keydown', onKeyDown);
+            document.body.style.overflow = previousOverflow;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeVideo]);
 
     return (
         <>
@@ -108,7 +138,17 @@ export default function BackstageClient({
                                     <article
                                         key={video.id || i}
                                         className="group cursor-pointer"
-                                        onClick={() => setActiveVideo(video.embedUrl)}
+                                        role="button"
+                                        tabIndex={0}
+                                        aria-haspopup="dialog"
+                                        aria-label={`Play video: ${video.title}`}
+                                        onClick={() => openVideo(video.embedUrl)}
+                                        onKeyDown={(event) => {
+                                            if (event.key === 'Enter' || event.key === ' ') {
+                                                event.preventDefault();
+                                                openVideo(video.embedUrl);
+                                            }
+                                        }}
                                     >
                                         {card}
                                     </article>
@@ -153,11 +193,15 @@ export default function BackstageClient({
             {activeVideo && (
                 <div
                     className="fixed inset-0 z-[60] bg-black/80 flex items-center justify-center p-4"
-                    onClick={() => setActiveVideo(null)}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Video player"
+                    onClick={closeVideo}
                 >
                     <button
-                        className="absolute top-6 right-6 text-white/80 hover:text-white transition-colors"
-                        onClick={() => setActiveVideo(null)}
+                        ref={closeButtonRef}
+                        className="absolute top-6 right-6 p-2 text-white/80 hover:text-white transition-colors"
+                        onClick={closeVideo}
                         aria-label="Close video"
                     >
                         <X className="w-8 h-8" />

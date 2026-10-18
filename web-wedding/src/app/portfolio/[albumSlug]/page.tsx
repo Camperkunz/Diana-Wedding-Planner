@@ -26,7 +26,7 @@ export async function generateMetadata({
 
   const title =
     album.seo?.metaTitle ||
-    `${album.title} — ${album.category} | Diana, Ottawa Wedding Planner`;
+    `${album.title}${album.category ? ` — ${album.category}` : ''} | Diana, Ottawa Wedding Planner`;
   const description = album.seo?.metaDescription || (album.story || album.title).slice(0, 160);
   // Album cover doubles as the share image when the editor set none.
   const image = album.seo?.ogImage || album.coverImage || settings?.seo?.ogImage;
