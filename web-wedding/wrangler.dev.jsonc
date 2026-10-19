@@ -24,9 +24,13 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "diana-wedding",
   "compatibility_date": "2026-10-01",
-  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public"
+  ],
   "vars": {
-    "NEXT_CACHE_DO_QUEUE_REVALIDATION_TIMEOUT_MS": "30000"
+    "NEXT_CACHE_DO_QUEUE_REVALIDATION_TIMEOUT_MS": "30000",
+    "RESEND_FROM_ADDRESS": "Diana's Website <onboarding@resend.dev>"
   },
   "kv_namespaces": [
     {
