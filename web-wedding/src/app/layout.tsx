@@ -21,6 +21,15 @@ export async function generateMetadata(): Promise<Metadata> {
     title: settings?.seo?.metaTitle || settings?.name || 'Wedding Planner',
     description: settings?.seo?.metaDescription || settings?.tagline,
     icons: settings?.favicon ? { icon: settings.favicon } : undefined,
+    // robots: noindex, nofollow, and no Googlebot indexing/following. This is a wedding site, not a business site, so we don't want it to appear in search results. remove it in actual production
+    robots: {
+      index: false,
+      follow: false,
+      googleBot: {
+        index: false,
+        follow: false,
+      },
+    },
     openGraph: {
       title: settings?.seo?.metaTitle || settings?.name || 'Wedding Planner',
       description: settings?.seo?.metaDescription || settings?.tagline,
