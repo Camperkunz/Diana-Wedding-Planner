@@ -58,6 +58,7 @@ they go in:
 | `RESEND_API_KEY` | Runtime (secret) | yes | Sending contact-form email |
 | `RESEND_FROM_ADDRESS` | Runtime | yes | Verified sender, as `Name <addr@domain>`. Required — when it is missing the submission is rejected with a generic error and the reason is logged. There is no test-sender fallback |
 | `RESEND_FALLBACK_EMAIL` | Runtime | optional | Last-resort recipient if the recipient in Sanity is unusable |
+| `SANITY_WEBHOOK_SECRET` | Runtime (secret) | yes for revalidation | Shared secret of the Sanity webhook (`/api/revalidate`). Without it the route answers 500 and content only refreshes when the ISR window expires |
 
 > Careful: the Cloudflare adapter compiles the `.env*` files into the Worker
 > bundle. Never put a production secret in `.env.local` — set it in the
@@ -84,7 +85,9 @@ Cloudflare dashboard → the Worker → **Settings → Build**:
 `wrangler.jsonc` in this folder is what gets deployed — `.open-next/worker.js`
 plus `.open-next/assets` — and it declares the bindings and compatibility flags
 the Worker needs. `open-next.config.ts` stores the ISR cache in Cloudflare KV
-(free plan, no R2), so Sanity changes appear within ~1-2 minutes with no redeploy.
+(free plan, no R2). A Sanity webhook calls `/api/revalidate`, which drops the
+cache tags of the edited document type, so saved content is live within seconds
+instead of waiting for the ISR window (see [Content updates](#content-updates-sanity-webhook)).
 
 ### One-time setup
 
@@ -102,6 +105,58 @@ Builds the Worker and serves it in the real Workers runtime (`workerd`) on your
 machine, using the values from `.env.local`. Use it to test anything that behaves
 differently on Cloudflare — server actions and ISR in particular. `npm run dev`
 remains the normal day-to-day workflow.
+
+### Content updates (Sanity webhook)
+
+Pages are cached with ISR in KV and tagged per document type, so the Studio tells
+the site what changed instead of the site waiting for the `revalidate` window:
+
+1. `src/lib/sanity-tags.ts` gives every cached `client.fetch` a `next: { tags }`
+   set — one tag per document type plus the global `sanity:all`.
+2. `POST /api/revalidate` (`src/app/api/revalidate/route.ts`) verifies the
+   `sanity-webhook-signature` header against `SANITY_WEBHOOK_SECRET`, then calls
+   `revalidateTag()` for each changed `_type`. An album payload also refreshes
+   `/portfolio` and the album's own URL; a payload without `_type` (a delete)
+   flushes `sanity:all`.
+3. OpenNext keeps the tags in a Durable Object (`NEXT_TAG_CACHE_DO_SHARDED`, the
+   `v2` migration in `wrangler.jsonc`, applied by the next deploy). Unlike the KV
+   tag cache variant there is no ~60s propagation delay.
+
+One-time setup in the Studio — sanity.io/manage → the project → **API →
+Webhooks** → Create webhook:
+
+| Field | Value |
+| --- | --- |
+| URL | `https://<worker-host>/api/revalidate` |
+| Dataset | `production` |
+| Trigger on | create, update, delete |
+| API version | `v2021-03-25` or newer (the payload needs `ids`) |
+| Secret | the same value as the Worker's `SANITY_WEBHOOK_SECRET` |
+| Filter | `_type in ["album","service","homePage","siteSettings","siteLayout","siteDesign","backstageVideo","aboutPage","portfolioPage","faqPage","backstagePage","contactPage","privacyPolicy","servicesPage"]` |
+| Projection | `{"_type": _type, "slug": slug.current}` |
+
+Set the Worker secret (dashboard → Settings → Variables and Secrets → add an
+encrypted secret, or):
+
+```bash
+npx wrangler secret put SANITY_WEBHOOK_SECRET
+```
+
+To test the route against the real runtime, run `npm run preview`, put the same
+secret in `.dev.vars` (git-ignored, read by `wrangler dev`), and send a signed
+payload:
+
+```bash
+node scripts/sanity-webhook-test.mjs http://localhost:8787/api/revalidate --type=album --slug=<album-slug>
+```
+
+`--all` sends an unattributable payload (global flush) and `--bad-signature` must
+answer `401`. The response lists what was invalidated, and Sanity shows the same
+body in its webhook delivery log.
+
+> Workers Cache stays disabled in `wrangler.jsonc` on purpose: the edge honours
+> Next's `s-maxage` and its copy cannot be purged on `workers.dev`, so it would
+> hide webhook updates for up to the ISR window.
 
 ### Deploying by hand
 

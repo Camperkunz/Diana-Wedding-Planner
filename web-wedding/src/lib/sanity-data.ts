@@ -5,6 +5,7 @@ import type { SanityImageSource } from '@sanity/image-url';
 import { GALLERY_IMAGE_WIDTHS, imageDimensions, sanityImage, sanityImageSrcSet } from '@/lib/sanity-image';
 import { safeCanonicalUrl, safeImageSrc } from '@/lib/safe-url';
 import { absoluteUrl } from '@/lib/site';
+import { sanityFetchOptions } from '@/lib/sanity-tags';
 
 // Все геттеры ниже — НЕ СРОЧНЫЕ чтения: CDN-клиент (useCdn: true, квота 1M/мес)
 // + дедупликация cache() в рамках одного рендера. Срочные запросы (draft/preview,
@@ -354,7 +355,13 @@ const siteChromeQuery = `{
   }
 }`;
 
-const fetchSiteChrome = cache(async () => client.fetch(siteChromeQuery));
+const fetchSiteChrome = cache(async () =>
+  client.fetch(
+    siteChromeQuery,
+    {},
+    sanityFetchOptions('siteSettings', 'siteLayout', 'siteDesign')
+  )
+);
 
 function mapSiteSettings(data: any): SiteSettings | null {
   if (!data) return null;
@@ -419,19 +426,31 @@ export const getAlbums = cache(async (): Promise<AlbumCard[]> => {
   // Newest first: the Studio no longer has a display-order field, so a freshly
   // published album surfaces at the top of the portfolio and the home page.
   // Cards only need the cover — see `albumCardProjection`.
-  const data = await client.fetch(`*[_type == "album"] | order(_createdAt desc){${albumCardProjection}}`);
+  const data = await client.fetch(
+    `*[_type == "album"] | order(_createdAt desc){${albumCardProjection}}`,
+    {},
+    sanityFetchOptions('album')
+  );
   return (data || []).map(mapAlbumCard);
 });
 
 export const getAlbum = cache(async (slug: string): Promise<Album | null> => {
-  const data = await client.fetch(`*[_type == "album" && slug.current == $slug][0]{${albumProjection}}`, { slug });
+  const data = await client.fetch(
+    `*[_type == "album" && slug.current == $slug][0]{${albumProjection}}`,
+    { slug },
+    sanityFetchOptions('album')
+  );
   return data ? mapAlbum(data) : null;
 });
 
 export const getServices = cache(async (): Promise<Service[]> => {
-  const data = await client.fetch(`*[_type == "service"] | order(coalesce(order, 9999) asc, _createdAt asc){
+  const data = await client.fetch(
+    `*[_type == "service"] | order(coalesce(order, 9999) asc, _createdAt asc){
     _id, name, slug, shortDescription, fullDescription, includes, image, imageAlt, startingPrice, featured, order
-  }`);
+  }`,
+    {},
+    sanityFetchOptions('service')
+  );
   return (data || []).map(mapService);
 });
 
@@ -453,7 +472,8 @@ function toParagraphs(value: unknown): string[] {
 export const getHomePage = cache(async (): Promise<HomePageContent | null> => {
   // aboutParagraph1/aboutParagraph2 are the legacy fields read only as a fallback
   // for documents that have not been migrated to aboutParagraphs yet.
-  const data = await client.fetch(`*[_type == "homePage" && _id == "homePage"][0]{
+  const data = await client.fetch(
+    `*[_type == "homePage" && _id == "homePage"][0]{
     seo{ metaTitle, metaDescription, ogImage, canonicalUrl, noIndex, noFollow },
     heroEyebrow, heroHeading, heroDescription, heroImage, heroImageAlt,
     heroPrimaryButtonLabel, heroPrimaryButtonLink, heroSecondaryButtonLabel, heroSecondaryButtonLink,
@@ -468,7 +488,10 @@ export const getHomePage = cache(async (): Promise<HomePageContent | null> => {
     approachEyebrow, approachHeading, approachImage, approachImageAlt, approachSteps[]{ number, title, description },
     testimonialsEyebrow, testimonialsHeading, testimonialsSubtext, testimonials[]{ quote, author, weddingType },
     ctaEyebrow, ctaHeading, ctaDescription, ctaButtonLabel, ctaButtonLink, ctaDirectContactText, ctaImage, ctaImageAlt
-  }`);
+  }`,
+    {},
+    sanityFetchOptions('homePage', 'album', 'service')
+  );
   if (!data) return null;
 
   return {
@@ -494,13 +517,17 @@ export const getHomePage = cache(async (): Promise<HomePageContent | null> => {
 });
 
 export const getBackstageVideos = cache(async () => {
-  return client.fetch(`
+  return client.fetch(
+    `
     *[
       _type == "backstageVideo" &&
       isVisible != false
     ]
     | order(order asc)
-  `)
+  `,
+    {},
+    sanityFetchOptions('backstageVideo')
+  );
 });
 
 export type SiteDesign = {
@@ -536,7 +563,8 @@ export const getSiteDesign = cache(async (): Promise<SiteDesign | null> => {
 export const getFixedPage = cache(async (type: string) => {
   const data = await client.fetch(
     `*[_type == $type] | order(select(_id == $type => 0, 1) asc, _updatedAt desc)[0]{...}`,
-    { type }
+    { type },
+    sanityFetchOptions(type)
   );
   if (!data) return null;
   // `seo.ogImage` is a Studio `image` field, so GROQ returns an object — not a
@@ -553,7 +581,8 @@ export async function getAboutPage() { return getFixedPage('aboutPage'); }
 // servicesPage has its own query (rather than the generic getFixedPage) because
 // comparisonRows needs its service references dereferenced into plain serviceId/value pairs.
 export const getServicesPage = cache(async () => {
-  const data = await client.fetch(`*[_type == "servicesPage" && _id == "servicesPage"][0]{
+  const data = await client.fetch(
+    `*[_type == "servicesPage" && _id == "servicesPage"][0]{
     ...,
     comparisonRows[]{
       label,
@@ -562,7 +591,10 @@ export const getServicesPage = cache(async () => {
         value
       }
     }
-  }`);
+  }`,
+    {},
+    sanityFetchOptions('servicesPage', 'service')
+  );
   if (!data) return null;
   // See getFixedPage: the social image arrives as an image object.
   return { ...data, seo: mapSeo(data.seo) };

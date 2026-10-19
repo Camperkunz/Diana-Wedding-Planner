@@ -5,13 +5,17 @@
   "main": ".open-next/worker.js",
   "name": "diana-wedding",
   "compatibility_date": "2026-10-01",
-  // Workers Cache: eligible GET/HEAD responses are served from Cloudflare's
-  // edge WITHOUT invoking the Worker (zero CPU on hits). Next/OpenNext emit
-  // `s-maxage=<revalidate>` for SSG/ISR pages, which defines the edge TTL.
-  // Revert by deleting this block if ISR revalidation ever stalls.
-  "cache": {
-    "enabled": true
-  },
+  // Workers Cache is intentionally DISABLED (it was `"cache": { "enabled": true }`).
+  //
+  // It let Cloudflare's edge answer eligible GET/HEAD requests without invoking
+  // the Worker, but Next/OpenNext also send
+  // `Cache-Control: s-maxage=<revalidate>, stale-while-revalidate=...` for
+  // SSG/ISR pages, so the edge kept the old HTML for the whole ISR window.
+  // On workers.dev that copy cannot be purged — the adapter's `Cache-Tag`
+  // purge needs a zone (`isPurgeCacheEnabled`) — which meant a Sanity edit
+  // stayed invisible for up to 30 minutes even after the tag cache was
+  // invalidated. Cache hits are still cheap without it: `enableCacheInterception`
+  // serves them from the KV entry without booting the Next.js bundle.
   "compatibility_flags": [
     "nodejs_compat",
     "global_fetch_strictly_public"
@@ -60,6 +64,16 @@
       {
         "name": "NEXT_CACHE_DO_QUEUE",
         "class_name": "DOQueueHandler"
+      },
+      // Cache tags written by `revalidateTag()` / `revalidatePath()` (see
+      // open-next.config.ts). A tag is stored in one shard; reads and writes go
+      // straight to the Durable Object, so a Sanity webhook takes effect
+      // immediately instead of after the KV tag cache's ~60s propagation.
+      // Like the queue, the class is exported by the adapter's worker entry, so
+      // binding it here is enough.
+      {
+        "name": "NEXT_TAG_CACHE_DO_SHARDED",
+        "class_name": "DOShardedTagCache"
       }
     ]
   },
@@ -67,6 +81,13 @@
     {
       "tag": "v1",
       "new_sqlite_classes": ["DOQueueHandler"]
+    },
+    {
+      // Applied automatically by the next `wrangler deploy` (OpenNext's deploy
+      // command runs it). Existing v1 objects are untouched; this only adds the
+      // tag cache class.
+      "tag": "v2",
+      "new_sqlite_classes": ["DOShardedTagCache"]
     }
   ],
   "observability": {

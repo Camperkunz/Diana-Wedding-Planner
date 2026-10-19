@@ -19,8 +19,10 @@
   // has no Durable Objects.
   //
   // KEEP IN SYNC: everything below mirrors the non-DO parts of wrangler.jsonc
-  // (name, compatibility, vars, KV). If you add a binding or a `vars` entry
-  // there and your app reads it at runtime, add it here too.
+  // (name, compatibility, vars, KV). Durable Objects stay out on purpose: neither
+  // `DOQueueHandler` (queue) nor `DOShardedTagCache` (cache tags) can be exported
+  // from the empty script the platform proxy runs. If you add a binding or a
+  // `vars` entry there and your app reads it at runtime, add it here too.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "diana-wedding",
   "compatibility_date": "2026-10-01",
