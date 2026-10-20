@@ -87,7 +87,7 @@ export default async function Home() {
         actions={
           <>
             <SafeLink
-              prefetch
+              prefetch={false}
               href={content.heroPrimaryButtonLink}
               fallbackHref="/contact"
               className="inline-flex items-center justify-center text-center bg-accent text-accent-foreground px-12 py-3.5 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-lg hover:shadow-xl"
@@ -96,7 +96,7 @@ export default async function Home() {
             </SafeLink>
 
             <SafeLink
-              prefetch
+              prefetch={false}
               href={content.heroSecondaryButtonLink}
               fallbackHref="/services"
               className="inline-flex items-center justify-center text-center border border-white/50 text-white px-12 py-3.5 text-sm uppercase tracking-wide hover:bg-white/10 transition-all duration-300"
@@ -130,7 +130,8 @@ export default async function Home() {
                 ))}
               </div>
 
-              <Link prefetch={false} 
+              <Link
+                prefetch={false}
                 href={content.aboutLink || '/about'}
                 className="inline-flex items-center gap-2 mt-10 text-sm uppercase tracking-wide text-accent hover:gap-4 transition-all duration-300"
               >
@@ -168,9 +169,7 @@ export default async function Home() {
 
       {/* STATS */}
       <FadeIn>
-        <StatsSection
-          stats={stats}
-        />
+        <StatsSection stats={stats} />
       </FadeIn>
 
       {/* SERVICES */}
@@ -192,7 +191,8 @@ export default async function Home() {
                 </p>
               </div>
 
-              <Link prefetch={false} 
+              <Link
+                prefetch={false}
                 href={content.servicesButtonLink || '/services'}
                 className="inline-flex items-center gap-2 border border-accent text-accent px-8 py-3 text-sm uppercase tracking-wide hover:bg-accent hover:text-accent-foreground transition-all duration-300 shrink-0 w-fit self-start md:self-center"
               >
@@ -205,7 +205,8 @@ export default async function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-12">
             {services.map((service: any, i: number) => (
               <FadeIn key={service._id || i} delay={i * 150}>
-                <Link prefetch={false} 
+                <Link
+                  prefetch={false}
                   href="/services"
                   className="group flex flex-col h-full"
                 >
@@ -297,7 +298,8 @@ export default async function Home() {
                 </h2>
               </div>
 
-              <Link prefetch={false} 
+              <Link
+                prefetch={false}
                 href={content.portfolioButtonLink || '/portfolio'}
                 className="inline-flex items-center gap-2 text-sm uppercase tracking-wide text-accent hover:gap-4 transition-all duration-300"
               >
@@ -319,19 +321,14 @@ export default async function Home() {
                     : 'sm:col-span-1'
                 )}
               >
-                <Link prefetch={false} 
+                <Link
+                  prefetch={false}
                   href={
                     album.slug
                       ? `/portfolio/${album.slug}`
                       : '/portfolio'
                   }
                   className={cn(
-                    // `h-full` is the fix for mismatched card heights: the row
-                    // is sized by the tallest card (the wide 16/10 one) and
-                    // every sibling stretches to it, so the vertical 4/5
-                    // previews no longer leave a gap underneath. With an
-                    // explicit height the aspect-ratio is ignored and
-                    // `object-cover` fills the box instead.
                     'group relative overflow-hidden rounded-sm hover:shadow-xl transition-all duration-500 block w-full h-full',
                     i === 0
                       ? 'aspect-[16/10]'
@@ -342,12 +339,6 @@ export default async function Home() {
                     source={album.coverImage}
                     alt={album.coverImageAlt || album.title}
                     sizes={
-                      // Card 0 takes 2 of the 4 columns: full width below lg,
-                      // half the grid from lg up — the old
-                      // `(min-width: 640px) 50vw` told tablets (640-1023px) to
-                      // fetch half the pixels they actually render. `min()`
-                      // caps each value to the real column: `container-wide`
-                      // stops at 80rem, so plain vw over-fetches on wide screens.
                       i === 0
                         ? '(min-width: 1024px) min(50vw, 37rem), 100vw'
                         : '(min-width: 1024px) min(25vw, 17.5rem), (min-width: 640px) 50vw, 100vw'
@@ -463,7 +454,8 @@ export default async function Home() {
               {content.ctaDescription}
             </p>
 
-            <Link prefetch={false} 
+            <Link
+              prefetch={false}
               href={content.ctaButtonLink || '/contact'}
               className="inline-flex items-center gap-3 bg-accent text-accent-foreground px-12 py-4 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-xl hover:shadow-2xl"
             >
@@ -479,7 +471,6 @@ export default async function Home() {
                   className="group relative inline-block py-0.5 text-white/80 hover:text-white focus-visible:text-white transition-colors duration-200"
                 >
                   {settings?.email}
-                  {/* Same slide-in line as the header/footer links */}
                   <span
                     aria-hidden="true"
                     className="absolute bottom-0 left-0 right-0 h-px origin-left scale-x-0 bg-accent-overlay transition-transform duration-300 group-hover:scale-x-100 group-focus-visible:scale-x-100"

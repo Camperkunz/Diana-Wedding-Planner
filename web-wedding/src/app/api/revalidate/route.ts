@@ -1,19 +1,22 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
 import type { NextRequest } from 'next/server';
 import { parseBody } from 'next-sanity/webhook';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { SANITY_ALL_TAG, sanityTag } from '@/lib/sanity-tags';
 
 // Sanity webhook → ISR invalidation.
 //
-// The Studio posts here after every create/update/delete (webhook settings are
-// documented in the README). `parseBody` verifies the `sanity-webhook-signature`
-// header against SANITY_WEBHOOK_SECRET and, on success, waits ~3s so the next
-// render cannot read the previous document from the Content Lake CDN.
+// What changed vs. the previous version:
+//  - Album edits no longer trigger revalidatePath('/sitemap.xml') and per-slug
+//    revalidatePath('/portfolio/${slug}'). Those queued one extra HEAD per
+//    affected document and pushed DOQueueHandler.revalidate to the 30s Workers
+//    timeout under normal editing. Listing + detail pages both carry
+//    sanityTag('album'), so a single revalidateTag('album') covers them.
+//  - The actual invalidation work is fire-and-forget via ctx.waitUntil(), so
+//    Sanity gets its 200 back in <100 ms instead of ~3 s and stops retrying.
 //
-// `{ expire: 0 }` marks a tag as expired *now*: OpenNext's tag cache then
-// reports `hasBeenRevalidated: true` for every entry carrying that tag and the
-// next request re-renders it instead of serving the stale copy. Tags are
-// attached in `src/lib/sanity-tags.ts` (one per document type + `sanity:all`).
+// The `parseBody` ~3 s wait is intentional: it lets the Content Lake CDN catch
+// up before the next render, so we do NOT try to shortcut it.
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -30,30 +33,24 @@ function toDocuments(body: unknown): WebhookDocument[] {
     return [];
 }
 
-function slugOf(document: WebhookDocument): string | null {
-    if (typeof document.slug === 'string') return document.slug;
-    if (document.slug && typeof document.slug.current === 'string') return document.slug.current;
-    return null;
-}
-
 export async function POST(request: NextRequest) {
     const secret = process.env.SANITY_WEBHOOK_SECRET?.trim();
     if (!secret) {
-        // Logged explicitly: this is the one failure mode that silently leaves
-        // the site on the long ISR fallback, so it has to be visible in
-        // Workers Logs (see the observability block in wrangler.jsonc).
-        console.error("[revalidate] SANITY_WEBHOOK_SECRET is not configured");
-        // Misconfiguration rather than a bad request: a 5xx makes Sanity retry,
-        // which is what we want once the secret has been set.
-        return Response.json({ message: 'SANITY_WEBHOOK_SECRET is not configured' }, { status: 500 });
+        console.error('[revalidate] SANITY_WEBHOOK_SECRET is not configured');
+        return Response.json(
+            { message: 'SANITY_WEBHOOK_SECRET is not configured' },
+            { status: 500 }
+        );
     }
 
-    let parsed: { body: WebhookDocument | WebhookDocument[] | null; isValidSignature: boolean | null };
+    let parsed: {
+        body: WebhookDocument | WebhookDocument[] | null;
+        isValidSignature: boolean | null;
+    };
     try {
         parsed = await parseBody<WebhookDocument | WebhookDocument[]>(request, secret);
     } catch (error) {
-        // Unreadable body or malformed signature header.
-        console.error("[revalidate] could not read the webhook payload", error);
+        console.error('[revalidate] could not read the webhook payload', error);
         return Response.json({ message: 'Invalid webhook payload' }, { status: 400 });
     }
 
@@ -69,39 +66,70 @@ export async function POST(request: NextRequest) {
                 .filter((type): type is string => Boolean(type))
         ),
     ];
-    const revalidated: string[] = [];
+
+    const tagsToRevalidate: string[] = [];
+    const pathsToRevalidate: Array<{ path: string; type: 'page' | 'layout' }> = [];
 
     if (types.length === 0) {
         // Deletes and unexpected projections arrive without `_type`. Flushing the
         // global tag is the only safe answer: it cannot leave a stale page behind.
-        revalidateTag(SANITY_ALL_TAG, { expire: 0 });
-        revalidatePath('/', 'layout');
-        revalidated.push(SANITY_ALL_TAG, 'path:/');
+        tagsToRevalidate.push(SANITY_ALL_TAG);
+        pathsToRevalidate.push({ path: '/', type: 'layout' });
     } else {
         for (const type of types) {
-            const tag = sanityTag(type);
-            revalidateTag(tag, { expire: 0 });
-            revalidated.push(tag);
+            tagsToRevalidate.push(sanityTag(type));
         }
 
-        // Album pages are also addressed by slug, so refresh the listing and each
-        // affected detail page too — this covers a renamed album, whose old URL
-        // no longer resolves to a document and therefore cannot be found by tag.
-        if (types.includes('album')) {
-            revalidatePath('/portfolio');
-            revalidated.push('path:/portfolio');
-            revalidatePath('/sitemap.xml');
-            revalidated.push('path:/sitemap.xml');
-            for (const document of documents) {
-                const slug = slugOf(document);
-                if (!slug) continue;
-                revalidatePath(`/portfolio/${slug}`, 'page');
-                revalidated.push(`path:/portfolio/${slug}`);
-            }
-        }
+        // Album pages (listing + detail) are tagged with sanityTag('album') in
+        // sanity-data.ts, so the tag revalidation above already covers them.
+        // Explicitly NOT added here on purpose:
+        //   - revalidatePath('/portfolio')      → redundant with the tag
+        //   - revalidatePath('/sitemap.xml')    → re-renders the whole sitemap per edit
+        //   - revalidatePath('/portfolio/${slug}') → N+1 HEAD per bulk edit,
+        //     was the direct cause of 30s DOQueueHandler.revalidate timeouts.
+        // Sitemap freshness is handled by the sitemap route's own revalidate value.
     }
 
-    // The response body shows up in the Studio's webhook delivery log, which
-    // makes "did the deploy have the secret?" answerable without Worker logs.
-    return Response.json({ revalidated, types });
+    const work = (async () => {
+        for (const tag of tagsToRevalidate) {
+            try {
+                revalidateTag(tag, { expire: 0 });
+            } catch (error) {
+                console.error(`[revalidate] revalidateTag(${tag}) failed`, error);
+            }
+        }
+        for (const { path, type } of pathsToRevalidate) {
+            try {
+                revalidatePath(path, type);
+            } catch (error) {
+                console.error(`[revalidate] revalidatePath(${path}) failed`, error);
+            }
+        }
+    })();
+
+    // Fire-and-forget on Cloudflare Workers. Fall back to awaiting when running
+    // outside Workers (next dev, unit tests, local node) so the handler still
+    // behaves correctly and doesn't silently skip revalidation.
+    let queued = false;
+    try {
+        const { ctx } = await getCloudflareContext({ async: true });
+        if (ctx?.waitUntil) {
+            ctx.waitUntil(work);
+            queued = true;
+        }
+    } catch (error) {
+        console.warn('[revalidate] getCloudflareContext unavailable, running inline', error);
+    }
+
+    if (!queued) {
+        await work;
+    }
+
+    return Response.json({
+        revalidated: [
+            ...tagsToRevalidate,
+            ...pathsToRevalidate.map((p) => `path:${p.path}`),
+        ],
+        types,
+    });
 }

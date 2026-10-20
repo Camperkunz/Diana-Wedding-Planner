@@ -152,7 +152,7 @@ export function SiteFooter({ settings, layout }: Props) {
           </div>
         </div>
         <div className="mt-12 pt-6 border-t border-primary-foreground/20 flex flex-col sm:flex-row items-center justify-between gap-8 sm:gap-3">
-          <div className="text-xs text-primary-foreground/70 items-center md:items-start flex flex-col">
+          <div className="text-sm md:text-xs text-primary-foreground/70 items-center md:items-start flex flex-col">
             <p className="text-sm text-center md:text-left mb-4 md:mb-0">
               {layout?.copyrightText || `© ${new Date().getFullYear()} ${settings?.name} Wedding Planning. All rights reserved.`}
             </p>

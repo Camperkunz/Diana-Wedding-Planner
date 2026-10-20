@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
+import type { FocusEvent, MouseEvent, ReactNode } from 'react';
 import { LuMenu as Menu, LuX as X, LuGlobe as Globe } from 'react-icons/lu';
 import {
   SiInstagram,
@@ -55,6 +56,123 @@ function getSocialIcon(platform?: string) {
   if (!platform) return <Globe className="w-5 h-5" />;
   const IconComponent = SOCIAL_ICONS[platform.toLowerCase().trim()];
   return IconComponent ? <IconComponent className="w-4 h-4" /> : <Globe className="w-5 h-5" />;
+}
+
+/**
+ * Desktop-only nav link with hover/focus-driven prefetch.
+ *
+ * Why not `<Link prefetch>`:
+ *  - `prefetch` in the App Router starts loading the RSC payload on viewport
+ *    intersection, i.e. immediately after hydration for the whole menu. That
+ *    burns one Worker invocation + one tag-cache RPC per link on every page
+ *    load, for routes the visitor may never open.
+ *
+ * What this does instead:
+ *  - `prefetch={false}` on the `<Link>` so nothing loads until intent.
+ *  - On `mouseenter` / `focus`, wait `PREFETCH_DELAY_MS` and then call
+ *    `router.prefetch(href)`. If the mouse leaves or focus blurs before the
+ *    timer fires, the prefetch is cancelled — a pointer brushing across the
+ *    menu costs nothing.
+ *  - The 100 ms delay is short enough that the click, which typically lands
+ *    200–400 ms after hover, still finds a warm cache.
+ *  - Each href is prefetched at most once per mount, so re-hovering does not
+ *    spam `router.prefetch`.
+ *  - The timer is cleared on unmount so a late callback cannot fire into a
+ *    torn-down tree.
+ *
+ * Mobile/tablet menus use plain `<Link prefetch={false}>`: touch devices have
+ * no hover, so hover-prefetch gives no benefit there and only competes with
+ * the current page's images and fonts for bandwidth.
+ */
+const PREFETCH_DELAY_MS = 100;
+
+type NavLinkProps = {
+  href: string;
+  prefetch?: boolean;
+  className?: string;
+  children: ReactNode;
+  onMouseEnter?: (event: MouseEvent<HTMLAnchorElement>) => void;
+  onMouseLeave?: (event: MouseEvent<HTMLAnchorElement>) => void;
+  onFocus?: (event: FocusEvent<HTMLAnchorElement>) => void;
+  onBlur?: (event: FocusEvent<HTMLAnchorElement>) => void;
+  'aria-current'?: 'page' | 'location' | undefined;
+};
+
+function NavLink({
+  href,
+  prefetch = true,
+  className,
+  children,
+  onMouseEnter,
+  onMouseLeave,
+  onFocus,
+  onBlur,
+  ...rest
+}: NavLinkProps) {
+  const router = useRouter();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prefetchedRef = useRef(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, []);
+
+  const cancelPending = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const schedulePrefetch = () => {
+    if (!prefetch) return;
+    if (prefetchedRef.current) return;
+    if (timerRef.current) return;
+
+    timerRef.current = setTimeout(() => {
+      timerRef.current = null;
+      if (!mountedRef.current || prefetchedRef.current) return;
+      prefetchedRef.current = true;
+      router.prefetch(href);
+    }, PREFETCH_DELAY_MS);
+  };
+
+  return (
+    <Link
+      href={href}
+      prefetch={false}
+      className={className}
+      onMouseEnter={(event) => {
+        schedulePrefetch();
+        onMouseEnter?.(event);
+      }}
+      onMouseLeave={(event) => {
+        cancelPending();
+        onMouseLeave?.(event);
+      }}
+      onFocus={(event) => {
+        // Keyboard users get the same warm-up: tabbing to a link usually means
+        // the next Enter press is imminent.
+        schedulePrefetch();
+        onFocus?.(event);
+      }}
+      onBlur={(event) => {
+        cancelPending();
+        onBlur?.(event);
+      }}
+      {...rest}
+    >
+      {children}
+    </Link>
+  );
 }
 
 export function SiteHeader({ settings, layout }: Props) {
@@ -116,6 +234,11 @@ export function SiteHeader({ settings, layout }: Props) {
       )}
     >
       <nav className="container-wide flex items-center justify-between h-20" aria-label="Main navigation">
+        {/*
+          HomeLink renders a `next/link` to `/` with `prefetch={false}` already
+          (see src/components/home-link.tsx) — the logo will not prefetch the
+          home route on every page.
+        */}
         <HomeLink
           className="flex items-center gap-3 group"
           aria-label="Diana — Home"
@@ -159,7 +282,7 @@ export function SiteHeader({ settings, layout }: Props) {
           {navLinks.map((link) => {
             const active = isActivePath(pathname, link.href);
             return (
-              <Link
+              <NavLink
                 key={link.href}
                 href={link.href}
                 aria-current={pathname === link.href ? 'page' : active ? 'location' : undefined}
@@ -188,15 +311,15 @@ export function SiteHeader({ settings, layout }: Props) {
                     active ? 'scale-x-100' : 'scale-x-0'
                   )}
                 />
-              </Link>
+              </NavLink>
             );
           })}
-          <Link
+          <NavLink
             href={contactLink.href}
             className="bg-accent text-accent-foreground px-8 py-2.5 text-sm font-medium tracking-wide uppercase hover:bg-accent/90 transition-all duration-300 shadow-sm hover:shadow-md"
           >
             {contactLink.label}
-          </Link>
+          </NavLink>
           {Boolean(settings?.socialLinks?.length) && (
             <div className={cn('flex items-center gap-1 border-l pl-3', opaque ? 'border-border' : 'border-white/20')}>
               {settings?.socialLinks?.map((item, index) => {
@@ -248,12 +371,19 @@ export function SiteHeader({ settings, layout }: Props) {
         )}
       >
         <div className="container-wide py-6 flex flex-col gap-1">
+          {/*
+            Touch devices: plain `prefetch={false}` links. No hover, so
+            hover-prefetch gives nothing; and eager prefetch would queue several
+            RSC requests at once, fighting the current page's images for
+            bandwidth. The ~200–400 ms wait after a tap reads as a normal click.
+          */}
           {navLinks.map((link) => {
             const active = isActivePath(pathname, link.href);
             return (
               <Link
                 key={link.href}
                 href={link.href}
+                prefetch={false}
                 aria-current={pathname === link.href ? 'page' : active ? 'location' : undefined}
                 className={cn(
                   'relative py-3 text-base tracking-wide transition-colors duration-200 border-b border-border/50',
@@ -270,6 +400,7 @@ export function SiteHeader({ settings, layout }: Props) {
           })}
           <Link
             href={contactLink.href}
+            prefetch={false}
             className="mt-4 bg-accent text-accent-foreground px-8 py-3 text-center text-sm font-medium tracking-wide uppercase transition-colors duration-300 hover:bg-accent/90 focus-visible:bg-accent/90 active:bg-accent/95"
           >
             {contactLink.label}
