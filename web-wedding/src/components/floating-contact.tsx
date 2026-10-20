@@ -12,6 +12,7 @@ export function FloatingContact() {
 
   return (
     <Link
+      prefetch={false}
       href="/contact"
       className={cn(
         'fixed bottom-6 right-6 z-40 group',

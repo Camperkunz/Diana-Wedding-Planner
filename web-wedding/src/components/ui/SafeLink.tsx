@@ -10,6 +10,14 @@ type SafeLinkProps = {
   className?: string;
   children: ReactNode;
   'aria-label'?: string;
+  /**
+   * Prefetch the route in the background (hover / viewport).
+   *
+   * Off by default: every prefetch is a real Worker invocation — a KV read plus
+   * a tag-cache RPC — and on the free Cloudflare plan those are the scarce
+   * resources. Opt in only on the few high-intent CTAs (see the hero).
+   */
+  prefetch?: boolean;
 };
 
 /**
@@ -24,13 +32,19 @@ export default function SafeLink({
   fallbackHref = '/',
   className,
   children,
+  prefetch = false,
   ...rest
 }: SafeLinkProps) {
   const target = safeLinkTarget(href, fallbackHref);
 
   if (target.isInternal) {
     return (
-      <Link href={target.href} className={className} {...rest}>
+      <Link
+        href={target.href}
+        prefetch={prefetch}
+        className={className}
+        {...rest}
+      >
         {children}
       </Link>
     );

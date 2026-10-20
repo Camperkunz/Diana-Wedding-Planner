@@ -7,7 +7,7 @@ import BackstageClient, { Video } from './backstage-client';
 const fallback = {};
 
 // ISR: new backstage videos edited in the Studio appear within this window.
-export const revalidate = 1800;
+export const revalidate = 21600;
 
 // This route had no metadata of its own, so it inherited nothing useful:
 // no canonical, no description beyond the root default, and no preview card.

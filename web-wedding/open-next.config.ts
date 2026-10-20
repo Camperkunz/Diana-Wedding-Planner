@@ -35,7 +35,20 @@ export default defineCloudflareConfig({
 	// binding and the `v2` migration in wrangler.jsonc; the class itself is
 	// already exported by the adapter's worker entry. `next dev` has no DO
 	// binding, so the override is a no-op there (dev renders uncached anyway).
-	tagCache: doShardedTagCache,
+	tagCache: doShardedTagCache({
+		// Default is 4 soft + 4 hard shards and a page render reads the tags of
+		// every shard it needs: the production logs showed ~4.5
+		// `DOShardedTagCache.getTagData` calls per request (163 in 38 seconds).
+		// This site has no tag fan-out, so a single shard is enough: at most one
+		// soft and one hard read instead of 4-8.
+		baseShardSize: 1,
+		// Readings of a tag are cached in the Cache API per colo, so a repeated
+		// visit costs zero Durable Object requests. `writeTags()` deletes that
+		// regional entry, so a Sanity webhook invalidates immediately in the colo
+		// that served the report and elsewhere within `regionalCacheTtlSec`.
+		regionalCache: true,
+		regionalCacheTtlSec: 30,
+	}),
 	// Serve SSG/ISR responses straight from the KV cache entry, without booting
 	// the Next.js server bundle. Big CPU/latency win on cache hits.
 	enableCacheInterception: true,

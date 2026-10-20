@@ -13,7 +13,7 @@ import ResponsiveImage from '@/components/ui/ResponsiveImage';
 const fallback = {};
 
 // ISR: Studio edits appear within this window, no redeploy needed.
-export const revalidate = 1800;
+export const revalidate = 21600;
 
 export async function generateMetadata() {
   const page = await getAboutPage();
@@ -147,7 +147,7 @@ export default async function AboutPage() {
           <p className="text-muted-foreground text-base md:text-lg font-light mb-10 max-w-xl mx-auto leading-relaxed">
             {c.ctaDescription}
           </p>
-          <Link
+          <Link prefetch={false} 
             href={c.ctaButtonLink || '/contact'}
             className="inline-flex items-center gap-3 bg-accent text-accent-foreground px-12 py-3.5 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-lg hover:shadow-xl"
           >

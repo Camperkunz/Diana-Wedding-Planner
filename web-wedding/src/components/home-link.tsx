@@ -40,7 +40,7 @@ export function HomeLink({ children, className, onClick, ...rest }: Props) {
   };
 
   return (
-    <Link href="/" className={className} onClick={handleClick} {...rest}>
+    <Link prefetch={false} href="/" className={className} onClick={handleClick} {...rest}>
       {children}
     </Link>
   );

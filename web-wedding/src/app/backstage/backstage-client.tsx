@@ -179,7 +179,7 @@ export default function BackstageClient({
                         <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-8 text-balance">
                             {content.ctaHeading}
                         </h2>
-                        <Link
+                        <Link prefetch={false} 
                             href={content.ctaButtonLink}
                             className="inline-flex items-center gap-3 bg-accent text-accent-foreground px-12 py-3.5 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-lg hover:shadow-xl"
                         >

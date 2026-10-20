@@ -20,7 +20,7 @@ const fallback = {};
 
 // ISR freshness for the home page (the most visited route). This value is also
 // the Cloudflare edge TTL (Next emits `s-maxage=<revalidate>`).
-export const revalidate = 600;
+export const revalidate = 3600;
 
 export async function generateMetadata() {
   const [home, settings] = await Promise.all([getHomePage(), getSiteSettings()]);
@@ -87,6 +87,7 @@ export default async function Home() {
         actions={
           <>
             <SafeLink
+              prefetch
               href={content.heroPrimaryButtonLink}
               fallbackHref="/contact"
               className="inline-flex items-center justify-center text-center bg-accent text-accent-foreground px-12 py-3.5 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-lg hover:shadow-xl"
@@ -95,6 +96,7 @@ export default async function Home() {
             </SafeLink>
 
             <SafeLink
+              prefetch
               href={content.heroSecondaryButtonLink}
               fallbackHref="/services"
               className="inline-flex items-center justify-center text-center border border-white/50 text-white px-12 py-3.5 text-sm uppercase tracking-wide hover:bg-white/10 transition-all duration-300"
@@ -128,7 +130,7 @@ export default async function Home() {
                 ))}
               </div>
 
-              <Link
+              <Link prefetch={false} 
                 href={content.aboutLink || '/about'}
                 className="inline-flex items-center gap-2 mt-10 text-sm uppercase tracking-wide text-accent hover:gap-4 transition-all duration-300"
               >
@@ -190,7 +192,7 @@ export default async function Home() {
                 </p>
               </div>
 
-              <Link
+              <Link prefetch={false} 
                 href={content.servicesButtonLink || '/services'}
                 className="inline-flex items-center gap-2 border border-accent text-accent px-8 py-3 text-sm uppercase tracking-wide hover:bg-accent hover:text-accent-foreground transition-all duration-300 shrink-0 w-fit self-start md:self-center"
               >
@@ -203,7 +205,7 @@ export default async function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-12">
             {services.map((service: any, i: number) => (
               <FadeIn key={service._id || i} delay={i * 150}>
-                <Link
+                <Link prefetch={false} 
                   href="/services"
                   className="group flex flex-col h-full"
                 >
@@ -295,7 +297,7 @@ export default async function Home() {
                 </h2>
               </div>
 
-              <Link
+              <Link prefetch={false} 
                 href={content.portfolioButtonLink || '/portfolio'}
                 className="inline-flex items-center gap-2 text-sm uppercase tracking-wide text-accent hover:gap-4 transition-all duration-300"
               >
@@ -317,7 +319,7 @@ export default async function Home() {
                     : 'sm:col-span-1'
                 )}
               >
-                <Link
+                <Link prefetch={false} 
                   href={
                     album.slug
                       ? `/portfolio/${album.slug}`
@@ -461,7 +463,7 @@ export default async function Home() {
               {content.ctaDescription}
             </p>
 
-            <Link
+            <Link prefetch={false} 
               href={content.ctaButtonLink || '/contact'}
               className="inline-flex items-center gap-3 bg-accent text-accent-foreground px-12 py-4 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-xl hover:shadow-2xl"
             >

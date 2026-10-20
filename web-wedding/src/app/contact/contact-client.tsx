@@ -320,6 +320,7 @@ export default function ContactClient({ services, settings, policyLastUpdated, c
                     >
                       I have read and agree to the{' '}
                       <Link
+                        prefetch={false}
                         href="/privacy"
                         className="text-accent underline underline-offset-2 hover:text-accent/80 focus-visible:text-accent/80"
                       >

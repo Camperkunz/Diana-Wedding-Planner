@@ -9,7 +9,7 @@ import { ALBUM_PAGE_SIZE } from '@/lib/album-paging';
 import AlbumGallery from '@/components/album-gallery';
 
 // ISR: album edits appear within this window, no redeploy needed.
-export const revalidate = 1800;
+export const revalidate = 21600;
 
 export function generateStaticParams() {
   return getAlbums().then((albums) => albums.map((album) => ({ albumSlug: album.slug })));
@@ -134,6 +134,7 @@ export default async function AlbumPage({
       <section className="py-20 md:py-24 bg-secondary/40 border-t border-border/50">
         <div className="container-wide flex flex-col sm:flex-row items-center justify-between gap-6">
           <Link
+            prefetch={false}
             href="/portfolio"
             className="inline-flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground hover:text-accent transition-colors duration-300"
           >
@@ -141,6 +142,7 @@ export default async function AlbumPage({
             All Weddings
           </Link>
           <Link
+            prefetch={false}
             href="/contact"
             className="inline-flex items-center gap-3 bg-accent text-accent-foreground px-12 py-3.5 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-lg hover:shadow-xl"
           >

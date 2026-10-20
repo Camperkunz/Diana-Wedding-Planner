@@ -31,7 +31,7 @@
     "global_fetch_strictly_public"
   ],
   "vars": {
-    "NEXT_CACHE_DO_QUEUE_REVALIDATION_TIMEOUT_MS": "30000",
+    "NEXT_CACHE_DO_QUEUE_REVALIDATION_TIMEOUT_MS": "12000",
     "RESEND_FROM_ADDRESS": "Diana's Website <onboarding@resend.dev>"
   },
   "kv_namespaces": [

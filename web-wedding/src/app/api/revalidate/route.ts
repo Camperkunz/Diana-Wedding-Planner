@@ -39,6 +39,10 @@ function slugOf(document: WebhookDocument): string | null {
 export async function POST(request: NextRequest) {
     const secret = process.env.SANITY_WEBHOOK_SECRET?.trim();
     if (!secret) {
+        // Logged explicitly: this is the one failure mode that silently leaves
+        // the site on the long ISR fallback, so it has to be visible in
+        // Workers Logs (see the observability block in wrangler.jsonc).
+        console.error("[revalidate] SANITY_WEBHOOK_SECRET is not configured");
         // Misconfiguration rather than a bad request: a 5xx makes Sanity retry,
         // which is what we want once the secret has been set.
         return Response.json({ message: 'SANITY_WEBHOOK_SECRET is not configured' }, { status: 500 });
@@ -47,8 +51,9 @@ export async function POST(request: NextRequest) {
     let parsed: { body: WebhookDocument | WebhookDocument[] | null; isValidSignature: boolean | null };
     try {
         parsed = await parseBody<WebhookDocument | WebhookDocument[]>(request, secret);
-    } catch {
+    } catch (error) {
         // Unreadable body or malformed signature header.
+        console.error("[revalidate] could not read the webhook payload", error);
         return Response.json({ message: 'Invalid webhook payload' }, { status: 400 });
     }
 

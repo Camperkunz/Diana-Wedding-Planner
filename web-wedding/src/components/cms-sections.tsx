@@ -60,7 +60,7 @@ export function CmsSections({ sections }: { sections: any[] }) {
               {section.subheading && <p className="text-muted-foreground mt-5 font-light leading-relaxed">{section.subheading}</p>}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
-              {(section.featuredAlbums || []).map((album: any) => album.coverImage && <Link key={album._id} href={`/portfolio/${album.slug?.current || ''}`} className="group relative aspect-[4/5] overflow-hidden rounded-sm">
+              {(section.featuredAlbums || []).map((album: any) => album.coverImage && <Link prefetch={false} key={album._id} href={`/portfolio/${album.slug?.current || ''}`} className="group relative aspect-[4/5] overflow-hidden rounded-sm">
                 <ResponsiveImage source={album.coverImage} alt={album.coverImageAlt || album.title} sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" widths={[480, 768, 1024, 1440]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-7"><p className="text-white/90 text-sm uppercase tracking-wide mb-2">{album.category}</p><h3 className="font-serif text-white text-2xl">{album.title}</h3></div>

@@ -11,7 +11,7 @@ import { sanityImage } from '@/lib/sanity-image';
 
 // ISR: contact page copy edited in the Studio appears within this window.
 // (The form itself is a server action — POST requests always bypass caches.)
-export const revalidate = 1800;
+export const revalidate = 21600;
 
 export async function generateMetadata() {
     const page = await getContactPage();

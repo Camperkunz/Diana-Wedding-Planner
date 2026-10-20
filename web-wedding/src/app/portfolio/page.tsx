@@ -11,7 +11,7 @@ import ResponsiveImage from '@/components/ui/ResponsiveImage';
 const fallback = {};
 
 // ISR: new albums edited in the Studio appear within this window.
-export const revalidate = 1800;
+export const revalidate = 21600;
 
 export async function generateMetadata() {
     const page = await getPortfolioPage();
@@ -57,7 +57,7 @@ export default async function PortfolioPage() {
                                 .join(', ');
 
                             return (
-                            <Link
+                            <Link prefetch={false} 
                                 key={album.slug}
                                 href={`/portfolio/${album.slug}`}
                                 className="group relative aspect-[4/5] overflow-hidden rounded-sm hover:shadow-xl transition-all duration-500"
@@ -96,7 +96,7 @@ export default async function PortfolioPage() {
                     <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-8 text-balance">
                         {c.ctaHeading}
                     </h2>
-                    <Link
+                    <Link prefetch={false} 
                         href={c.ctaButtonLink || '/contact'}
                         className="inline-flex items-center gap-3 bg-accent text-accent-foreground px-12 py-3.5 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-lg hover:shadow-xl"
                     >

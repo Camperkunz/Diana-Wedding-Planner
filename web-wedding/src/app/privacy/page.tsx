@@ -6,7 +6,7 @@ import { PRIVACY_POLICY_LAST_UPDATED } from '@/lib/legal';
 import { safeMailtoHref } from '@/lib/safe-url';
 
 // ISR: policy edits made in the Studio appear within this window.
-export const revalidate = 1800;
+export const revalidate = 21600;
 
 /**
  * Privacy Policy.

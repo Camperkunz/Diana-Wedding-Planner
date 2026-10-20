@@ -20,6 +20,7 @@ export default function NotFound() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
+            prefetch={false}
             href="/"
             className="inline-flex items-center gap-3 bg-accent text-accent-foreground px-12 py-3.5 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-lg hover:shadow-xl"
           >
@@ -27,6 +28,7 @@ export default function NotFound() {
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
+            prefetch={false}
             href="/contact"
             className="inline-flex items-center gap-2 border border-accent text-accent px-10 py-3 text-sm uppercase tracking-wide hover:bg-accent hover:text-accent-foreground transition-all duration-300"
           >

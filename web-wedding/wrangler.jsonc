@@ -44,11 +44,12 @@
     }
   ],
   "vars": {
-    // ISR revalidation (Durable Object queue). A Sanity query can take up to
-    // 3 × 5s (client `timeout` × `maxRetries`) before it gives up, so allow
-    // 30s per revalidation attempt instead of the adapter's 10s default —
-    // otherwise a slow Content Lake response aborts the re-render again.
-    "NEXT_CACHE_DO_QUEUE_REVALIDATION_TIMEOUT_MS": "30000"
+    // ISR revalidation (Durable Object queue). A Sanity query now fails within
+    // ~6s (client `timeout` 3s × 2 attempts), so 12s per attempt is plenty.
+    // It used to be 30s, which is what the logs showed: six revalidations held
+    // the Durable Object for 28-30s each just to give up at the end. A shorter
+    // timeout frees the DO and lets the queue retry with backoff instead.
+    "NEXT_CACHE_DO_QUEUE_REVALIDATION_TIMEOUT_MS": "12000"
   },
   "durable_objects": {
     "bindings": [
@@ -91,6 +92,16 @@
     }
   ],
   "observability": {
+    // Workers Logs on the free plan allows 200k log events/day, and every
+    // request, Durable Object RPC and queue job writes one invocation log —
+    // that is why a single visit used to look like ~220 events in 38s.
+    //
+    // Sampling stays at 1 on purpose: head-based sampling drops a request
+    // *whole*, errors included, so a 0.1 rate would hide 9 of 10 failures.
+    // Volume is reduced at the source instead (links no longer prefetch, one
+    // tag-cache shard, far fewer background revalidations), which costs
+    // neither errors nor stack traces. If the log budget still runs out, set
+    // `invocation_logs: false` — `console.*` output and failures are kept.
     "logs": {
       "enabled": true,
       "head_sampling_rate": 1,

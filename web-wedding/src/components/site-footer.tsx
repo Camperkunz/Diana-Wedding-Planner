@@ -72,6 +72,7 @@ export function SiteFooter({ settings, layout }: Props) {
               {footerLinks.map((link) => (
                 <li key={link.href}>
                   <Link
+                    prefetch={false}
                     href={link.href}
                     className="group relative inline-block py-0.5 text-sm text-primary-foreground/80 transition-colors duration-200 hover:text-white focus-visible:text-white"
                   >
@@ -168,6 +169,7 @@ export function SiteFooter({ settings, layout }: Props) {
               <span aria-hidden="true" className="hidden md:block text-primary-foreground/30">·</span>
               <nav aria-label="Legal">
                 <Link
+                  prefetch={false}
                   href="/privacy"
                   className="group relative inline-block py-0.5 transition-colors duration-200 hover:text-white focus-visible:text-white"
                 >

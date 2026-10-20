@@ -12,7 +12,7 @@ import HeroSection from '@/components/ui/HeroSection';
 const fallback = {};
 
 // ISR: Studio edits appear within this window, no redeploy needed.
-export const revalidate = 1800;
+export const revalidate = 21600;
 
 /**
  * Splits a Studio `text` value into paragraphs: every newline the editor types
@@ -109,7 +109,8 @@ export default async function FaqPage() {
                                 </div>
                                 {c.contactButtonLabel && (
                                     <Link
-                                        href={c.contactButtonLink || '/contact'}
+                                      prefetch={false}
+                                      href={c.contactButtonLink || '/contact'}
                                         className="inline-flex items-center gap-3 bg-accent text-accent-foreground px-12 py-3.5 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-lg hover:shadow-xl"
                                     >
                                         {c.contactButtonLabel}
