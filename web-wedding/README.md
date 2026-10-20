@@ -201,9 +201,10 @@ is falling back to a coarser bucket — worth checking once via `wrangler tail`.
 
 ## SEO
 
-There is currently no `src/app/robots.ts` or `src/app/sitemap.ts`, so the site
-does not serve `/robots.txt` or `/sitemap.xml`. `SITE_URL` exported from
-`src/lib/site.ts` is the canonical origin to build them from if they are added.
+`/robots.txt` and `/sitemap.xml` are generated (`src/app/robots.ts`, `src/app/sitemap.ts`)
+from `SITE_URL`; albums come from Sanity (albums with "Hide from Search Engines"
+are left out) and the sitemap refreshes via the Sanity webhook. Set
+`NEXT_PUBLIC_ALLOW_INDEXING=false` to block indexing (noindex + `Disallow: /`).
 
 ## Learn more
 

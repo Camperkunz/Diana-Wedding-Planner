@@ -85,6 +85,8 @@ export async function POST(request: NextRequest) {
         if (types.includes('album')) {
             revalidatePath('/portfolio');
             revalidated.push('path:/portfolio');
+            revalidatePath('/sitemap.xml');
+            revalidated.push('path:/sitemap.xml');
             for (const document of documents) {
                 const slug = slugOf(document);
                 if (!slug) continue;

@@ -42,6 +42,10 @@ const MAX_FIELDS = 30;
 const MAX_LABEL_LENGTH = 200;
 const MAX_VALUE_LENGTH = 2000;
 const MAX_TOTAL_LENGTH = 10000;
+/** A human needs longer than this to fill the form; faster submissions are bots. */
+const MIN_FILL_TIME_MS = 3000;
+/** Label of the render-time stamp the form sends; never emailed. */
+const TIMESTAMP_FIELD = '_hp_ts';
 
 /** Upper bound on tracked rate-limit buckets (per IP, or per user-agent hash). */
 const MAX_TRACKED_KEYS = 10000;
@@ -182,6 +186,15 @@ export async function sendEmailAction({ formData }: SendEmailParams) {
             return { success: true };
         }
 
+        // Time trap: the form stamps its render time. A submission made faster
+        // than a human can type (or with a missing/forged-future stamp) is dropped
+        // silently, exactly like a honeypot hit.
+        const renderedAt = Number(formData?.[TIMESTAMP_FIELD]);
+        const elapsed = Date.now() - renderedAt;
+        if (!Number.isFinite(renderedAt) || elapsed < MIN_FILL_TIME_MS) {
+            return { success: true };
+        }
+
         // Check-only pass: the attempt itself is recorded later, right before the
         // send, so rejected or mis-configured requests never burn a visitor's
         // quota. The bucket is keyed on a Cloudflare-supplied header, not on the
@@ -229,6 +242,7 @@ export async function sendEmailAction({ formData }: SendEmailParams) {
         for (const rawLabel in source) {
             if (++scanned > MAX_FIELDS) break;
             if (!Object.prototype.hasOwnProperty.call(source, rawLabel)) continue;
+            if (rawLabel === TIMESTAMP_FIELD || rawLabel === '_hp_website') continue;
             const label = sanitizeText(rawLabel, MAX_LABEL_LENGTH);
             const value = sanitizeText(source[rawLabel], MAX_VALUE_LENGTH);
             if (!label) continue;

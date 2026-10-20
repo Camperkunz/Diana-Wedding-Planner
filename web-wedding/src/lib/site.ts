@@ -46,3 +46,10 @@ export function absoluteUrl(path = '/'): string {
   if (/^https?:\/\//i.test(path)) return path;
   return `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`;
 }
+
+/**
+ * Search-engine indexing switch. On by default; set `NEXT_PUBLIC_ALLOW_INDEXING=false`
+ * (e.g. on a staging/workers.dev deployment) to serve `noindex` meta tags and a
+ * `Disallow: /` robots.txt with no code change.
+ */
+export const ALLOW_INDEXING = process.env.NEXT_PUBLIC_ALLOW_INDEXING?.trim().toLowerCase() !== 'false';

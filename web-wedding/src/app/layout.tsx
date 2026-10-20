@@ -5,7 +5,7 @@ import { SiteHeader } from '../components/site-header';
 import { SiteFooter } from '../components/site-footer';
 import { FloatingContact } from '../components/floating-contact';
 import { getSiteDesign, getSiteLayout, getSiteSettings, hexToHsl } from '../lib/sanity-data';
-import { SITE_URL } from '../lib/site';
+import { ALLOW_INDEXING, SITE_URL } from '../lib/site';
 import { JsonLd } from '../components/json-ld';
 import { GoogleAnalytics } from '../components/google-analytics';
 
@@ -21,15 +21,8 @@ export async function generateMetadata(): Promise<Metadata> {
     title: settings?.seo?.metaTitle || settings?.name || 'Wedding Planner',
     description: settings?.seo?.metaDescription || settings?.tagline,
     icons: settings?.favicon ? { icon: settings.favicon } : undefined,
-    // robots: noindex, nofollow, and no Googlebot indexing/following. This is a wedding site, not a business site, so we don't want it to appear in search results. remove it in actual production
-    robots: {
-      index: false,
-      follow: false,
-      googleBot: {
-        index: false,
-        follow: false,
-      },
-    },
+    // Indexing is controlled by NEXT_PUBLIC_ALLOW_INDEXING (see lib/site.ts).
+    robots: ALLOW_INDEXING ? undefined : { index: false, follow: false, googleBot: { index: false, follow: false } },
     openGraph: {
       title: settings?.seo?.metaTitle || settings?.name || 'Wedding Planner',
       description: settings?.seo?.metaDescription || settings?.tagline,

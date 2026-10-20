@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import Link from 'next/link';
 import { LuMail as Mail, LuPhone as Phone, LuMapPin as MapPin, LuInstagram as Instagram, LuSend as Send, LuCheck as Check } from 'react-icons/lu';
@@ -79,6 +79,8 @@ export default function ContactClient({ services, settings, policyLastUpdated, c
   // browser from submitting without it; this state exists so the consent can be
   // recorded with the message (proof of consent) and reset afterwards.
   const [consent, setConsent] = useState(false);
+  // Render time, sent as a bot-detection stamp (checked in actions/sendEmail.ts).
+  const renderedAt = useRef(Date.now());
 
   const instagramUrl = settings.socialLinks.find((item) => item.platform === 'instagram')?.url;
   const instagramHandle = instagramHandleFromUrl(instagramUrl);
@@ -127,6 +129,7 @@ export default function ContactClient({ services, settings, policyLastUpdated, c
     const result = await sendEmailAction({
       formData: {
         ...formData,
+        _hp_ts: String(renderedAt.current),
         'Privacy Policy Consent': `Accepted — policy version ${policyLastUpdated || PRIVACY_POLICY_LAST_UPDATED}`,
       },
     });
