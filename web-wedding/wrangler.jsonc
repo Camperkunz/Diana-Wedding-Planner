@@ -49,7 +49,8 @@
     // It used to be 30s, which is what the logs showed: six revalidations held
     // the Durable Object for 28-30s each just to give up at the end. A shorter
     // timeout frees the DO and lets the queue retry with backoff instead.
-    "NEXT_CACHE_DO_QUEUE_REVALIDATION_TIMEOUT_MS": "12000"
+    "NEXT_CACHE_DO_QUEUE_REVALIDATION_TIMEOUT_MS": "12000",
+    "RESEND_FROM_ADDRESS": "Diana's Website <onboarding@resend.dev>"
   },
   "durable_objects": {
     "bindings": [
@@ -81,14 +82,18 @@
   "migrations": [
     {
       "tag": "v1",
-      "new_sqlite_classes": ["DOQueueHandler"]
+      "new_sqlite_classes": [
+        "DOQueueHandler"
+      ]
     },
     {
       // Applied automatically by the next `wrangler deploy` (OpenNext's deploy
       // command runs it). Existing v1 objects are untouched; this only adds the
       // tag cache class.
       "tag": "v2",
-      "new_sqlite_classes": ["DOShardedTagCache"]
+      "new_sqlite_classes": [
+        "DOShardedTagCache"
+      ]
     }
   ],
   "observability": {
