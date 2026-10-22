@@ -58,9 +58,11 @@ export default async function Home() {
       : sanityServices.filter((service: any) => service.featured)
   ).slice(0, 3);
 
-  const albums = content.featuredAlbums?.length
-    ? content.featuredAlbums
-    : sanityAlbums.slice(0, 4);
+  // First 3 entries of the “Albums (order)” list: the home grid has four
+  // columns and its first card spans two, so exactly three cards fill one row.
+  const albums = (
+    content.featuredAlbums?.length ? content.featuredAlbums : sanityAlbums
+  ).slice(0, 3);
 
   const steps = content.approachSteps?.length
     ? content.approachSteps

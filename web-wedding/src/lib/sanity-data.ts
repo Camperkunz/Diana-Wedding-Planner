@@ -422,16 +422,46 @@ export const getSiteLayout = cache(async (): Promise<SiteLayout | null> => {
   return chrome?.layout ? mapSiteLayout(chrome.layout) : null;
 });
 
+/**
+ * All albums, in the order the editor sets by dragging the “Albums (order)”
+ * list in the Home page document. That array is the single source of order for
+ * the whole website: the Portfolio grid and the homepage cards (first 3) use the
+ * same list, so the featured albums are always the same three in the same order.
+ * Albums that are not in the list yet (just created) fall to the end, newest
+ * first, so a new album can never disappear from the portfolio.
+ */
 export const getAlbums = cache(async (): Promise<AlbumCard[]> => {
-  // Newest first: the Studio no longer has a display-order field, so a freshly
-  // published album surfaces at the top of the portfolio and the home page.
   // Cards only need the cover — see `albumCardProjection`.
-  const data = await client.fetch(
-    `*[_type == "album"] | order(_createdAt desc){${albumCardProjection}}`,
-    {},
-    sanityFetchOptions('album')
+  const [data, featuredOrder] = await Promise.all([
+    client.fetch(
+      `*[_type == "album"] | order(_createdAt desc){${albumCardProjection}}`,
+      {},
+      sanityFetchOptions('album')
+    ),
+    client.fetch(
+      `*[_type == "homePage" && _id == "homePage"][0].featuredAlbums[]->_id`,
+      {},
+      // Tagged homePage too, so reordering the list in the Studio purges the
+      // cached Portfolio page through the webhook, not only the home page.
+      sanityFetchOptions('homePage')
+    ),
+  ]);
+
+  const rank = new Map<string, number>(
+    (featuredOrder || []).map((id: string, index: number): [string, number] => [id, index])
   );
-  return (data || []).map(mapAlbumCard);
+
+  // Stable sort: albums the Home page list does not mention keep the GROQ
+  // order (newest first).
+  const albums: AlbumCard[] = (data || []).map(mapAlbumCard);
+  return albums.sort((a: AlbumCard, b: AlbumCard) => {
+    const rankA = rank.get(a._id);
+    const rankB = rank.get(b._id);
+    if (rankA === undefined && rankB === undefined) return 0;
+    if (rankA === undefined) return 1;
+    if (rankB === undefined) return -1;
+    return rankA - rankB;
+  });
 });
 
 export const getAlbum = cache(async (slug: string): Promise<Album | null> => {

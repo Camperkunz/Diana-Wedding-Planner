@@ -95,7 +95,15 @@ export const homePage = defineType({
     defineField({ name: 'portfolioHeading', title: 'Heading', type: 'string', fieldset: 'portfolio', validation: (rule) => rule.required() }),
     defineField({ name: 'portfolioButtonLabel', title: 'Button Label', type: 'string', fieldset: 'portfolio' }),
     defineField({ name: 'portfolioButtonLink', title: 'Button Link', type: 'string', fieldset: 'portfolio', initialValue: '/portfolio', validation: (rule) => validLink(rule) }),
-    defineField({ name: 'featuredAlbums', title: 'Albums to Show', type: 'array', fieldset: 'portfolio', of: [{ type: 'reference', to: [{ type: 'album' }] }], validation: (rule) => rule.max(4) }),
+    defineField({
+      name: 'featuredAlbums',
+      title: 'Albums (order)',
+      type: 'array',
+      fieldset: 'portfolio',
+      of: [{ type: 'reference', to: [{ type: 'album' }] }],
+      description:
+        'Add every album here and drag them into the order you want. The Portfolio page uses this exact order, and the homepage shows the first 3 (the large card plus two beside it).',
+    }),
 
     defineField({ name: 'approachEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'approach' }),
     defineField({ name: 'approachHeading', title: 'Heading', type: 'string', fieldset: 'approach', validation: (rule) => rule.required() }),
