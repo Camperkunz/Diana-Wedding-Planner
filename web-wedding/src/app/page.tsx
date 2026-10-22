@@ -52,9 +52,11 @@ export default async function Home() {
     ),
   } as typeof fallback & Record<string, any>;
 
-  const services = content.featuredServices?.length
-    ? content.featuredServices
-    : sanityServices.filter((service: any) => service.featured).slice(0, 3);
+  const services = (
+    content.featuredServices?.length
+      ? content.featuredServices
+      : sanityServices.filter((service: any) => service.featured)
+  ).slice(0, 3);
 
   const albums = content.featuredAlbums?.length
     ? content.featuredAlbums

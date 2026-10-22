@@ -443,15 +443,47 @@ export const getAlbum = cache(async (slug: string): Promise<Album | null> => {
   return data ? mapAlbum(data) : null;
 });
 
+/**
+ * All services, in the order the editor sets by dragging the “Services (order)”
+ * list in the Home page document. That array is the single source of order for
+ * the whole website: it drives the Services page list, the comparison table
+ * columns, the Contact form and the homepage cards (first 3). Services that are
+ * not in the list yet fall to the end in the legacy `order` / creation order, so
+ * a newly created service can never disappear from a page.
+ */
 export const getServices = cache(async (): Promise<Service[]> => {
-  const data = await client.fetch(
-    `*[_type == "service"] | order(coalesce(order, 9999) asc, _createdAt asc){
-    _id, name, slug, shortDescription, fullDescription, includes, image, imageAlt, startingPrice, featured, order
-  }`,
-    {},
-    sanityFetchOptions('service')
+  const [data, featuredOrder] = await Promise.all([
+    client.fetch(
+      `*[_type == "service"] | order(coalesce(order, 9999) asc, _createdAt asc){
+      _id, name, slug, shortDescription, fullDescription, includes, image, imageAlt, startingPrice, featured, order
+    }`,
+      {},
+      sanityFetchOptions('service')
+    ),
+    client.fetch(
+      `*[_type == "homePage" && _id == "homePage"][0].featuredServices[]->_id`,
+      {},
+      // Tagged homePage too, so reordering the list in the Studio purges the
+      // cached Services page through the webhook, not only the home page.
+      sanityFetchOptions('homePage')
+    ),
+  ]);
+
+  const rank = new Map<string, number>(
+    (featuredOrder || []).map((id: string, index: number): [string, number] => [id, index])
   );
-  return (data || []).map(mapService);
+
+  // Stable sort: entries the Home page list does not mention keep the GROQ
+  // order (legacy `order` number, then creation date).
+  const services: Service[] = (data || []).map(mapService);
+  return services.sort((a: Service, b: Service) => {
+    const rankA = rank.get(a._id);
+    const rankB = rank.get(b._id);
+    if (rankA === undefined && rankB === undefined) return 0;
+    if (rankA === undefined) return 1;
+    if (rankB === undefined) return -1;
+    return rankA - rankB;
+  });
 });
 
 /**

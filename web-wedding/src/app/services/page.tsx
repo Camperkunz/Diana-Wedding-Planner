@@ -103,7 +103,7 @@ export default async function ServicesPage() {
                   ))}
                 </div>
 
-                <Link prefetch={false} 
+                <Link prefetch={false}
                   href="/contact"
                   className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-10 py-3 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-sm hover:shadow-md"
                 >
@@ -118,7 +118,7 @@ export default async function ServicesPage() {
 
       {/* Comparison Section */}
       {comparisonRows.length > 0 && services.length > 0 && (
-        <section className="py-28 md:py-36 bg-secondary/40">
+        <section className="py-28 md:py-28 bg-secondary/40">
           <div className="container-wide">
             <div className="text-center mb-16">
               <p className="text-xs uppercase tracking-wide-lg text-accent mb-6">
@@ -177,6 +177,14 @@ export default async function ServicesPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Optional note typed in the Studio under “Note Under the Table”.
+                Nothing is rendered (not even spacing) while the field is empty. */}
+            {c.comparisonNote && (
+              <p className="mt-8 text-center text-sm md:text-base text-muted-foreground font-light leading-relaxed max-w-3xl mx-auto whitespace-pre-line">
+                {c.comparisonNote}
+              </p>
+            )}
           </div>
         </section>
       )}
@@ -190,7 +198,7 @@ export default async function ServicesPage() {
           <p className="text-muted-foreground text-base md:text-lg font-light mb-10 max-w-xl mx-auto leading-relaxed">
             {c.ctaDescription}
           </p>
-          <Link prefetch={false} 
+          <Link prefetch={false}
             href={c.ctaButtonLink || '/contact'}
             className="inline-flex items-center gap-3 bg-accent text-accent-foreground px-12 py-3.5 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-lg hover:shadow-xl"
           >

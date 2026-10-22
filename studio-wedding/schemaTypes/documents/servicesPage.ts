@@ -62,6 +62,15 @@ export const servicesPage = defineType({
         },
       }],
     }),
+    defineField({
+      name: 'comparisonNote',
+      title: 'Note Under the Table',
+      type: 'text',
+      rows: 3,
+      fieldset: 'comparison',
+      description:
+        'Optional. Shown as a small note under the comparison table — e.g. what “—” means, or a “prices are starting points” disclaimer. Leave it empty and nothing appears on the page.',
+    }),
     defineField({ name: 'ctaHeading', title: 'Heading', type: 'string', fieldset: 'cta', validation: (rule) => rule.required() }),
     defineField({ name: 'ctaDescription', title: 'Description', type: 'text', rows: 5, fieldset: 'cta', validation: (rule) => rule.required() }),
     defineField({ name: 'ctaButtonLabel', title: 'Button Label', type: 'string', fieldset: 'cta' }),

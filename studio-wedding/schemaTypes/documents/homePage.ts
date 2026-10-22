@@ -76,7 +76,15 @@ export const homePage = defineType({
     defineField({ name: 'servicesDescription', title: 'Description', type: 'text', rows: 3, fieldset: 'services' }),
     defineField({ name: 'servicesButtonLabel', title: 'Button Label', type: 'string', fieldset: 'services' }),
     defineField({ name: 'servicesButtonLink', title: 'Button Link', type: 'string', fieldset: 'services', initialValue: '/services', validation: (rule) => validLink(rule) }),
-    defineField({ name: 'featuredServices', title: 'Services to Show', type: 'array', fieldset: 'services', of: [{ type: 'reference', to: [{ type: 'service' }] }], validation: (rule) => rule.max(3) }),
+    defineField({
+      name: 'featuredServices',
+      title: 'Services (order)',
+      type: 'array',
+      fieldset: 'services',
+      of: [{ type: 'reference', to: [{ type: 'service' }] }],
+      description:
+        'Add every service here and drag them into the order you want. This order is used everywhere: the Services page list and comparison table, the Contact form, and the homepage cards (the homepage shows the first 3).',
+    }),
 
     defineField({ name: 'quoteImage', title: 'Background Image', type: 'image', fieldset: 'quote', options: { hotspot: true }, validation: (rule) => rule.required() }),
     defineField({ name: 'quoteImageAlt', title: 'Image Alt Text', type: 'string', fieldset: 'quote', validation: (rule) => rule.required() }),

@@ -20,8 +20,20 @@ export const service = defineType({
     defineField({ name: 'includes', title: 'What Is Included', type: 'array', fieldset: 'content', of: [{ type: 'string' }], description: 'Add one included item per line. Drag to reorder.' }),
     defineField({ name: 'image', title: 'Service Photo', type: 'image', fieldset: 'image', options: { hotspot: true } }),
     defineField({ name: 'imageAlt', title: 'Photo Alt Text', type: 'string', fieldset: 'image' }),
-    defineField({ name: 'featured', title: 'Show on Homepage', type: 'boolean', fieldset: 'display', initialValue: true }),
-    defineField({ name: 'order', title: 'Display Order', type: 'number', fieldset: 'display', initialValue: 1, description: 'Lower numbers appear first.' }),
+    defineField({
+      name: 'featured',
+      title: 'Show on Homepage',
+      type: 'boolean',
+      fieldset: 'display',
+      initialValue: true,
+      description:
+        'Fallback only: used when the “Services (order)” list on the Home page is empty.',
+    }),
+    // Service order is set once, by dragging the “Services (order)” list in the
+    // Home page document — that list drives the homepage, the Services page and
+    // the Contact form. The legacy `order` number is no longer editable here; it
+    // only remains in the data as a fallback sort for services missing from
+    // that list (see getServices in web-wedding/src/lib/sanity-data.ts).
   ],
   preview: { select: { title: 'name', subtitle: 'startingPrice', media: 'image' } },
 })
