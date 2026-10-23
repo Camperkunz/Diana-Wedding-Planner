@@ -1,6 +1,6 @@
 # Diana Voloshina — Content Studio
 
-The Sanity Studio powering [dianavoloshina.com](https://dianavoloshina.com). It provides a custom content management interface for website pages, services, wedding albums, brand settings and backstage videos.
+The Sanity Studio. It provides a custom content management interface for website pages, services, wedding albums, brand settings and backstage videos.
 
 The website consumes the same Sanity documents through a typed data layer, keeping content separate from the frontend implementation.
 
