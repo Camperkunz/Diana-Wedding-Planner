@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { LuArrowRight as ArrowRight, LuArrowLeft as ArrowLeft, LuMapPin as MapPin, LuCalendar as Calendar } from 'react-icons/lu';
 import { getAlbum, getAlbums, getSiteSettings } from '@/lib/sanity-data';
 import { safeCanonicalUrl } from '@/lib/safe-url';
+import { absoluteUrl } from '@/lib/site';
 import HeroSection from '@/components/ui/HeroSection';
 import { ALBUM_PAGE_SIZE } from '@/lib/album-paging';
 import AlbumGallery from '@/components/album-gallery';
@@ -30,8 +31,12 @@ export async function generateMetadata({
   const description = album.seo?.metaDescription || (album.story || album.title).slice(0, 160);
   // Album cover doubles as the share image when the editor set none.
   const image = album.seo?.ogImage || album.coverImage || settings?.seo?.ogImage;
-  // Only an absolute http(s) URL may become a canonical — see safe-url.ts.
-  const url = safeCanonicalUrl(album.seo?.canonicalUrl);
+  // Only an absolute http(s) URL may become a canonical — see safe-url.ts. When
+  // the editor set none, the album canonicalises to itself, so tracking
+  // parameters and the www host are not indexed as separate albums.
+  const url =
+    safeCanonicalUrl(album.seo?.canonicalUrl) ||
+    absoluteUrl(`/portfolio/${encodeURIComponent(albumSlug)}`);
 
   // openGraph/twitter are always present — omitting them would wipe the
   // site-wide tags inherited from the root layout (Next.js replaces the whole
@@ -45,6 +50,8 @@ export async function generateMetadata({
       title,
       description,
       type: 'article',
+      siteName: settings?.name || undefined,
+      locale: 'en_CA',
       url,
       images: image ? [{ url: image }] : undefined,
     },

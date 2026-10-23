@@ -2,16 +2,19 @@
  * The one place that knows the public address of the website.
  *
  * Nothing else hard-codes a domain: canonical tags, `og:url` and every other
- * absolute URL on the site read it from here. Set `NEXT_PUBLIC_SITE_URL` as a
- * *build* variable in the Cloudflare dashboard (Worker -> Settings -> Variables
- * and Secrets) and every URL follows — no code change, no redeploy of the content.
+ * absolute URL on the site read it from here.
  *
- * There is deliberately NO built-in production domain:
- *  - in development the address falls back to http://localhost:3000;
- *  - a production build without a valid value fails fast, so a forgotten
- *    variable can never ship wrong canonical/og URLs.
+ * `NEXT_PUBLIC_SITE_URL` still wins (set it as a *build* variable in the
+ * Cloudflare dashboard), but the production origin is now also baked in as a
+ * fallback. A forgotten build variable used to ship the previous (dead) worker
+ * domain in every canonical and in the JSON-LD, so the safe default is the
+ * live domain rather than an error or a staging URL. In development the address
+ * stays http://localhost:3000.
  */
 const LOCALHOST_FALLBACK = 'http://localhost:3000';
+
+/** The live site. Keep in sync with `wrangler.jsonc` (custom domain). */
+const PRODUCTION_FALLBACK = 'https://dianavoloshina.com';
 
 function resolveSiteUrl(): string {
   const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
@@ -29,12 +32,9 @@ function resolveSiteUrl(): string {
         );
       }
     }
-  } else if (process.env.NODE_ENV === 'production') {
-    throw new Error(
-      'NEXT_PUBLIC_SITE_URL is not set. Provide the public origin of the site ' +
-        '(e.g. https://example.com) before building for production.'
-    );
   }
+
+  if (process.env.NODE_ENV === 'production') return PRODUCTION_FALLBACK;
 
   return LOCALHOST_FALLBACK;
 }
@@ -46,10 +46,3 @@ export function absoluteUrl(path = '/'): string {
   if (/^https?:\/\//i.test(path)) return path;
   return `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`;
 }
-
-/**
- * Search-engine indexing switch. On by default; set `NEXT_PUBLIC_ALLOW_INDEXING=false`
- * (e.g. on a staging/workers.dev deployment) to serve `noindex` meta tags and a
- * `Disallow: /` robots.txt with no code change.
- */
-export const ALLOW_INDEXING = process.env.NEXT_PUBLIC_ALLOW_INDEXING?.trim().toLowerCase() !== 'false';

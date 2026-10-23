@@ -5,7 +5,7 @@ import { SiteHeader } from '../components/site-header';
 import { SiteFooter } from '../components/site-footer';
 import { FloatingContact } from '../components/floating-contact';
 import { getSiteDesign, getSiteLayout, getSiteSettings, hexToHsl } from '../lib/sanity-data';
-import { ALLOW_INDEXING, SITE_URL } from '../lib/site';
+import { SITE_URL } from '../lib/site';
 import { JsonLd } from '../components/json-ld';
 import { GoogleAnalytics } from '../components/google-analytics';
 
@@ -21,12 +21,16 @@ export async function generateMetadata(): Promise<Metadata> {
     title: settings?.seo?.metaTitle || settings?.name || 'Wedding Planner',
     description: settings?.seo?.metaDescription || settings?.tagline,
     icons: settings?.favicon ? { icon: settings.favicon } : undefined,
-    // Indexing is controlled by NEXT_PUBLIC_ALLOW_INDEXING (see lib/site.ts).
-    robots: ALLOW_INDEXING ? undefined : { index: false, follow: false, googleBot: { index: false, follow: false } },
+    // No `robots` here on purpose: every route emits its own (see
+    // buildSeoMetadata), and a leftover `noindex` at layout level would be
+    // inherited by any page that forgets to override it. Indexing is the
+    // default; the Studio's "Hide from search engines" switch opts pages out.
     openGraph: {
       title: settings?.seo?.metaTitle || settings?.name || 'Wedding Planner',
       description: settings?.seo?.metaDescription || settings?.tagline,
       type: 'website',
+      siteName: settings?.name || undefined,
+      locale: 'en_CA',
       images: settings?.seo?.ogImage ? [settings.seo.ogImage] : undefined,
     },
   };
@@ -83,9 +87,29 @@ export default async function RootLayout({
   const sameAs = (settings?.socialLinks || [])
     .map((link) => link.url)
     .filter(Boolean);
+  // `siteSettings.address` holds the short "City, Province" form ("Ottawa, ON"),
+  // so it can be split into the PostalAddress parts search engines read. A
+  // longer value (a full street address) is kept verbatim as the locality
+  // instead of being mangled into the wrong field. The country is a constant:
+  // this is a Canadian business.
+  const postalAddress = (() => {
+    const raw = settings?.address?.trim();
+    if (!raw) return undefined;
+    const parts = raw.split(',').map((part) => part.trim()).filter(Boolean);
+    const isCityProvince = parts.length === 2 && /^[A-Za-z]{2,3}$/.test(parts[1]);
+    return {
+      '@type': 'PostalAddress',
+      addressLocality: isCityProvince ? parts[0] : raw,
+      addressRegion: isCityProvince ? parts[1].toUpperCase() : undefined,
+      addressCountry: 'CA',
+    };
+  })();
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ProfessionalService',
+    // Stable identifier for the business entity, so other markup can reference
+    // it (`{ "@id": "https://dianavoloshina.com/#business" }`).
+    '@id': `${SITE_URL}/#business`,
     name: settings?.name || 'Diana — Wedding Planner',
     url: SITE_URL,
     logo: settings?.logo || undefined,
@@ -94,15 +118,13 @@ export default async function RootLayout({
       settings?.seo?.metaDescription || settings?.tagline || undefined,
     email: settings?.email || undefined,
     telephone: settings?.phone || undefined,
-    address: settings?.location
-      ? { '@type': 'PostalAddress', addressLocality: settings.location }
-      : undefined,
+    address: postalAddress,
     areaServed: settings?.serviceArea || undefined,
     sameAs: sameAs.length ? sameAs : undefined,
   };
 
   return (
-    <html lang="en" data-scroll-behavior="smooth">
+    <html lang="en-CA" data-scroll-behavior="smooth">
       {/* Every photo is served from Sanity's CDN: opening the connection while
           the HTML is still parsing saves a DNS + TCP + TLS round trip before
           the first image request. React 19 hoists <link> into <head>. */}

@@ -20,7 +20,8 @@ export async function generateMetadata() {
   return buildSeoMetadata(
     page?.seo,
     'About Diana — Ottawa Wedding Planner',
-    'Meet Diana, an independent wedding planner based in Ottawa.'
+    'Meet Diana, an independent wedding planner based in Ottawa.',
+    '/about'
   );
 }
 

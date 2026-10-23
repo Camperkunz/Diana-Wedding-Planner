@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { Fragment } from 'react';
 import { getSiteLayout, getSiteSettings, getPrivacyPolicy, buildSeoMetadata } from '@/lib/sanity-data';
-import { absoluteUrl } from '@/lib/site';
 import { PRIVACY_POLICY_LAST_UPDATED } from '@/lib/legal';
 import { safeMailtoHref } from '@/lib/safe-url';
 
@@ -27,11 +26,12 @@ export const revalidate = 21600;
  */
 
 export async function generateMetadata() {
-  const settings = await getSiteSettings();
+  const [settings, policy] = await Promise.all([getSiteSettings(), getPrivacyPolicy()]);
   return buildSeoMetadata(
-    { canonicalUrl: absoluteUrl('/privacy') },
+    policy?.seo,
     `Privacy Policy | ${settings?.name || 'Diana — Wedding Planner'}`,
-    'How this website collects, uses and protects personal information — contact form details, cookies and Google Analytics — and the rights you have over your data.'
+    'How this website collects, uses and protects personal information — contact form details, cookies and Google Analytics — and the rights you have over your data.',
+    '/privacy'
   );
 }
 

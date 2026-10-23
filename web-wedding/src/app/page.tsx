@@ -31,7 +31,8 @@ export async function generateMetadata() {
   return buildSeoMetadata(
     home?.seo || settings?.seo,
     'Diana — Wedding Planner in Ottawa | Personal, Hands-On Wedding Planning',
-    'Independent, personal wedding planning in Ottawa.'
+    'Independent, personal wedding planning in Ottawa.',
+    '/'
   );
 }
 

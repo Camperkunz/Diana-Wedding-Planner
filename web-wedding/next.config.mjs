@@ -61,6 +61,26 @@ const nextConfig = (phase) => {
   return {
     // Do not advertise the framework/version in responses.
     poweredByHeader: false,
+    // ── www → apex ──────────────────────────────────────────────────────────
+    // `www.dianavoloshina.com` is a Cloudflare custom domain on the same Worker,
+    // so without this rule the whole site answered 200 on both hosts and search
+    // engines saw two copies of every page. The redirect is permanent (308,
+    // `permanent: true`) and path-preserving.
+    //
+    // Cheaper alternative: a Cloudflare Redirect Rule (Rules → Redirect Rules).
+    // It terminates the request at the edge, so `www` traffic never reaches the
+    // Worker and costs no invocations — the rule below exists as the default
+    // that works without touching the dashboard.
+    async redirects() {
+      return [
+        {
+          source: '/:path*',
+          has: [{ type: 'host', value: 'www.dianavoloshina.com' }],
+          destination: 'https://dianavoloshina.com/:path*',
+          permanent: true,
+        },
+      ];
+    },
     async headers() {
       return [{ source: '/:path*', headers: securityHeaders }];
     },

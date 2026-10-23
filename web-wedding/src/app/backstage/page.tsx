@@ -16,7 +16,8 @@ export async function generateMetadata(): Promise<Metadata> {
     return buildSeoMetadata(
         page?.seo,
         'Backstage — Behind the Scenes | Diana, Ottawa Wedding Planner',
-        'Behind the scenes of weddings planned by Diana: films, real celebrations and the details that never make it into the gallery.'
+        'Behind the scenes of weddings planned by Diana: films, real celebrations and the details that never make it into the gallery.',
+        '/backstage'
     );
 }
 

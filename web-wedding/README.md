@@ -54,7 +54,7 @@ they go in:
 | --- | --- | --- | --- |
 | `NEXT_PUBLIC_SANITY_PROJECT_ID` | Build | yes | Sanity project to read content from |
 | `NEXT_PUBLIC_SANITY_DATASET` | Build | yes | Sanity dataset (`production`) |
-| `NEXT_PUBLIC_SITE_URL` | Build | yes in production | Canonical origin, used for metadata/Open Graph. Falling back to localhost in a production build is treated as a mistake and fails the build on purpose |
+| `NEXT_PUBLIC_SITE_URL` | Build | recommended | Canonical origin used by metadata, Open Graph, `sitemap.xml`, `robots.txt` and the JSON-LD. In a production build without it, `src/lib/site.ts` falls back to `https://dianavoloshina.com`; in development it falls back to `http://localhost:3000` |
 | `RESEND_API_KEY` | Runtime (secret) | yes | Sending contact-form email |
 | `RESEND_FROM_ADDRESS` | Runtime | yes | Verified sender, as `Name <addr@domain>`. Required — when it is missing the submission is rejected with a generic error and the reason is logged. There is no test-sender fallback |
 | `RESEND_FALLBACK_EMAIL` | Runtime | optional | Last-resort recipient if the recipient in Sanity is unusable |
@@ -201,10 +201,53 @@ is falling back to a coarser bucket — worth checking once via `wrangler tail`.
 
 ## SEO
 
-`/robots.txt` and `/sitemap.xml` are generated (`src/app/robots.ts`, `src/app/sitemap.ts`)
-from `SITE_URL`; albums come from Sanity (albums with "Hide from Search Engines"
-are left out) and the sitemap refreshes via the Sanity webhook. Set
-`NEXT_PUBLIC_ALLOW_INDEXING=false` to block indexing (noindex + `Disallow: /`).
+The site is fully indexable — there is no on/off switch to forget. Indexing is the
+default, and the only thing that can mark a page `noindex` is the editor's "Hide
+from Search Engines" switch in the Studio (per-page SEO and per-album SEO).
+
+| What | Where it comes from |
+| --- | --- |
+| Canonical + `og:url` | The page's own path (`buildSeoMetadata(..., '/services')`) unless the editor set an absolute "Canonical URL" in the Studio |
+| `robots.txt` | `src/app/robots.ts` — `Allow: /`, `Disallow: /api/`, links the sitemap |
+| `sitemap.xml` | `src/app/sitemap.ts` — the 8 fixed pages plus every album from Sanity that is not hidden, with `lastModified` and up to 7 gallery images per album (image sitemap) |
+| Structured data | `src/app/layout.tsx` (`ProfessionalService` with `@id`, postal address and `sameAs` from Site Settings) |
+| Host | `www.dianavoloshina.com` 301/308-redirects to the apex (`next.config.mjs`) |
+
+`NEXT_PUBLIC_SITE_URL` (a **Build** variable) decides which origin ends up in all of
+the above; when it is missing from a production build, `src/lib/site.ts` falls back
+to `https://dianavoloshina.com` — never to localhost or the old `workers.dev`
+address.
+
+Changing `robots.txt` or `sitemap.xml` requires a new build: they are generated at
+build time and served from the ISR cache. After deploying, check
+`https://dianavoloshina.com/robots.txt` (must contain `Allow: /`) and the sitemap
+(8 + one URL per album). If a stale copy is still served, purge the Worker's
+incremental cache, then re-submit the sitemap in Google Search Console.
+
+### After publishing content
+
+`npm run indexnow` (from this folder) pushes the current sitemap URLs to IndexNow,
+which Bing, Yandex, Seznam and the AI search crawlers read — new albums usually
+show up there within hours instead of weeks. It needs `INDEXNOW_KEY` (or the key
+file in `public/`) and only talks to `api.indexnow.org`; nothing about the Worker
+or its free-tier quota changes.
+
+Google still has to be asked once: Search Console → Sitemaps → add
+`https://dianavoloshina.com/sitemap.xml`, then use URL Inspection → *Request
+indexing* for the home page and the main sections.
+
+### Free-tier notes
+
+Indexing does not change the cost of a request: static assets are served by
+Cloudflare's asset server (free, unlimited), one page view costs about one Worker
+invocation. Do **not** enable "Cache Everything"/Worker Cache for HTML: purging it
+by cache tag is an Enterprise feature on this setup, so Studio edits would then
+sit behind a stale edge copy for hours. The existing KV cache interception already
+serves repeat hits without loading the Next.js bundle.
+
+The real risk to the 100k requests/day free quota is AI/crawler traffic, not
+couples. Cloudflare's managed `robots.txt` (Security → Bots / AI Crawl Control) is
+the place to block AI training bots while keeping Googlebot and Bingbot allowed.
 
 ## Learn more
 

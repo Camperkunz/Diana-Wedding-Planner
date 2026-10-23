@@ -18,7 +18,8 @@ export async function generateMetadata() {
     return buildSeoMetadata(
         page?.seo,
         'Portfolio — Weddings Planned by Diana | Ottawa',
-        'Real weddings planned and designed by Diana in Ottawa, Gatineau and Eastern Ontario — browse every celebration from ceremony to last dance.'
+        'Real weddings planned and designed by Diana in Ottawa, Gatineau and Eastern Ontario — browse every celebration from ceremony to last dance.',
+        '/portfolio'
     );
 }
 

@@ -1,24 +1,56 @@
 import type { MetadataRoute } from 'next';
 import { client } from '@/app/sanity/client';
 import { sanityFetchOptions } from '@/lib/sanity-tags';
-import { ALLOW_INDEXING, absoluteUrl } from '@/lib/site';
+import { sanityImage, type ImageSource } from '@/lib/sanity-image';
+import { absoluteUrl } from '@/lib/site';
 
-// Refreshed by the Sanity webhook (album tag + path); this is the safety net.
+// Re-rendered hourly. Album edits do not force a sitemap rebuild (the webhook
+// deliberately skips it — see app/api/revalidate/route.ts), so a new album shows
+// up here within the hour while its page is already live via on-demand ISR.
 export const revalidate = 3600;
 
 const STATIC_PATHS = ['/', '/portfolio', '/services', '/about', '/faq', '/backstage', '/contact', '/privacy'];
 
-type AlbumRow = { slug?: string; _updatedAt?: string };
+type AlbumRow = {
+  slug?: string;
+  _updatedAt?: string;
+  images?: (ImageSource | null)[];
+};
+
+/** How many gallery photos per album go into the image sitemap. */
+const SITEMAP_IMAGES_PER_ALBUM = 6;
+
+/**
+ * Next writes sitemap values into the XML verbatim — no escaping at all (see
+ * `resolve-route-data.js`). Sanity image URLs carry `&auto=format`, which is
+ * invalid XML unescaped, so every value goes through this first.
+ */
+function escapeXml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  if (!ALLOW_INDEXING) return [];
-
   let albums: AlbumRow[] = [];
   try {
     albums =
       (await client.fetch(
-        `*[_type == "album" && defined(slug.current) && seo.noIndex != true]{ "slug": slug.current, _updatedAt }`,
-        {},
+        // Albums the editor hid from search engines are left out, exactly like
+        // their `noindex` meta tag. The cover (or the first gallery photo) plus
+        // the first few gallery images feed the image sitemap, which is what
+        // actually brings wedding-photo traffic from Google Images.
+        `*[_type == "album" && defined(slug.current) && seo.noIndex != true]{
+          "slug": slug.current,
+          _updatedAt,
+          "images": array::compact([
+            coalesce(coverImage, photos[defined(image.asset)][0].image)
+          ]) + photos[defined(image.asset)][0...$imageLimit].image
+        }`,
+        { imageLimit: SITEMAP_IMAGES_PER_ALBUM },
         sanityFetchOptions('album')
       )) || [];
   } catch (error) {
@@ -28,15 +60,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...STATIC_PATHS.map((path) => ({
-      url: absoluteUrl(path),
+      url: escapeXml(absoluteUrl(path)),
       priority: path === '/' ? 1 : 0.7,
     })),
     ...albums
-      .filter((album): album is Required<AlbumRow> => Boolean(album.slug))
-      .map((album) => ({
-        url: absoluteUrl(`/portfolio/${encodeURIComponent(album.slug)}`),
-        lastModified: album._updatedAt ? new Date(album._updatedAt) : undefined,
-        priority: 0.6,
-      })),
+      .filter((album): album is Required<Pick<AlbumRow, 'slug'>> & AlbumRow => Boolean(album.slug))
+      .map((album) => {
+        const images = [
+          ...new Set(
+            (album.images || [])
+              .map((image) => sanityImage(image, 1200))
+              .filter((url): url is string => Boolean(url))
+          ),
+        ];
+
+        return {
+          url: escapeXml(absoluteUrl(`/portfolio/${encodeURIComponent(album.slug)}`)),
+          lastModified: album._updatedAt ? new Date(album._updatedAt) : undefined,
+          priority: 0.6,
+          ...(images.length ? { images: images.map(escapeXml) } : {}),
+        };
+      }),
   ];
 }

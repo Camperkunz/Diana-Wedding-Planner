@@ -679,11 +679,21 @@ export async function getPrivacyPolicy() { return getFixedPage('privacyPolicy');
  * whole, so returning `undefined` here silently erased the site-wide tags and
  * most pages shipped with no social preview at all. The site-wide image and
  * description are used when the page has none of its own.
+ *
+ * `path` is the route's own path (`/services`, `/portfolio/…`). It produces the
+ * self-referencing canonical and `og:url` when the editor left
+ * "Canonical URL" empty in the Studio.
+ *
+ * `robots` is emitted only for pages the editor hid from search engines. The
+ * root layout no longer sets `robots` at all, so `undefined` here means "no meta
+ * robots tag" → indexable by default, and the `noIndex` switch in the Studio
+ * still wins.
  */
 export async function buildSeoMetadata(
   seo: any,
   fallbackTitle: string,
-  fallbackDescription?: string
+  fallbackDescription?: string,
+  path?: string
 ): Promise<Metadata> {
   const settings = await getSiteSettings();
 
@@ -691,9 +701,11 @@ export async function buildSeoMetadata(
   const description =
     seo?.metaDescription || fallbackDescription || settings?.seo?.metaDescription;
   const image = sanityImage(seo?.ogImage || settings?.seo?.ogImage, 1200);
-  // A canonical must be an absolute http(s) URL; a relative or malformed editor
-  // value would deindex the page, so it is dropped instead of emitted.
-  const url = safeCanonicalUrl(seo?.canonicalUrl);
+  // Canonical: the editor's absolute URL wins (cross-domain cases), otherwise
+  // the page canonicalises to itself. Without that fallback every inner page
+  // shipped without a canonical at all, so `?utm=…` and the www host could be
+  // indexed as separate copies of the same page.
+  const url = safeCanonicalUrl(seo?.canonicalUrl) ?? (path ? absoluteUrl(path) : undefined);
 
   return {
     title,
@@ -705,6 +717,9 @@ export async function buildSeoMetadata(
       description,
       type: 'website',
       siteName: settings?.name || undefined,
+      // Canadian site: `en_CA` is what Facebook/LinkedIn use to pick the locale
+      // variant of a shared link (the html lang is en-CA as well).
+      locale: 'en_CA',
       url,
       images: image ? [{ url: image }] : undefined,
     },

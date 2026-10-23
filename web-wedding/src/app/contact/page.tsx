@@ -15,7 +15,7 @@ export const revalidate = 21600;
 
 export async function generateMetadata() {
     const page = await getContactPage();
-    return buildSeoMetadata(page?.seo, 'Contact', page?.formDescription);
+    return buildSeoMetadata(page?.seo, 'Contact', page?.formDescription, '/contact');
 }
 
 export default async function ContactPage() {

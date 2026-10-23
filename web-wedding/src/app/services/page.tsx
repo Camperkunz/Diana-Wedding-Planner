@@ -19,7 +19,8 @@ export async function generateMetadata() {
   return buildSeoMetadata(
     page?.seo,
     'Services — Wedding Planning with Diana | Ottawa',
-    'Full-service wedding planning, partial planning and day-of coordination with Diana — compare what each package includes and starting prices.'
+    'Full-service wedding planning, partial planning and day-of coordination with Diana — compare what each package includes and starting prices.',
+    '/services'
   );
 }
 

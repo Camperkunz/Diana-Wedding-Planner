@@ -32,7 +32,8 @@ export async function generateMetadata() {
     return buildSeoMetadata(
         page?.seo,
         'FAQ — Common Questions | Diana, Ottawa Wedding Planner',
-        'Answers to the questions couples ask most often about working with Diana — service levels, pricing, process, and more.'
+        'Answers to the questions couples ask most often about working with Diana — service levels, pricing, process, and more.',
+        '/faq'
     );
 }
 
