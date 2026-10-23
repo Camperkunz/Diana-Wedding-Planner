@@ -2,6 +2,9 @@
   "name": "diana-wedding",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -15,8 +18,6 @@
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.0",
     "@sanity/image-url": "^2.1.1",
-    "@types/node": "20.6.2",
-    "@types/react-dom": "18.2.7",
     "autoprefixer": "10.4.15",
     "clsx": "^2.1.1",
     "next": "^16.4.3",
@@ -28,12 +29,14 @@
     "resend": "^6.28.0",
     "tailwind-merge": "^2.5.2",
     "tailwindcss": "^3.3.3",
-    "tailwindcss-animate": "^1.0.7",
-    "typescript": "5.2.2"
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@opennextjs/cloudflare": "^1.20.13",
+    "@types/node": "20.6.2",
     "@types/react": "^19.2.14",
+    "@types/react-dom": "18.2.7",
+    "typescript": "^5.2.2",
     "wrangler": "^4.149.0"
   }
 }
