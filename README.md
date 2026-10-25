@@ -5,8 +5,6 @@ two-app monorepo: a **Next.js** front end on **Cloudflare Workers**, and a
 **Sanity Studio** the client uses to edit every page, service, album and colour
 without touching code.
 
-**Live:** https://dianavoloshina.com
-
 ---
 
 ## What this is
