@@ -32,7 +32,8 @@
   ],
   "vars": {
     "NEXT_CACHE_DO_QUEUE_REVALIDATION_TIMEOUT_MS": "12000",
-    "RESEND_FROM_ADDRESS": "Diana's Website <onboarding@resend.dev>"
+    "RESEND_FROM_ADDRESS": "Diana's Website <onboarding@resend.dev>",
+    "NEXT_PUBLIC_TURNSTILE_SITE_KEY": "0x4AAAAAAFlZ5kdoNGv4dfyk"
   },
   "kv_namespaces": [
     {

@@ -3,11 +3,17 @@
 import { useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import Link from 'next/link';
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 import { LuMail as Mail, LuPhone as Phone, LuMapPin as MapPin, LuInstagram as Instagram, LuSend as Send, LuCheck as Check } from 'react-icons/lu';
 import { sendEmailAction } from '@/app/actions/sendEmail';
 import { PRIVACY_POLICY_LAST_UPDATED } from '@/lib/legal';
 import { safeMailtoHref } from '@/lib/safe-url';
 import HeroSection from '@/components/ui/HeroSection';
+
+/** Public Turnstile site key. Inlined at build time, so it must exist when `next build` runs. */
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
+/** Must match TURNSTILE_FIELD in app/actions/sendEmail.ts. */
+const TURNSTILE_FIELD = 'cf-turnstile-response';
 
 interface ServiceItem {
   _id: string;
@@ -82,6 +88,12 @@ export default function ContactClient({ services, settings, policyLastUpdated, c
   // Render time, sent as a bot-detection stamp (checked in actions/sendEmail.ts).
   const renderedAt = useRef(Date.now());
 
+  // Cloudflare Turnstile. The token is single-use and expires after a few
+  // minutes, so it is cleared after every submit attempt and the widget reset.
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [widgetError, setWidgetError] = useState(false);
+  const turnstileRef = useRef<TurnstileInstance>(null);
+
   const instagramUrl = settings.socialLinks.find((item) => item.platform === 'instagram')?.url;
   const instagramHandle = instagramHandleFromUrl(instagramUrl);
   // CMS values are untrusted: a malformed address renders as plain text,
@@ -114,32 +126,51 @@ export default function ContactClient({ services, settings, policyLastUpdated, c
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
+    if (!turnstileToken) {
+      setErrorMessage('Please wait for the security check to finish, then try again.');
+      return;
+    }
+
     setIsSubmitting(true);
     setErrorMessage(null);
 
-    // Honeypot value rides along with the real fields; the server silently
-    // discards the submission when it is filled (see actions/sendEmail.ts).
-    // The recipient is resolved server-side from Sanity inside the action —
-    // never sent from the client (prevents abuse as an open email relay).
-    //
-    // The consent is recorded with the message: the delivered e-mail itself is
-    // the record that consent was given, and to which revision of the policy it
-    // referred. The label is deliberately free of "name"/"email", so it cannot
-    // confuse the reply-to/subject detection in the action.
-    const result = await sendEmailAction({
-      formData: {
-        ...formData,
-        _hp_ts: String(renderedAt.current),
-        'Privacy Policy Consent': `Accepted — policy version ${policyLastUpdated || PRIVACY_POLICY_LAST_UPDATED}`,
-      },
-    });
+    try {
+      // Honeypot value rides along with the real fields; the server silently
+      // discards the submission when it is filled (see actions/sendEmail.ts).
+      // The recipient is resolved server-side from Sanity inside the action —
+      // never sent from the client (prevents abuse as an open email relay).
+      //
+      // The consent is recorded with the message: the delivered e-mail itself is
+      // the record that consent was given, and to which revision of the policy it
+      // referred. The label is deliberately free of "name"/"email", so it cannot
+      // confuse the reply-to/subject detection in the action.
+      //
+      // The Turnstile token is verified server-side before the message is sent,
+      // and is never part of the delivered e-mail (see actions/sendEmail.ts).
+      const result = await sendEmailAction({
+        formData: {
+          ...formData,
+          _hp_ts: String(renderedAt.current),
+          'Privacy Policy Consent': `Accepted — policy version ${policyLastUpdated || PRIVACY_POLICY_LAST_UPDATED}`,
+          [TURNSTILE_FIELD]: turnstileToken,
+        },
+      });
 
-    setIsSubmitting(false);
-
-    if (result.success) {
-      setSubmitted(true);
-    } else {
-      setErrorMessage(result.error || 'Something went wrong. Please try again.');
+      if (result.success) {
+        setSubmitted(true);
+      } else {
+        setErrorMessage(result.error || 'Something went wrong. Please try again.');
+      }
+    } catch {
+      // Network failure or a thrown server error: without this the button would
+      // stay stuck on "Sending..." forever.
+      setErrorMessage('Something went wrong. Please try again.');
+    } finally {
+      // Tokens are single-use: always request a fresh one after an attempt.
+      turnstileRef.current?.reset();
+      setTurnstileToken(null);
+      setIsSubmitting(false);
     }
   };
 
@@ -188,6 +219,9 @@ export default function ContactClient({ services, settings, policyLastUpdated, c
                       setSubmitted(false);
                       setFormData({});
                       setConsent(false);
+                      setTurnstileToken(null);
+                      setWidgetError(false);
+                      setErrorMessage(null);
                     }}
                     className="mt-8 text-sm text-muted-foreground hover:text-accent transition-colors"
                   >
@@ -195,20 +229,23 @@ export default function ContactClient({ services, settings, policyLastUpdated, c
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Honeypot — visually hidden and skipped by keyboard/screen
-                    readers. Humans never fill it; bots that do get a fake
-                    "success" response and their message is dropped server-side. */}
-                <input
-                  type="text"
-                  name="_hp_website"
-                  value={formData['_hp_website'] || ''}
-                  onChange={(e) => handleInputChange('_hp_website', e.target.value)}
-                  tabIndex={-1}
-                  autoComplete="off"
-                  aria-hidden="true"
-                  className="absolute left-[-9999px] top-0 h-0 w-0 overflow-hidden opacity-0"
-                />
+                // method="post": if the form is ever submitted natively (JS not
+                // hydrated yet, or a bot that skips JS), the data goes in the
+                // request body — never into the URL and the access logs.
+                <form method="post" onSubmit={handleSubmit} className="relative space-y-6">
+                  {/* Honeypot — visually hidden and skipped by keyboard/screen
+                      readers. Humans never fill it; bots that do get a fake
+                      "success" response and their message is dropped server-side. */}
+                  <input
+                    type="text"
+                    name="_hp_website"
+                    value={formData['_hp_website'] || ''}
+                    onChange={(e) => handleInputChange('_hp_website', e.target.value)}
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                    className="absolute left-[-9999px] top-0 h-0 w-0 overflow-hidden opacity-0"
+                  />
                   {c.customFields?.map((field, idx) => {
                     const fieldId = field._key || `field-${idx}`;
                     return (
@@ -301,8 +338,8 @@ export default function ContactClient({ services, settings, policyLastUpdated, c
                     );
                   })}
 
-                  {/* Data-processing consent — last element of the form, right above
-                      the submit button. `required` gives the same native validation as
+                  {/* Data-processing consent — right above the security check and the
+                      submit button. `required` gives the same native validation as
                       the other fields, and the text is one <label> so the checkbox is
                       clickable through the whole sentence. */}
                   <div className="flex items-start gap-3 rounded-sm border border-border/60 bg-card/50 p-4">
@@ -332,13 +369,36 @@ export default function ContactClient({ services, settings, policyLastUpdated, c
                     </label>
                   </div>
 
+                  {/* Cloudflare Turnstile — the token is verified server-side. */}
+                  <Turnstile
+                    ref={turnstileRef}
+                    siteKey={TURNSTILE_SITE_KEY}
+                    onSuccess={(token) => {
+                      setTurnstileToken(token);
+                      setWidgetError(false);
+                    }}
+                    onExpire={() => setTurnstileToken(null)}
+                    onError={() => {
+                      setTurnstileToken(null);
+                      setWidgetError(true);
+                    }}
+                    options={{ theme: 'auto', size: 'flexible', language: 'en', refreshExpired: 'auto' }}
+                  />
+
+                  {widgetError && (
+                    <p role="alert" className="text-sm text-destructive font-normal">
+                      The security check could not load. Please refresh the page or disable content
+                      blockers for this site.
+                    </p>
+                  )}
+
                   {errorMessage && (
                     <p role="alert" className="text-sm text-destructive font-normal">{errorMessage}</p>
                   )}
 
                   <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !turnstileToken}
                     className="inline-flex items-center gap-3 bg-accent text-accent-foreground px-12 py-3.5 text-sm uppercase tracking-wide hover:bg-accent/90 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50"
                   >
                     {isSubmitting ? 'Sending...' : c.submitLabel}

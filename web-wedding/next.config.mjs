@@ -36,13 +36,13 @@ const nextConfig = (phase) => {
     "object-src 'none'",
     "frame-ancestors 'none'",
     "form-action 'self'",
-    `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://www.googletagmanager.com https://www.google-analytics.com`,
+    `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://www.googletagmanager.com https://www.google-analytics.com https://challenges.cloudflare.com`,
     "script-src-attr 'none'",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https://cdn.sanity.io https://img.youtube.com https://i.ytimg.com https://i.vimeocdn.com",
     "font-src 'self'",
-    "connect-src 'self' https://cdn.sanity.io https://*.sanity.io https://*.google-analytics.com https://www.googletagmanager.com",
-    "frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com",
+    "connect-src 'self' https://cdn.sanity.io https://*.sanity.io https://*.google-analytics.com https://www.googletagmanager.com https://challenges.cloudflare.com",
+    "frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://challenges.cloudflare.com",
     "media-src 'self'",
     "worker-src 'self' blob:",
     "manifest-src 'self'",
@@ -107,5 +107,3 @@ export default nextConfig;
 initOpenNextCloudflareForDev({
   configPath: fileURLToPath(new URL('./wrangler.dev.jsonc', import.meta.url)),
 });
-
-

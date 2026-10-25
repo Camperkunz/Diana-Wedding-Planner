@@ -34,6 +34,9 @@ interface SendEmailParams {
 //    must never be trusted for throttling.
 // 6. Duplicate submissions (double-click, network retry) carry a deterministic
 //    Resend idempotency key, so one enquiry cannot be delivered twice.
+// 7. The Cloudflare Turnstile token is verified with Cloudflare before the mail
+//    leaves (tokens are single-use and bound to the site key) and is never
+//    echoed into the delivered message.
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const RATE_LIMIT_MAX_ATTEMPTS = 3;
@@ -46,6 +49,18 @@ const MAX_TOTAL_LENGTH = 10000;
 const MIN_FILL_TIME_MS = 3000;
 /** Label of the render-time stamp the form sends; never emailed. */
 const TIMESTAMP_FIELD = '_hp_ts';
+/**
+ * Label of the Cloudflare Turnstile token. Must match TURNSTILE_FIELD in
+ * app/contact/contact-client.tsx: the client posts the widget's token under this
+ * key, the action verifies it and drops it — it is never part of the e-mail.
+ */
+const TURNSTILE_FIELD = 'cf-turnstile-response';
+/**
+ * Bookkeeping the form posts for its own bot checks. These keys are read by the
+ * action and deliberately left out of the message, so the inbox only shows what
+ * the visitor actually typed.
+ */
+const INTERNAL_FIELDS = new Set([TIMESTAMP_FIELD, '_hp_website', TURNSTILE_FIELD]);
 
 /** Upper bound on tracked rate-limit buckets (per IP, or per user-agent hash). */
 const MAX_TRACKED_KEYS = 10000;
@@ -168,6 +183,70 @@ async function sha256Hex(value: string): Promise<string> {
     return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
+/** Endpoint that validates a Turnstile token against the widget's secret key. */
+const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+/**
+ * Hard cap on the verification round-trip. `fetch` has no timeout of its own in
+ * Workers, and a stalled call would hold the server action (and the visitor's
+ * "Sending…" button) until the platform kills the request.
+ */
+const TURNSTILE_VERIFY_TIMEOUT_MS = 5000;
+
+interface TurnstileVerifyResponse {
+    success: boolean;
+    'error-codes'?: string[];
+}
+
+/**
+ * Verifies a Turnstile token with Cloudflare. A token is single-use and bound to
+ * the site key, so this runs exactly once per submission, before the mail is
+ * handed to Resend. When `TURNSTILE_SECRET_KEY` is not configured the check is
+ * skipped with a loud warning instead of failing closed: a missing secret would
+ * otherwise silently reject every visitor while the form still looks healthy.
+ * Any token that is present but rejected by Cloudflare blocks the send.
+ */
+async function verifyTurnstile(token: string, clientIp: string | null): Promise<boolean> {
+    const secret = process.env.TURNSTILE_SECRET_KEY;
+    if (!secret) {
+        console.warn(
+            'Contact form: TURNSTILE_SECRET_KEY is not configured — skipping the Turnstile check.'
+        );
+        return true;
+    }
+
+    if (!token) return false;
+
+    try {
+        const body = new URLSearchParams({ secret, response: token });
+        if (clientIp) body.set('remoteip', clientIp);
+
+        const response = await fetch(TURNSTILE_VERIFY_URL, {
+            method: 'POST',
+            body,
+            signal: AbortSignal.timeout(TURNSTILE_VERIFY_TIMEOUT_MS),
+        });
+        if (!response.ok) {
+            console.error(
+                `Contact form: Turnstile verification returned HTTP ${response.status}.`
+            );
+            return false;
+        }
+
+        const result = (await response.json()) as TurnstileVerifyResponse;
+        if (!result.success) {
+            console.warn(
+                `Contact form: Turnstile rejected the token — ${
+                    result['error-codes']?.join(', ') || 'unknown error'
+                }`
+            );
+        }
+        return result.success === true;
+    } catch (err) {
+        console.error('Contact form: Turnstile verification failed:', err);
+        return false;
+    }
+}
+
 /** Generic error shown to visitors — details are only logged on the server. */
 const GENERIC_ERROR = 'Failed to send message. Please try again later.';
 
@@ -193,6 +272,20 @@ export async function sendEmailAction({ formData }: SendEmailParams) {
         const elapsed = Date.now() - renderedAt;
         if (!Number.isFinite(renderedAt) || elapsed < MIN_FILL_TIME_MS) {
             return { success: true };
+        }
+
+        // Cloudflare Turnstile. This runs after the free traps above (so bot
+        // traffic does not spend Cloudflare's verification quota) and before the
+        // rate-limit check, where a failed challenge still costs the visitor
+        // nothing. The token itself is single-use — Cloudflare has now consumed
+        // it and it is never part of the e-mail (see INTERNAL_FIELDS).
+        const turnstileToken =
+            typeof formData?.[TURNSTILE_FIELD] === 'string' ? formData[TURNSTILE_FIELD].trim() : '';
+        if (!(await verifyTurnstile(turnstileToken, resolveClientIp(headerStore)))) {
+            return {
+                success: false,
+                error: 'Security check failed. Please reload the page and try again.',
+            };
         }
 
         // Check-only pass: the attempt itself is recorded later, right before the
@@ -242,7 +335,9 @@ export async function sendEmailAction({ formData }: SendEmailParams) {
         for (const rawLabel in source) {
             if (++scanned > MAX_FIELDS) break;
             if (!Object.prototype.hasOwnProperty.call(source, rawLabel)) continue;
-            if (rawLabel === TIMESTAMP_FIELD || rawLabel === '_hp_website') continue;
+            // Bot-check bookkeeping (honeypot, render stamp, Turnstile token) was
+            // read above and must never be echoed into the delivered message.
+            if (INTERNAL_FIELDS.has(rawLabel)) continue;
             const label = sanitizeText(rawLabel, MAX_LABEL_LENGTH);
             const value = sanitizeText(source[rawLabel], MAX_VALUE_LENGTH);
             if (!label) continue;
