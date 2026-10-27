@@ -15,8 +15,10 @@ import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
 //
 // The Content-Security-Policy is an allow-list for exactly what this website
 // loads: the Sanity image CDN (all photos), the YouTube / Vimeo players used by
-// the Backstage page plus their thumbnails, and Google Analytics (which only
-// becomes active when a Measurement ID is saved in the Studio).
+// the Backstage page plus their thumbnails, Google Analytics (which only
+// becomes active when a Measurement ID is saved in the Studio), Cloudflare
+// Turnstile (the contact form challenge) and the Cloudflare Web Analytics
+// beacon that the edge injects automatically on proxied zones.
 // `'unsafe-inline'` is required by the small inline snippets Next.js and the
 // GA4 tag emit; `'unsafe-eval'` is added in development only (Turbopack).
 //
@@ -36,12 +38,12 @@ const nextConfig = (phase) => {
     "object-src 'none'",
     "frame-ancestors 'none'",
     "form-action 'self'",
-    `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://www.googletagmanager.com https://www.google-analytics.com https://challenges.cloudflare.com`,
+    `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://www.googletagmanager.com https://www.google-analytics.com https://challenges.cloudflare.com https://static.cloudflareinsights.com`,
     "script-src-attr 'none'",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https://cdn.sanity.io https://img.youtube.com https://i.ytimg.com https://i.vimeocdn.com",
     "font-src 'self'",
-    "connect-src 'self' https://cdn.sanity.io https://*.sanity.io https://*.google-analytics.com https://www.googletagmanager.com https://challenges.cloudflare.com",
+    "connect-src 'self' https://cdn.sanity.io https://*.sanity.io https://*.google-analytics.com https://www.googletagmanager.com https://challenges.cloudflare.com https://cloudflareinsights.com data:",
     "frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://challenges.cloudflare.com",
     "media-src 'self'",
     "worker-src 'self' blob:",
