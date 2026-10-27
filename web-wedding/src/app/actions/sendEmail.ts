@@ -27,11 +27,11 @@ interface SendEmailParams {
 //    (`cf-connecting-ip`, else the LAST `x-forwarded-for` hop, else `x-real-ip`).
 // 6. Duplicate submissions carry a deterministic Resend idempotency key.
 // 7. Cloudflare Turnstile is verified with `siteverify` on the server, with
-//    action and hostname checks. In production the check FAILS CLOSED when the
-//    secret is missing — a misconfiguration must not silently disable protection.
-// 8. Local development uses Cloudflare's official test secret
-//    (1x0000000000000000000000000000000AA) so the real `siteverify` path runs
-//    locally without ever touching production credentials.
+//    action and hostname checks. The check is STRICTLY FAIL-CLOSED:
+//    a missing secret, a missing TURNSTILE_HOSTNAMES, a malformed token,
+//    a Cloudflare rejection, a timeout, or an action/hostname mismatch all
+//    return `false`. There is no development bypass and no "always success"
+//    secret — production and local behave identically.
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const RATE_LIMIT_MAX_ATTEMPTS = 3;
@@ -55,14 +55,16 @@ const MAX_TRACKED_KEYS = 10000;
 const IDEMPOTENCY_BUCKET_MS = 60 * 1000;
 
 /**
- * The `data-action` value set on the Turnstile widget. Must match exactly —
- * Cloudflare echoes it back in the siteverify response, and a token minted for
- * a different form must not be accepted here.
+ * The `action` value the Turnstile widget must be created with (client-side
+ * `options={{ action: 'contact' }}`). Cloudflare echoes it back in the
+ * siteverify response; a token minted for a different form is rejected here.
  */
 const EXPECTED_TURNSTILE_ACTION = 'contact';
+
 /**
  * Hostnames the widget is allowed to run on. Parsed from
- * TURNSTILE_HOSTNAMES (comma-separated). Required in production.
+ * TURNSTILE_HOSTNAMES (comma-separated). Required — the check fails closed
+ * when this is empty, so a misconfiguration cannot silently disable it.
  */
 const EXPECTED_TURNSTILE_HOSTNAMES = new Set(
     (process.env.TURNSTILE_HOSTNAMES ?? '')
@@ -70,13 +72,12 @@ const EXPECTED_TURNSTILE_HOSTNAMES = new Set(
         .map((h) => h.trim())
         .filter(Boolean)
 );
+
 /** Cloudflare documents a hard maximum of 2048 characters for a token. */
 const TURNSTILE_TOKEN_MAX_LENGTH = 2048;
 /** Hard cap on the verification round-trip; a stalled fetch must not hang. */
 const TURNSTILE_VERIFY_TIMEOUT_MS = 5000;
 const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
-/** Official Cloudflare test secret: always passes validation. Dev only. */
-const TURNSTILE_TEST_SECRET = '1x0000000000000000000000000000000AA';
 
 const attemptLog = new Map<string, number[]>();
 
@@ -172,12 +173,16 @@ interface TurnstileVerifyResponse {
 }
 
 /**
- * Verifies a Turnstile token with Cloudflare.
+ * Verifies a Turnstile token with Cloudflare. Strictly fail-closed:
+ *   - missing `TURNSTILE_SECRET_KEY`    → false
+ *   - missing `TURNSTILE_HOSTNAMES`     → false
+ *   - empty or oversized token          → false
+ *   - `siteverify` returns success=false→ false
+ *   - action mismatch                   → false
+ *   - hostname mismatch                 → false
+ *   - network error, timeout, bad JSON  → false
  *
- * Fail-closed in production: a missing secret, missing hostname configuration,
- * a malformed token, a Cloudflare rejection, a timeout, or an `action` /
- * `hostname` mismatch all return `false`. In development the official test
- * secret is used so the real `siteverify` path is still exercised.
+ * There is no development bypass and no "always-success" test secret.
  */
 async function verifyTurnstile(token: string, clientIp: string | null): Promise<boolean> {
     if (!token) return false;
@@ -186,22 +191,14 @@ async function verifyTurnstile(token: string, clientIp: string | null): Promise<
         return false;
     }
 
-    const isProduction = process.env.NODE_ENV === 'production';
-
-    const secret = isProduction
-        ? process.env.TURNSTILE_SECRET_KEY
-        : (process.env.TURNSTILE_SECRET_KEY ?? TURNSTILE_TEST_SECRET);
-
+    const secret = process.env.TURNSTILE_SECRET_KEY;
     if (!secret) {
-        // Production: fail closed. A missing secret must not disable the check.
-        console.error('Contact form: TURNSTILE_SECRET_KEY is missing in production — rejecting.');
+        console.error('Contact form: TURNSTILE_SECRET_KEY is not configured — rejecting.');
         return false;
     }
 
-    if (isProduction && EXPECTED_TURNSTILE_HOSTNAMES.size === 0) {
-        console.error(
-            'Contact form: TURNSTILE_HOSTNAMES is not configured in production — rejecting.'
-        );
+    if (EXPECTED_TURNSTILE_HOSTNAMES.size === 0) {
+        console.error('Contact form: TURNSTILE_HOSTNAMES is not configured — rejecting.');
         return false;
     }
 
@@ -239,13 +236,11 @@ async function verifyTurnstile(token: string, clientIp: string | null): Promise<
         }
 
         // Token must have been issued for one of our configured hostnames.
-        if (EXPECTED_TURNSTILE_HOSTNAMES.size > 0) {
-            if (!result.hostname || !EXPECTED_TURNSTILE_HOSTNAMES.has(result.hostname)) {
-                console.warn(
-                    `Contact form: Turnstile hostname mismatch (got "${result.hostname ?? 'none'}").`
-                );
-                return false;
-            }
+        if (!result.hostname || !EXPECTED_TURNSTILE_HOSTNAMES.has(result.hostname)) {
+            console.warn(
+                `Contact form: Turnstile hostname mismatch (got "${result.hostname ?? 'none'}").`
+            );
+            return false;
         }
 
         return true;
@@ -277,7 +272,7 @@ export async function sendEmailAction({ formData }: SendEmailParams) {
             return { success: true }; // silently drop
         }
 
-        // ── 3. Cloudflare Turnstile (server-side siteverify) ────────────────
+        // ── 3. Cloudflare Turnstile (server-side siteverify, fail-closed) ───
         const turnstileToken =
             typeof formData?.[TURNSTILE_FIELD] === 'string' ? formData[TURNSTILE_FIELD].trim() : '';
         if (!(await verifyTurnstile(turnstileToken, resolveClientIp(headerStore)))) {

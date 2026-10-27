@@ -369,7 +369,10 @@ export default function ContactClient({ services, settings, policyLastUpdated, c
                     </label>
                   </div>
 
-                  {/* Cloudflare Turnstile — the token is verified server-side. */}
+                  {/* Cloudflare Turnstile — the token is verified server-side.
+                      `action: 'contact'` MUST match EXPECTED_TURNSTILE_ACTION in
+                      app/actions/sendEmail.ts, or the server rejects the token
+                      with "action mismatch". */}
                   <Turnstile
                     ref={turnstileRef}
                     siteKey={TURNSTILE_SITE_KEY}
@@ -382,7 +385,13 @@ export default function ContactClient({ services, settings, policyLastUpdated, c
                       setTurnstileToken(null);
                       setWidgetError(true);
                     }}
-                    options={{ theme: 'auto', size: 'flexible', language: 'en', refreshExpired: 'auto' }}
+                    options={{
+                      theme: 'auto',
+                      size: 'flexible',
+                      language: 'en',
+                      refreshExpired: 'auto',
+                      action: 'contact',
+                    }}
                   />
 
                   {widgetError && (
