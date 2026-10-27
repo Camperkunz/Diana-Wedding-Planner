@@ -4,10 +4,6 @@ import { Resend } from 'resend';
 import { headers } from 'next/headers';
 import { getContactPage, getSiteLayout, getSiteSettings } from '@/lib/sanity-data';
 
-// The Resend client is created on first use, not at module scope. `process.env`
-// is only guaranteed to be populated while the Worker is handling a request, and
-// the Resend constructor throws when the API key is missing — so building the
-// client during a cold start would break the contact form.
 let resendClient: Resend | null = null;
 
 function getResend(): Resend {
@@ -22,21 +18,20 @@ interface SendEmailParams {
 // ── Security hardening ─────────────────────────────────────────────────────
 // 1. The recipient is resolved SERVER-SIDE from Sanity. It is never taken from
 //    the request, so nobody can turn this action into an open email relay.
-// 2. Every value interpolated into the HTML email is escaped (no HTML/script
-//    injection into the message body).
+// 2. Every value interpolated into the HTML email is escaped.
 // 3. replyTo must be a syntactically valid email or it is dropped.
 // 4. Best-effort in-memory rate limiting per client IP. NOTE: this resets on
 //    cold starts and is per-instance — it raises the bar against spam but does
-//    not replace a CAPTCHA/WAF if abuse ever becomes a problem.
+//    not replace Turnstile/WAF.
 // 5. The client IP is read from headers Cloudflare controls
-//    (`cf-connecting-ip`, else the LAST `x-forwarded-for` hop, else
-//    `x-real-ip`). The FIRST `x-forwarded-for` entry is visitor-supplied and
-//    must never be trusted for throttling.
-// 6. Duplicate submissions (double-click, network retry) carry a deterministic
-//    Resend idempotency key, so one enquiry cannot be delivered twice.
-// 7. The Cloudflare Turnstile token is verified with Cloudflare before the mail
-//    leaves (tokens are single-use and bound to the site key) and is never
-//    echoed into the delivered message.
+//    (`cf-connecting-ip`, else the LAST `x-forwarded-for` hop, else `x-real-ip`).
+// 6. Duplicate submissions carry a deterministic Resend idempotency key.
+// 7. Cloudflare Turnstile is verified with `siteverify` on the server, with
+//    action and hostname checks. In production the check FAILS CLOSED when the
+//    secret is missing — a misconfiguration must not silently disable protection.
+// 8. Local development uses Cloudflare's official test secret
+//    (1x0000000000000000000000000000000AA) so the real `siteverify` path runs
+//    locally without ever touching production credentials.
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const RATE_LIMIT_MAX_ATTEMPTS = 3;
@@ -49,31 +44,42 @@ const MAX_TOTAL_LENGTH = 10000;
 const MIN_FILL_TIME_MS = 3000;
 /** Label of the render-time stamp the form sends; never emailed. */
 const TIMESTAMP_FIELD = '_hp_ts';
-/**
- * Label of the Cloudflare Turnstile token. Must match TURNSTILE_FIELD in
- * app/contact/contact-client.tsx: the client posts the widget's token under this
- * key, the action verifies it and drops it — it is never part of the e-mail.
- */
+/** Label of the Cloudflare Turnstile token. Must match the widget field name. */
 const TURNSTILE_FIELD = 'cf-turnstile-response';
-/**
- * Bookkeeping the form posts for its own bot checks. These keys are read by the
- * action and deliberately left out of the message, so the inbox only shows what
- * the visitor actually typed.
- */
+/** Bot-check bookkeeping — read by the action and never echoed into the email. */
 const INTERNAL_FIELDS = new Set([TIMESTAMP_FIELD, '_hp_website', TURNSTILE_FIELD]);
 
-/** Upper bound on tracked rate-limit buckets (per IP, or per user-agent hash). */
+/** Upper bound on tracked rate-limit buckets. */
 const MAX_TRACKED_KEYS = 10000;
 /** Window used to collapse duplicate submissions into a single delivered mail. */
 const IDEMPOTENCY_BUCKET_MS = 60 * 1000;
 
+/**
+ * The `data-action` value set on the Turnstile widget. Must match exactly —
+ * Cloudflare echoes it back in the siteverify response, and a token minted for
+ * a different form must not be accepted here.
+ */
+const EXPECTED_TURNSTILE_ACTION = 'contact';
+/**
+ * Hostnames the widget is allowed to run on. Parsed from
+ * TURNSTILE_HOSTNAMES (comma-separated). Required in production.
+ */
+const EXPECTED_TURNSTILE_HOSTNAMES = new Set(
+    (process.env.TURNSTILE_HOSTNAMES ?? '')
+        .split(',')
+        .map((h) => h.trim())
+        .filter(Boolean)
+);
+/** Cloudflare documents a hard maximum of 2048 characters for a token. */
+const TURNSTILE_TOKEN_MAX_LENGTH = 2048;
+/** Hard cap on the verification round-trip; a stalled fetch must not hang. */
+const TURNSTILE_VERIFY_TIMEOUT_MS = 5000;
+const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+/** Official Cloudflare test secret: always passes validation. Dev only. */
+const TURNSTILE_TEST_SECRET = '1x0000000000000000000000000000000AA';
+
 const attemptLog = new Map<string, number[]>();
 
-/**
- * Read-only check: has this bucket already spent its attempts inside the
- * window? Nothing is recorded here, so a caller can be rejected without
- * consuming quota — bot traps and validation failures stay free.
- */
 function isRateLimited(key: string): boolean {
     const now = Date.now();
     const recent = attemptLog.get(key);
@@ -81,19 +87,11 @@ function isRateLimited(key: string): boolean {
     return recent.filter((t) => now - t < RATE_LIMIT_WINDOW_MS).length >= RATE_LIMIT_MAX_ATTEMPTS;
 }
 
-/**
- * Counts one attempt. Only called when a submission is actually about to be
- * handed to Resend. When the log outgrows its bound the expired buckets are
- * dropped and — only if that frees nothing — the oldest buckets are evicted
- * (the current one is never evicted), so a burst of unique keys from an
- * attacker cannot reset the limits of unrelated visitors. The previous code
- * called `clear()` here, which did exactly that.
- */
 function recordAttempt(key: string): void {
     const now = Date.now();
     const recent = (attemptLog.get(key) || []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
     recent.push(now);
-    attemptLog.delete(key); // re-insert so eviction order follows recency
+    attemptLog.delete(key);
     attemptLog.set(key, recent);
 
     if (attemptLog.size <= MAX_TRACKED_KEYS) return;
@@ -108,7 +106,6 @@ function recordAttempt(key: string): void {
     }
 }
 
-/** Escapes a value for safe interpolation into the HTML email body. */
 function escapeHtml(value: string): string {
     return value
         .replace(/&/g, '&amp;')
@@ -118,7 +115,6 @@ function escapeHtml(value: string): string {
         .replace(/'/g, '&#39;');
 }
 
-/** Strips control characters and caps the length of untrusted text. */
 function sanitizeText(value: unknown, maxLength: number): string {
     if (typeof value !== 'string') return '';
     // eslint-disable-next-line no-control-regex
@@ -127,13 +123,6 @@ function sanitizeText(value: unknown, maxLength: number): string {
 
 type HeaderStore = Awaited<ReturnType<typeof headers>>;
 
-/**
- * Resolves the caller IP from headers written by Cloudflare. `cf-connecting-ip`
- * is set at the edge and cannot be chosen by the visitor; when it is missing
- * (e.g. a local `next dev` run) the LAST `x-forwarded-for` hop is used, because
- * Cloudflare appends the real address there — everything before it is
- * visitor-supplied, which is why the old `split(',')[0]` was spoofable.
- */
 function resolveClientIp(headerStore: HeaderStore): string | null {
     const connectingIp = headerStore.get('cf-connecting-ip')?.trim();
     if (connectingIp) return connectingIp;
@@ -147,12 +136,6 @@ function resolveClientIp(headerStore: HeaderStore): string | null {
     return headerStore.get('x-real-ip')?.trim() || null;
 }
 
-/**
- * Bucket key for the rate limiter. A caller without a usable IP would otherwise
- * share one global bucket and lock out unrelated visitors, so the user-agent is
- * hashed as a fallback; the final fallback is deliberately a single shared
- * bucket (unreachable behind Cloudflare, where an IP header is always present).
- */
 function rateLimitKey(headerStore: HeaderStore): string {
     const ip = resolveClientIp(headerStore);
     if (ip) return `ip:${ip}`;
@@ -167,7 +150,6 @@ function rateLimitKey(headerStore: HeaderStore): string {
     return 'anonymous';
 }
 
-/** FNV-1a — small, dependency-free digest used only to build bucket names. */
 function hashString(value: string): string {
     let hash = 0x811c9dc5;
     for (let i = 0; i < value.length; i++) {
@@ -177,44 +159,51 @@ function hashString(value: string): string {
     return (hash >>> 0).toString(16);
 }
 
-/** SHA-256 as hex. WebCrypto is available in both the Workers and Node runtimes. */
 async function sha256Hex(value: string): Promise<string> {
     const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
     return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
-/** Endpoint that validates a Turnstile token against the widget's secret key. */
-const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
-/**
- * Hard cap on the verification round-trip. `fetch` has no timeout of its own in
- * Workers, and a stalled call would hold the server action (and the visitor's
- * "Sending…" button) until the platform kills the request.
- */
-const TURNSTILE_VERIFY_TIMEOUT_MS = 5000;
-
 interface TurnstileVerifyResponse {
     success: boolean;
+    action?: string;
+    hostname?: string;
     'error-codes'?: string[];
 }
 
 /**
- * Verifies a Turnstile token with Cloudflare. A token is single-use and bound to
- * the site key, so this runs exactly once per submission, before the mail is
- * handed to Resend. When `TURNSTILE_SECRET_KEY` is not configured the check is
- * skipped with a loud warning instead of failing closed: a missing secret would
- * otherwise silently reject every visitor while the form still looks healthy.
- * Any token that is present but rejected by Cloudflare blocks the send.
+ * Verifies a Turnstile token with Cloudflare.
+ *
+ * Fail-closed in production: a missing secret, missing hostname configuration,
+ * a malformed token, a Cloudflare rejection, a timeout, or an `action` /
+ * `hostname` mismatch all return `false`. In development the official test
+ * secret is used so the real `siteverify` path is still exercised.
  */
 async function verifyTurnstile(token: string, clientIp: string | null): Promise<boolean> {
-    const secret = process.env.TURNSTILE_SECRET_KEY;
-    if (!secret) {
-        console.warn(
-            'Contact form: TURNSTILE_SECRET_KEY is not configured — skipping the Turnstile check.'
-        );
-        return true;
+    if (!token) return false;
+    if (token.length > TURNSTILE_TOKEN_MAX_LENGTH) {
+        console.warn('Contact form: Turnstile token exceeds the 2048-character limit.');
+        return false;
     }
 
-    if (!token) return false;
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    const secret = isProduction
+        ? process.env.TURNSTILE_SECRET_KEY
+        : (process.env.TURNSTILE_SECRET_KEY ?? TURNSTILE_TEST_SECRET);
+
+    if (!secret) {
+        // Production: fail closed. A missing secret must not disable the check.
+        console.error('Contact form: TURNSTILE_SECRET_KEY is missing in production — rejecting.');
+        return false;
+    }
+
+    if (isProduction && EXPECTED_TURNSTILE_HOSTNAMES.size === 0) {
+        console.error(
+            'Contact form: TURNSTILE_HOSTNAMES is not configured in production — rejecting.'
+        );
+        return false;
+    }
 
     try {
         const body = new URLSearchParams({ secret, response: token });
@@ -225,23 +214,43 @@ async function verifyTurnstile(token: string, clientIp: string | null): Promise<
             body,
             signal: AbortSignal.timeout(TURNSTILE_VERIFY_TIMEOUT_MS),
         });
+
         if (!response.ok) {
-            console.error(
-                `Contact form: Turnstile verification returned HTTP ${response.status}.`
-            );
+            console.error(`Contact form: Turnstile verification returned HTTP ${response.status}.`);
             return false;
         }
 
         const result = (await response.json()) as TurnstileVerifyResponse;
-        if (!result.success) {
+
+        if (result.success !== true) {
             console.warn(
-                `Contact form: Turnstile rejected the token — ${
-                    result['error-codes']?.join(', ') || 'unknown error'
+                `Contact form: Turnstile rejected the token — ${result['error-codes']?.join(', ') || 'unknown error'
                 }`
             );
+            return false;
         }
-        return result.success === true;
+
+        // Token is valid, but it must have been minted for THIS form.
+        if (result.action !== EXPECTED_TURNSTILE_ACTION) {
+            console.warn(
+                `Contact form: Turnstile action mismatch (expected "${EXPECTED_TURNSTILE_ACTION}", got "${result.action ?? 'none'}").`
+            );
+            return false;
+        }
+
+        // Token must have been issued for one of our configured hostnames.
+        if (EXPECTED_TURNSTILE_HOSTNAMES.size > 0) {
+            if (!result.hostname || !EXPECTED_TURNSTILE_HOSTNAMES.has(result.hostname)) {
+                console.warn(
+                    `Contact form: Turnstile hostname mismatch (got "${result.hostname ?? 'none'}").`
+                );
+                return false;
+            }
+        }
+
+        return true;
     } catch (err) {
+        // Timeouts, network failures, and malformed JSON all fail closed.
         console.error('Contact form: Turnstile verification failed:', err);
         return false;
     }
@@ -254,31 +263,21 @@ export async function sendEmailAction({ formData }: SendEmailParams) {
     try {
         const headerStore = await headers();
 
-        // Honeypot: `_hp_website` is a visually hidden field in the form that
-        // people never see or fill. Bots that auto-complete every input report
-        // "success" but the message is dropped before anything is sent. The trap
-        // is checked first and touches no state, so bot traffic cannot consume
-        // the rate-limit budget of real visitors.
+        // ── 1. Honeypot (free, no state touched) ────────────────────────────
         const honeypot =
             typeof formData?.['_hp_website'] === 'string' ? formData['_hp_website'].trim() : '';
         if (honeypot) {
-            return { success: true };
+            return { success: true }; // silently drop bots
         }
 
-        // Time trap: the form stamps its render time. A submission made faster
-        // than a human can type (or with a missing/forged-future stamp) is dropped
-        // silently, exactly like a honeypot hit.
+        // ── 2. Time trap ────────────────────────────────────────────────────
         const renderedAt = Number(formData?.[TIMESTAMP_FIELD]);
         const elapsed = Date.now() - renderedAt;
         if (!Number.isFinite(renderedAt) || elapsed < MIN_FILL_TIME_MS) {
-            return { success: true };
+            return { success: true }; // silently drop
         }
 
-        // Cloudflare Turnstile. This runs after the free traps above (so bot
-        // traffic does not spend Cloudflare's verification quota) and before the
-        // rate-limit check, where a failed challenge still costs the visitor
-        // nothing. The token itself is single-use — Cloudflare has now consumed
-        // it and it is never part of the e-mail (see INTERNAL_FIELDS).
+        // ── 3. Cloudflare Turnstile (server-side siteverify) ────────────────
         const turnstileToken =
             typeof formData?.[TURNSTILE_FIELD] === 'string' ? formData[TURNSTILE_FIELD].trim() : '';
         if (!(await verifyTurnstile(turnstileToken, resolveClientIp(headerStore)))) {
@@ -288,16 +287,13 @@ export async function sendEmailAction({ formData }: SendEmailParams) {
             };
         }
 
-        // Check-only pass: the attempt itself is recorded later, right before the
-        // send, so rejected or mis-configured requests never burn a visitor's
-        // quota. The bucket is keyed on a Cloudflare-supplied header, not on the
-        // visitor-controlled first `x-forwarded-for` entry.
+        // ── 4. Rate-limit pre-check (read-only) ──────────────────────────────
         const limiterKey = rateLimitKey(headerStore);
         if (isRateLimited(limiterKey)) {
             return { success: false, error: 'Too many messages sent. Please try again later.' };
         }
 
-        // Recipient comes from the CMS, never from the client payload.
+        // ── 5. Resolve recipient server-side ────────────────────────────────
         const [page, settings, layout] = await Promise.all([
             getContactPage(),
             getSiteSettings(),
@@ -307,8 +303,6 @@ export async function sendEmailAction({ formData }: SendEmailParams) {
             sanitizeText(page?.recipientEmail, 320) ||
             sanitizeText(settings?.email, 320) ||
             sanitizeText(layout?.footerEmail, 320) ||
-            // Env is server-side and trusted, so it is a safe last-resort fallback
-            // (it replaces the old client-supplied fallback).
             sanitizeText(process.env.RESEND_FALLBACK_EMAIL, 320);
 
         if (!EMAIL_RE.test(targetEmail)) {
@@ -316,51 +310,41 @@ export async function sendEmailAction({ formData }: SendEmailParams) {
             return { success: false, error: GENERIC_ERROR };
         }
 
-        // Sender comes from env only. There is deliberately no fallback: a hardcoded
-        // test sender would silently make production mail undeliverable.
         const FROM_ADDRESS = sanitizeText(process.env.RESEND_FROM_ADDRESS, 320);
         if (!FROM_ADDRESS) {
             console.error('Contact form: RESEND_FROM_ADDRESS is not configured.');
             return { success: false, error: GENERIC_ERROR };
         }
 
-        // Sanitised, bounded copy of the submitted fields. The scan walks the
-        // payload lazily and stops at MAX_FIELDS: `Object.entries(...).slice()`
-        // materialised every attacker-supplied key before throwing the extras
-        // away.
+        // ── 6. Sanitise and bound submitted fields ──────────────────────────
         const source: Record<string, string> = formData || {};
         const entries: [string, string][] = [];
         let totalLength = 0;
         let scanned = 0;
+
         for (const rawLabel in source) {
             if (++scanned > MAX_FIELDS) break;
             if (!Object.prototype.hasOwnProperty.call(source, rawLabel)) continue;
-            // Bot-check bookkeeping (honeypot, render stamp, Turnstile token) was
-            // read above and must never be echoed into the delivered message.
-            if (INTERNAL_FIELDS.has(rawLabel)) continue;
+            if (INTERNAL_FIELDS.has(rawLabel)) continue; // never email bot-check fields
+
             const label = sanitizeText(rawLabel, MAX_LABEL_LENGTH);
             const value = sanitizeText(source[rawLabel], MAX_VALUE_LENGTH);
             if (!label) continue;
+
             totalLength += label.length + value.length;
             if (totalLength > MAX_TOTAL_LENGTH) break;
             entries.push([label, value]);
         }
 
-        // replyTo: the first field that both looks like an email field and holds
-        // a valid address; failing that, the first valid address anywhere in the
-        // form. Matching on the label alone silently dropped reply-to whenever
-        // that one field was empty or mistyped.
+        // ── 7. replyTo / subject ────────────────────────────────────────────
         const looksLikeEmailLabel = ([label]: [string, string]) => {
-            const lowerLabel = label.toLowerCase();
-            return (
-                lowerLabel.includes('email') ||
-                lowerLabel.includes('mail') ||
-                lowerLabel.includes('почта')
-            );
+            const lower = label.toLowerCase();
+            return lower.includes('email') || lower.includes('mail') || lower.includes('почта');
         };
         const holdsEmailAddress = ([, value]: [string, string]) => EMAIL_RE.test(value);
+
         const replyTo = (
-            entries.find((entry) => looksLikeEmailLabel(entry) && holdsEmailAddress(entry)) ??
+            entries.find((e) => looksLikeEmailLabel(e) && holdsEmailAddress(e)) ??
             entries.find(holdsEmailAddress)
         )?.[1];
 
@@ -372,21 +356,14 @@ export async function sendEmailAction({ formData }: SendEmailParams) {
         const formattedFields = entries
             .map(
                 ([label, value]) =>
-                    `<p style="margin: 6px 0;"><strong>${escapeHtml(label)}:</strong> ${escapeHtml(value) || 'N/A'}</p>`
+                    `<p style="margin: 6px 0;"><strong>${escapeHtml(label)}:</strong> ${escapeHtml(value) || 'N/A'
+                    }</p>`
             )
             .join('');
 
-        // Plain-text alternative. HTML-only mail is scored worse by spam filters
-        // and is unreadable in text-only clients; the SDK accepts both parts, so
-        // no extra dependency is involved.
-        const textFields = entries
-            .map(([label, value]) => `${label}: ${value || 'N/A'}`)
-            .join('\n');
+        const textFields = entries.map(([label, value]) => `${label}: ${value || 'N/A'}`).join('\n');
 
-        // Deterministic idempotency key: a double-click, or a retry of the same
-        // submission, produces the same key and Resend drops the duplicate
-        // instead of delivering twice. The minute bucket keeps a genuinely
-        // repeated enquiry (sent later) deliverable.
+        // ── 8. Deterministic idempotency key ────────────────────────────────
         const idempotencyKey = `contact-${await sha256Hex(
             [
                 limiterKey,
@@ -397,10 +374,10 @@ export async function sendEmailAction({ formData }: SendEmailParams) {
             ].join('\u0000')
         )}`;
 
-        // Validation has passed and the mail is about to leave — this is the one
-        // place an attempt is recorded against the rate limit.
+        // ── 9. Record the attempt only when the mail is about to leave ──────
         recordAttempt(limiterKey);
 
+        // ── 10. Send via Resend ─────────────────────────────────────────────
         const { error } = await getResend().emails.send(
             {
                 from: FROM_ADDRESS,
@@ -421,10 +398,6 @@ export async function sendEmailAction({ formData }: SendEmailParams) {
         );
 
         if (error) {
-            // Resend reports *why* it refused (`daily_quota_exceeded`,
-            // `rate_limit_exceeded`, `validation_error`, …). Logging the name
-            // keeps those distinguishable instead of collapsing into one opaque
-            // line; visitors keep seeing the same generic message.
             const statusCode =
                 typeof error.statusCode === 'number' ? ` (HTTP ${error.statusCode})` : '';
             console.error(
@@ -440,8 +413,7 @@ export async function sendEmailAction({ formData }: SendEmailParams) {
 
         return { success: true };
     } catch (err) {
-        console.error('Server Action Error:', err);
+        console.error('Server Action Error:', err instanceof Error ? `${err.name}: ${err.message}` : 'unknown');
         return { success: false, error: GENERIC_ERROR };
     }
 }
-

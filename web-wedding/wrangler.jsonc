@@ -50,7 +50,8 @@
     // the Durable Object for 28-30s each just to give up at the end. A shorter
     // timeout frees the DO and lets the queue retry with backoff instead.
     "NEXT_CACHE_DO_QUEUE_REVALIDATION_TIMEOUT_MS": "12000",
-    "RESEND_FROM_ADDRESS": "Diana's Website <onboarding@resend.dev>"
+    "RESEND_FROM_ADDRESS": "Diana's Website <onboarding@resend.dev>",
+    "TURNSTILE_HOSTNAMES": "dianavoloshina.com,www.dianavoloshina.com"
   },
   "durable_objects": {
     "bindings": [
