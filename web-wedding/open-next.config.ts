@@ -47,7 +47,11 @@ export default defineCloudflareConfig({
 		// regional entry, so a Sanity webhook invalidates immediately in the colo
 		// that served the report and elsewhere within `regionalCacheTtlSec`.
 		regionalCache: true,
-		regionalCacheTtlSec: 30,
+		// 5 minutes (was 30 s): every page view used to re-read its tags from the
+		// Durable Object after half a minute, which is most of the DO requests on
+		// the free plan's daily budget. Ottawa traffic goes through one colo, where
+		// the webhook still invalidates instantly; other colos catch up within 5 min.
+		regionalCacheTtlSec: 300,
 	}),
 	// Serve SSG/ISR responses straight from the KV cache entry, without booting
 	// the Next.js server bundle. Big CPU/latency win on cache hits.
