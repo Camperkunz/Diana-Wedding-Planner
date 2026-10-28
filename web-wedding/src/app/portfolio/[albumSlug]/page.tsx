@@ -8,6 +8,30 @@ import { absoluteUrl } from '@/lib/site';
 import HeroSection from '@/components/ui/HeroSection';
 import { ALBUM_PAGE_SIZE } from '@/lib/album-paging';
 import AlbumGallery from '@/components/album-gallery';
+import { JsonLd } from '@/components/json-ld';
+import { BUSINESS_ID, breadcrumbList } from '@/lib/structured-data';
+
+/** Photos listed in the ImageGallery markup (the gallery itself pages further). */
+const JSON_LD_PHOTOS = 12;
+
+/**
+ * Fallback description when the editor wrote neither an SEO description nor a
+ * story: names the couple, the kind of wedding, the place and the planner.
+ */
+function albumFallbackDescription(album: { title: string; category?: string; venue?: string; location?: string }) {
+  const place = [album.venue, album.location].filter(Boolean).join(', ');
+  return [
+    album.title,
+    album.category?.trim() ? ` — ${album.category.trim()}` : ' — wedding',
+    place ? ` at ${place}` : '',
+    ', planned by Diana Voloshina, Ottawa wedding planner.',
+  ].join('');
+}
+
+/** A machine-readable date for <time>, only when the value is ISO (YYYY-MM-DD). */
+function isoDate(value?: string) {
+  return value && /^\d{4}-\d{2}-\d{2}/.test(value) ? value.slice(0, 10) : undefined;
+}
 
 // ISR: album edits appear within this window, no redeploy needed.
 export const revalidate = 21600;
@@ -28,7 +52,8 @@ export async function generateMetadata({
   const title =
     album.seo?.metaTitle ||
     `${album.title}${album.category ? ` — ${album.category}` : ''} | Diana, Ottawa Wedding Planner`;
-  const description = album.seo?.metaDescription || (album.story || album.title).slice(0, 160);
+  const description =
+    album.seo?.metaDescription || (album.story || albumFallbackDescription(album)).slice(0, 160);
   // Album cover doubles as the share image when the editor set none.
   const image = album.seo?.ogImage || album.coverImage || settings?.seo?.ogImage;
   // Only an absolute http(s) URL may become a canonical — see safe-url.ts. When
@@ -73,8 +98,37 @@ export default async function AlbumPage({
   const album = await getAlbum(albumSlug);
   if (!album) notFound();
 
+  const path = `/portfolio/${encodeURIComponent(albumSlug)}`;
+  const jsonLd = [
+    breadcrumbList([
+      ['Home', '/'],
+      ['Portfolio', '/portfolio'],
+      [album.title, path],
+    ]),
+    {
+      '@context': 'https://schema.org',
+      '@type': 'ImageGallery',
+      name: album.title,
+      url: absoluteUrl(path),
+      description: album.story?.slice(0, 300) || albumFallbackDescription(album),
+      dateCreated: isoDate(album.date),
+      contentLocation: album.venue || album.location
+        ? { '@type': 'Place', name: [album.venue, album.location].filter(Boolean).join(', ') }
+        : undefined,
+      author: { '@id': BUSINESS_ID },
+      image: album.photos.slice(0, JSON_LD_PHOTOS).map((photo) => ({
+        '@type': 'ImageObject',
+        contentUrl: photo.src,
+        caption: photo.caption || photo.alt || undefined,
+        width: photo.width,
+        height: photo.height,
+      })),
+    },
+  ];
+
   return (
     <>
+      <JsonLd data={jsonLd} />
       {/* Hero */}
       <HeroSection
         eyebrow={album.category}
@@ -87,7 +141,7 @@ export default async function AlbumPage({
             {album.date ? (
               <span className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" aria-hidden="true" />
-                {album.date}
+                <time dateTime={isoDate(album.date)}>{album.date}</time>
               </span>
             ) : null}
             {album.venue || album.location ? (

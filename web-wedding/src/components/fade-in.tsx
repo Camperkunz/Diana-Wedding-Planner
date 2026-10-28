@@ -52,6 +52,8 @@ export function FadeIn({
             style={{ transitionDelay: `${delay}ms` }}
             className={cn(
                 'transition-all duration-700 ease-out',
+                // Reduced motion: content is shown at once, without the slide.
+                'motion-reduce:transition-none motion-reduce:opacity-100 motion-reduce:translate-y-0',
                 isVisible
                     ? 'opacity-100 translate-y-0'
                     : `opacity-0 ${directionClasses[direction]}`,

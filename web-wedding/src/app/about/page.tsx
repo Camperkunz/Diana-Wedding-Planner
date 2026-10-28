@@ -8,6 +8,10 @@ import {
 import { StatsSection } from '@/components/stats-section';
 import HeroSection from '@/components/ui/HeroSection';
 import ResponsiveImage from '@/components/ui/ResponsiveImage';
+import { JsonLd } from '@/components/json-ld';
+import { PERSON_ID, breadcrumbList } from '@/lib/structured-data';
+import { absoluteUrl } from '@/lib/site';
+import { sanityImage } from '@/lib/sanity-image';
 
 // Fallback data
 const fallback = {};
@@ -36,8 +40,24 @@ export default async function AboutPage() {
   const glance = c.glanceItems?.length ? c.glanceItems : [];
   const philosophy = c.philosophyItems?.length ? c.philosophyItems : [];
 
+  const portrait = sanityImage(c.storyImage, 1200);
+
   return (
     <>
+      <JsonLd
+        data={[
+          breadcrumbList([['Home', '/'], ['About', '/about']]),
+          {
+            '@context': 'https://schema.org',
+            '@type': 'AboutPage',
+            url: absoluteUrl('/about'),
+            mainEntity: {
+              '@id': PERSON_ID,
+              image: portrait || undefined,
+            },
+          },
+        ]}
+      />
       {/* Hero */}
       <HeroSection
         eyebrow={c.heroEyebrow}

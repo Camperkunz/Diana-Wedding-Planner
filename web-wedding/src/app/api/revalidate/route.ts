@@ -1,6 +1,6 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
 import type { NextRequest } from 'next/server';
-import { parseBody } from 'next-sanity/webhook';
+import { SIGNATURE_HEADER_NAME, isValidSignature } from '@sanity/webhook';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { SANITY_ALL_TAG, sanityTag } from '@/lib/sanity-tags';
 
@@ -17,6 +17,27 @@ import { SANITY_ALL_TAG, sanityTag } from '@/lib/sanity-tags';
 //
 // The `parseBody` ~3 s wait is intentional: it lets the Content Lake CDN catch
 // up before the next render, so we do NOT try to shortcut it.
+
+/**
+ * Reads and verifies a Sanity webhook (same contract as next-sanity's
+ * `parseBody`, which this replaces so the frontend no longer installs the whole
+ * Studio dependency tree). After a valid signature it waits ~3 s so the Content
+ * Lake CDN has caught up before the next render.
+ */
+async function parseBody<T>(
+    request: NextRequest,
+    secret: string
+): Promise<{ body: T | null; isValidSignature: boolean | null }> {
+    const signature = request.headers.get(SIGNATURE_HEADER_NAME);
+    if (!signature) {
+        console.error('[revalidate] missing signature header');
+        return { body: null, isValidSignature: null };
+    }
+    const body = await request.text();
+    const valid = await isValidSignature(body, signature, secret);
+    if (valid) await new Promise((resolve) => setTimeout(resolve, 3_000));
+    return { body: body.trim() ? (JSON.parse(body) as T) : null, isValidSignature: valid };
+}
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

@@ -3,11 +3,14 @@ import { LuArrowRight as ArrowRight, LuCheck as Check } from 'react-icons/lu';
 import {
   getServices,
   getServicesPage,
+  getSiteSettings,
   buildSeoMetadata,
   ComparisonRow,
 } from '@/lib/sanity-data';
 import HeroSection from '@/components/ui/HeroSection';
 import ResponsiveImage from '@/components/ui/ResponsiveImage';
+import { JsonLd } from '@/components/json-ld';
+import { BUSINESS_ID, areaServed, breadcrumbList, parsePrice } from '@/lib/structured-data';
 
 const fallback = {};
 
@@ -25,12 +28,43 @@ export async function generateMetadata() {
 }
 
 export default async function ServicesPage() {
-  const [page, services] = await Promise.all([getServicesPage(), getServices()]);
+  const [page, services, settings] = await Promise.all([
+    getServicesPage(),
+    getServices(),
+    getSiteSettings(),
+  ]);
   const c = { ...fallback, ...(page || {}) } as typeof fallback & Record<string, any>;
   const comparisonRows: ComparisonRow[] = c.comparisonRows || [];
 
+  const area = areaServed(settings?.serviceArea);
+  const servicesJsonLd = services.map((service) => {
+    const price = parsePrice(service.startingPrice);
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      name: service.name,
+      serviceType: 'Wedding planning',
+      description: service.fullDescription || service.shortDescription || undefined,
+      image: service.image || undefined,
+      provider: { '@id': BUSINESS_ID },
+      areaServed: area,
+      offers: price
+        ? {
+            '@type': 'Offer',
+            priceCurrency: 'CAD',
+            priceSpecification: {
+              '@type': 'PriceSpecification',
+              minPrice: price,
+              priceCurrency: 'CAD',
+            },
+          }
+        : undefined,
+    };
+  });
+
   return (
     <>
+      <JsonLd data={[breadcrumbList([['Home', '/'], ['Services', '/services']]), ...servicesJsonLd]} />
       {/* Hero */}
       <HeroSection
         eyebrow={c.heroEyebrow}

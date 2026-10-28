@@ -1,5 +1,5 @@
 import './globals.css';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import type { CSSProperties, ReactNode } from 'react';
 import { SiteHeader } from '../components/site-header';
 import { SiteFooter } from '../components/site-footer';
@@ -8,6 +8,7 @@ import { getSiteDesign, getSiteLayout, getSiteSettings, hexToHsl } from '../lib/
 import { SITE_URL } from '../lib/site';
 import { JsonLd } from '../components/json-ld';
 import { GoogleAnalytics } from '../components/google-analytics';
+import { BUSINESS_ID, PERSON_ID, WEBSITE_ID, areaServed } from '../lib/structured-data';
 
 // Revalidation is configured per route (`export const revalidate` in each
 // page.tsx), not here: the old layout-level `revalidate = 60` forced every
@@ -20,7 +21,11 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(SITE_URL),
     title: settings?.seo?.metaTitle || settings?.name || 'Wedding Planner',
     description: settings?.seo?.metaDescription || settings?.tagline,
-    icons: settings?.favicon ? { icon: settings.favicon } : undefined,
+    // 96px (a multiple of 48, as Google's favicon guidelines require) plus the
+    // 180px home-screen icon for iOS.
+    icons: settings?.favicon
+      ? { icon: settings.favicon, apple: settings.appleIcon }
+      : undefined,
     // No `robots` here on purpose: every route emits its own (see
     // buildSeoMetadata), and a leftover `noindex` at layout level would be
     // inherited by any page that forgets to override it. Indexing is the
@@ -34,6 +39,12 @@ export async function generateMetadata(): Promise<Metadata> {
       images: settings?.seo?.ogImage ? [settings.seo.ogImage] : undefined,
     },
   };
+}
+
+// Mobile browser chrome (address bar) takes the site's background colour.
+export async function generateViewport(): Promise<Viewport> {
+  const design = await getSiteDesign();
+  return { themeColor: design?.colors?.background || '#ffffff' };
 }
 
 export default async function RootLayout({
@@ -104,23 +115,46 @@ export default async function RootLayout({
       addressCountry: 'CA',
     };
   })();
+  const businessName = settings?.name || 'Diana — Wedding Planner';
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'ProfessionalService',
-    // Stable identifier for the business entity, so other markup can reference
-    // it (`{ "@id": "https://dianavoloshina.com/#business" }`).
-    '@id': `${SITE_URL}/#business`,
-    name: settings?.name || 'Diana — Wedding Planner',
-    url: SITE_URL,
-    logo: settings?.logo || undefined,
-    image: settings?.seo?.ogImage || undefined,
-    description:
-      settings?.seo?.metaDescription || settings?.tagline || undefined,
-    email: settings?.email || undefined,
-    telephone: settings?.phone || undefined,
-    address: postalAddress,
-    areaServed: settings?.serviceArea || undefined,
-    sameAs: sameAs.length ? sameAs : undefined,
+    '@graph': [
+      {
+        '@type': 'ProfessionalService',
+        // Stable identifier for the business entity, so other markup can
+        // reference it (`{ "@id": "https://dianavoloshina.com/#business" }`).
+        '@id': BUSINESS_ID,
+        name: businessName,
+        url: SITE_URL,
+        logo: settings?.logo || undefined,
+        image: settings?.seo?.ogImage || undefined,
+        description:
+          settings?.seo?.metaDescription || settings?.tagline || undefined,
+        email: settings?.email || undefined,
+        telephone: settings?.phone || undefined,
+        address: postalAddress,
+        areaServed: areaServed(settings?.serviceArea),
+        founder: { '@id': PERSON_ID },
+        sameAs: sameAs.length ? sameAs : undefined,
+      },
+      {
+        '@type': 'Person',
+        '@id': PERSON_ID,
+        name: 'Diana Voloshina',
+        jobTitle: 'Wedding Planner',
+        url: `${SITE_URL}/about`,
+        worksFor: { '@id': BUSINESS_ID },
+        sameAs: sameAs.length ? sameAs : undefined,
+      },
+      {
+        '@type': 'WebSite',
+        '@id': WEBSITE_ID,
+        name: businessName,
+        url: SITE_URL,
+        inLanguage: 'en-CA',
+        publisher: { '@id': BUSINESS_ID },
+      },
+    ],
   };
 
   return (
@@ -147,7 +181,7 @@ export default async function RootLayout({
         <SiteFooter settings={settings} layout={siteLayout} />
         <FloatingContact />
         {/* Renders nothing unless a valid GA4 Measurement ID (G-*) is set in
-            Business & Contact Info. Scripts load after hydration. */}
+            Business & Contact Info. Scripts load once the page has finished loading. */}
         <GoogleAnalytics id={settings?.googleAnalyticsId} />
       </body>
     </html>

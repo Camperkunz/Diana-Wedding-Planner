@@ -17,6 +17,8 @@ export type SiteSettings = {
   logo?: string;
   logoAlt?: string;
   favicon?: string;
+  /** 180×180 home-screen icon (iOS), cut from the same favicon asset. */
+  appleIcon?: string;
   email?: string;
   phone?: string;
   address?: string;
@@ -378,7 +380,9 @@ function mapSiteSettings(data: any): SiteSettings | null {
     // from being stretched, and `sanityImage` returns `undefined` if the asset was
     // deleted instead of throwing inside the root layout (which would take down
     // every page of the site).
-    favicon: sanityImage(data.favicon, 64, undefined, { height: 64, fit: 'crop' }),
+    // 96px: Google only shows favicons whose size is a multiple of 48.
+    favicon: sanityImage(data.favicon, 96, undefined, { height: 96, fit: 'crop' }),
+    appleIcon: sanityImage(data.favicon, 180, undefined, { height: 180, fit: 'crop' }),
     email: data.email,
     phone: data.phone,
     address: data.address,

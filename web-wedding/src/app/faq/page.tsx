@@ -8,6 +8,8 @@ import {
 } from '@/components/ui/accordion';
 import { getFaqPage, buildSeoMetadata } from '@/lib/sanity-data';
 import HeroSection from '@/components/ui/HeroSection';
+import { JsonLd } from '@/components/json-ld';
+import { breadcrumbList } from '@/lib/structured-data';
 
 const fallback = {};
 
@@ -47,9 +49,28 @@ export default async function FaqPage() {
     const items: any[] = c.items || [];
     const categories = Array.from(new Set(items.map((i: any) => i.category)));
     const showContact = Boolean(c.contactHeading || c.contactDescription);
+    // FAQPage markup mirrors the accordion exactly: same questions, same text.
+    const faqItems = items.filter((item: any) => item.question && item.answer);
 
     return (
         <>
+            <JsonLd data={breadcrumbList([['Home', '/'], ['FAQ', '/faq']])} />
+            {faqItems.length > 0 && (
+                <JsonLd
+                    data={{
+                        '@context': 'https://schema.org',
+                        '@type': 'FAQPage',
+                        mainEntity: faqItems.map((item: any) => ({
+                            '@type': 'Question',
+                            name: item.question,
+                            acceptedAnswer: {
+                                '@type': 'Answer',
+                                text: toParagraphs(item.answer).join('\n\n'),
+                            },
+                        })),
+                    }}
+                />
+            )}
             {/* Hero Section */}
             <HeroSection
                 eyebrow={c.heroEyebrow}

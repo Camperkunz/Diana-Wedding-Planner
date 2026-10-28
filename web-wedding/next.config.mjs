@@ -48,6 +48,7 @@ const nextConfig = (phase) => {
     "media-src 'self'",
     "worker-src 'self' blob:",
     "manifest-src 'self'",
+    'upgrade-insecure-requests',
   ].join('; ');
 
   const securityHeaders = [

@@ -3,6 +3,8 @@ import { getBackstagePage, getBackstageVideos, buildSeoMetadata } from '@/lib/sa
 import { sanityImage } from '@/lib/sanity-image';
 import { getEmbedUrl, getAutoThumbnail } from '@/lib/video-embed';
 import BackstageClient, { Video } from './backstage-client';
+import { JsonLd } from '@/components/json-ld';
+import { BUSINESS_ID, breadcrumbList } from '@/lib/structured-data';
 
 const fallback = {};
 
@@ -22,8 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function BackstagePage() {
-    const page = await getBackstagePage();
-    const videos = await getBackstageVideos();
+    const [page, videos] = await Promise.all([getBackstagePage(), getBackstageVideos()]);
 
     const c = {
         ...fallback,
@@ -49,7 +50,25 @@ export default async function BackstagePage() {
         })
     );
 
+    // VideoObject per embeddable video. Google requires name, thumbnailUrl and
+    // uploadDate, so a video missing one of them is left out of the markup.
+    const videoJsonLd = mapped
+        .map((video, index) => ({ video, createdAt: videos?.[index]?._createdAt }))
+        .filter(({ video, createdAt }) => video.title && video.thumbnail && video.embedUrl && createdAt)
+        .map(({ video, createdAt }) => ({
+            '@context': 'https://schema.org',
+            '@type': 'VideoObject',
+            name: video.title,
+            description: video.description || video.title,
+            thumbnailUrl: video.thumbnail,
+            embedUrl: video.embedUrl,
+            uploadDate: createdAt,
+            publisher: { '@id': BUSINESS_ID },
+        }));
+
     return (
+        <>
+        <JsonLd data={[breadcrumbList([['Home', '/'], ['Backstage', '/backstage']]), ...videoJsonLd]} />
         <BackstageClient
             content={{
                 title: c.title,
@@ -65,5 +84,6 @@ export default async function BackstagePage() {
             }}
             videos={mapped}
         />
+        </>
     );
 }

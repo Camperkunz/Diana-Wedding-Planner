@@ -9,7 +9,17 @@ import { absoluteUrl } from '@/lib/site';
 // up here within the hour while its page is already live via on-demand ISR.
 export const revalidate = 3600;
 
-const STATIC_PATHS = ['/', '/portfolio', '/services', '/about', '/faq', '/backstage', '/contact', '/privacy'];
+/** Static routes and the Studio document whose last edit dates each of them. */
+const STATIC_PAGES: [path: string, type: string][] = [
+  ['/', 'homePage'],
+  ['/portfolio', 'portfolioPage'],
+  ['/services', 'servicesPage'],
+  ['/about', 'aboutPage'],
+  ['/faq', 'faqPage'],
+  ['/backstage', 'backstagePage'],
+  ['/contact', 'contactPage'],
+  ['/privacy', 'privacyPolicy'],
+];
 
 type AlbumRow = {
   slug?: string;
@@ -36,6 +46,23 @@ function escapeXml(value: string): string {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let albums: AlbumRow[] = [];
+  const pageUpdatedAt = new Map<string, string>();
+  try {
+    const pages: { _type: string; _updatedAt: string }[] =
+      (await client.fetch(
+        `*[_type in $types]{ _type, _updatedAt }`,
+        { types: STATIC_PAGES.map(([, type]) => type) },
+        sanityFetchOptions(...STATIC_PAGES.map(([, type]) => type))
+      )) || [];
+    // Newest edit wins when a type has more than one document.
+    for (const page of pages) {
+      const known = pageUpdatedAt.get(page._type);
+      if (!known || page._updatedAt > known) pageUpdatedAt.set(page._type, page._updatedAt);
+    }
+  } catch (error) {
+    console.error('Sitemap: could not load page dates from Sanity.', error);
+  }
+
   try {
     albums =
       (await client.fetch(
@@ -59,10 +86,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   return [
-    ...STATIC_PATHS.map((path) => ({
-      url: escapeXml(absoluteUrl(path)),
-      priority: path === '/' ? 1 : 0.7,
-    })),
+    ...STATIC_PAGES.map(([path, type]) => {
+      const updatedAt = pageUpdatedAt.get(type);
+      return {
+        url: escapeXml(absoluteUrl(path)),
+        lastModified: updatedAt ? new Date(updatedAt) : undefined,
+        priority: path === '/' ? 1 : 0.7,
+      };
+    }),
     ...albums
       .filter((album): album is Required<Pick<AlbumRow, 'slug'>> & AlbumRow => Boolean(album.slug))
       .map((album) => {

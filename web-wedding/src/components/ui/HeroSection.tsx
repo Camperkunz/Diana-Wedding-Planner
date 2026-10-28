@@ -31,7 +31,8 @@ type HeroStyles = {
 
 const HERO_STYLES: Record<HeroSize, HeroStyles> = {
     fullscreen: {
-        section: 'h-screen min-h-[600px]',
+        // svh: the hero does not jump when the mobile address bar hides.
+        section: 'h-screen h-[100svh] min-h-[600px]',
         eyebrow: 'mb-6',
         heading: 'text-5xl md:text-7xl lg:text-8xl leading-[1.1] max-w-4xl',
         description: 'mt-8 max-w-2xl',
